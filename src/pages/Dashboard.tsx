@@ -13,6 +13,7 @@ import { CameraCapture } from '../components/tracking/CameraCapture'
 import { AudioCapture } from '../components/tracking/AudioCapture'
 import { MealBottomSheet } from '../components/tracking/MealBottomSheet'
 import { ManualEntry } from '../components/tracking/ManualEntry'
+import { PhotoContextSheet } from '../components/tracking/PhotoContextSheet'
 import type { AIEstimation } from '../types'
 
 export function Dashboard() {
@@ -21,6 +22,7 @@ export function Dashboard() {
   const recentLogs = getRecentLogs(7)
 
   const [mode, setMode] = useState<'idle' | 'camera' | 'audio' | 'manual'>('idle')
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [estimation, setEstimation] = useState<AIEstimation | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
@@ -32,13 +34,19 @@ export function Dashboard() {
   const weights = recentLogs.map((l) => l.morning_weight)
   const avgWeight = computeMovingAverage(weights)
 
-  const handlePhotoCapture = async (base64: string) => {
+  const handlePhotoCapture = (base64: string) => {
+    setCapturedPhoto(base64)
     setMode('idle')
+  }
+
+  const handlePhotoAnalyze = async (context?: string) => {
+    if (!capturedPhoto) return
+    setCapturedPhoto(null)
     setSheetOpen(true)
     setAiLoading(true)
     setAiError(null)
     try {
-      const est = await getAI(profile).analyzePhoto(base64)
+      const est = await getAI(profile).analyzePhoto(capturedPhoto, context)
       setEstimation(est)
     } catch (e) {
       setAiError(e instanceof Error ? e.message : 'Erreur IA')
@@ -70,7 +78,7 @@ export function Dashboard() {
       protein_g: data.protein_g,
       fat_g: data.fat_g,
       carbs_g: data.carbs_g,
-      source: mode === 'idle' ? 'manual' : mode === 'camera' ? 'photo' : mode === 'audio' ? 'audio' : 'manual',
+      source: 'manual',
       ai_raw_response: null,
     })
     setSheetOpen(false)
@@ -170,6 +178,16 @@ export function Dashboard() {
 
       {/* Camera */}
       {mode === 'camera' && <CameraCapture onCapture={handlePhotoCapture} />}
+
+      {/* Photo context — description step after camera */}
+      {capturedPhoto && (
+        <PhotoContextSheet
+          base64Image={capturedPhoto}
+          onAnalyze={handlePhotoAnalyze}
+          onCancel={() => setCapturedPhoto(null)}
+          onTranscribe={(blob) => getAI(profile).transcribeAudio(blob)}
+        />
+      )}
 
       {/* Audio */}
       {mode === 'audio' && (

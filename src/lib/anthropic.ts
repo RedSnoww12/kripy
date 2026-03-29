@@ -13,7 +13,7 @@ const SYSTEM_PROMPT = `Tu es un nutritionniste expert. Analyse le repas décrit 
 }
 Estime les quantités si non précisées. Sois précis sur les macros.`
 
-export async function analyzePhoto(base64Image: string, apiKey: string): Promise<AIEstimation> {
+export async function analyzePhoto(base64Image: string, apiKey: string, context?: string): Promise<AIEstimation> {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -30,7 +30,7 @@ export async function analyzePhoto(base64Image: string, apiKey: string): Promise
         {
           role: 'user',
           content: [
-            { type: 'text', text: 'Analyse ce repas et estime les macros.' },
+            { type: 'text', text: context ? `Analyse ce repas. Informations supplémentaires : "${context}". Utilise ces informations pour affiner ton estimation.` : 'Analyse ce repas et estime les macros.' },
             { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64Image } },
           ],
         },
@@ -67,4 +67,8 @@ export async function analyzeText(text: string, apiKey: string): Promise<AIEstim
 
 export async function analyzeAudio(_audioBlob: Blob, _apiKey: string): Promise<AIEstimation> {
   throw new Error("L'analyse audio n'est pas supportée par Anthropic. Utilisez OpenAI ou Gemini.")
+}
+
+export async function transcribeAudio(_audioBlob: Blob, _apiKey: string): Promise<string> {
+  throw new Error("La transcription audio n'est pas supportée par Anthropic. Utilisez OpenAI ou Gemini.")
 }

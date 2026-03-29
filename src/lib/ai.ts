@@ -31,11 +31,13 @@ export function getAI(profile: UserProfile) {
   }
 
   return {
-    analyzePhoto: (base64Image: string): Promise<AIEstimation> =>
-      impl.analyzePhoto(base64Image, requireKey()),
+    analyzePhoto: (base64Image: string, context?: string): Promise<AIEstimation> =>
+      impl.analyzePhoto(base64Image, requireKey(), context),
     analyzeAudio: (audioBlob: Blob): Promise<AIEstimation> =>
       impl.analyzeAudio(audioBlob, requireKey()),
     analyzeText: (text: string): Promise<AIEstimation> =>
       impl.analyzeText(text, requireKey()),
+    transcribeAudio: (audioBlob: Blob): Promise<string> =>
+      impl.transcribeAudio(audioBlob, requireKey()),
   }
 }

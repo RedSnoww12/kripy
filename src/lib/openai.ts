@@ -11,7 +11,11 @@ const SYSTEM_PROMPT = `Tu es un nutritionniste expert. Analyse le repas décrit 
 }
 Estime les quantités si non précisées. Sois précis sur les macros.`
 
-export async function analyzePhoto(base64Image: string, apiKey: string): Promise<AIEstimation> {
+export async function analyzePhoto(base64Image: string, apiKey: string, context?: string): Promise<AIEstimation> {
+  const userText = context
+    ? `Analyse ce repas. Informations supplémentaires fournies par l'utilisateur : "${context}". Utilise ces informations pour affiner ton estimation.`
+    : 'Analyse ce repas et estime les macros.'
+
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -25,7 +29,7 @@ export async function analyzePhoto(base64Image: string, apiKey: string): Promise
         {
           role: 'user',
           content: [
-            { type: 'text', text: 'Analyse ce repas et estime les macros.' },
+            { type: 'text', text: userText },
             { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64Image}` } },
           ],
         },
