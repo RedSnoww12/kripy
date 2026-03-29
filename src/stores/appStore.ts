@@ -18,12 +18,23 @@ function todayStr() {
   return new Date().toISOString().split('T')[0]
 }
 
-function defaultProfile(): UserProfile {
+function computeMacroGrams(calories: number, protPct: number, fatPct: number, carbsPct: number) {
   return {
-    calorie_target: 2200,
-    protein_g: 160,
-    fat_g: 70,
-    carbs_g: 230,
+    protein_g: Math.round((calories * protPct) / 100 / 4),
+    fat_g: Math.round((calories * fatPct) / 100 / 9),
+    carbs_g: Math.round((calories * carbsPct) / 100 / 4),
+  }
+}
+
+function defaultProfile(): UserProfile {
+  const cals = 2200
+  const prot = 30, fat = 30, carbs = 40
+  return {
+    calorie_target: cals,
+    protein_pct: prot,
+    fat_pct: fat,
+    carbs_pct: carbs,
+    ...computeMacroGrams(cals, prot, fat, carbs),
     current_phase: 'deficit',
     ai_provider: 'openai',
     openai_api_key: '',
@@ -115,7 +126,15 @@ export const useAppStore = create<AppState>()(
       setActiveTab: (tab) => set({ activeTab: tab }),
 
       setProfile: (p) =>
-        set((s) => ({ profile: { ...s.profile, ...p } })),
+        set((s) => {
+          const merged = { ...s.profile, ...p }
+          // Auto-recalculate grams when calories or percentages change
+          if ('calorie_target' in p || 'protein_pct' in p || 'fat_pct' in p || 'carbs_pct' in p) {
+            const grams = computeMacroGrams(merged.calorie_target, merged.protein_pct, merged.fat_pct, merged.carbs_pct)
+            return { profile: { ...merged, ...grams } }
+          }
+          return { profile: merged }
+        }),
 
       getTodayLog: () => {
         const today = todayStr()

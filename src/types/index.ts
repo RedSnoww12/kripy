@@ -69,6 +69,9 @@ export const AI_PROVIDER_LABELS: Record<AIProvider, string> = {
 
 export interface UserProfile {
   calorie_target: number
+  protein_pct: number
+  fat_pct: number
+  carbs_pct: number
   protein_g: number
   fat_g: number
   carbs_g: number
