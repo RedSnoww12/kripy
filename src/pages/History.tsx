@@ -4,7 +4,7 @@ import { useAppStore } from '../stores/appStore'
 import { PHASE_LABELS, type DailyLog } from '../types'
 
 export function History() {
-  const { logs, meals, updateLogByDate, getLogByDate } = useAppStore()
+  const { logs, meals, updateLogByDate } = useAppStore()
   const sorted = [...logs].sort((a, b) => b.date.localeCompare(a.date))
 
   const [editingLog, setEditingLog] = useState<DailyLog | null>(null)

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Phase, DailyLog, Meal, UserProfile } from '../types'
+import type { DailyLog, Meal, UserProfile } from '../types'
 import { supabase } from '../lib/supabase'
 
 function generateId(): string {

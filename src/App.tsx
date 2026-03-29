@@ -10,7 +10,7 @@ import { Profile } from './pages/Profile'
 import { Settings } from './pages/Settings'
 import { Login } from './pages/Login'
 
-const pages: Record<string, () => JSX.Element> = {
+const pages: Record<string, () => React.JSX.Element> = {
   dashboard: Dashboard,
   history: History,
   charts: Charts,

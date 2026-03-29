@@ -11,7 +11,7 @@ export function AudioCapture({ onCapture, onCancel }: AudioCaptureProps) {
   const [duration, setDuration] = useState(0)
   const mediaRecorder = useRef<MediaRecorder | null>(null)
   const chunks = useRef<Blob[]>([])
-  const timerRef = useRef<ReturnType<typeof setInterval>>()
+  const timerRef = useRef<ReturnType<typeof setInterval>>(undefined)
 
   useEffect(() => {
     return () => {
@@ -42,7 +42,7 @@ export function AudioCapture({ onCapture, onCancel }: AudioCaptureProps) {
       recorder.start()
       setRecording(true)
       timerRef.current = setInterval(() => setDuration((d) => d + 1), 1000)
-    } catch {
+    } catch (_e) {
       onCancel()
     }
   }
