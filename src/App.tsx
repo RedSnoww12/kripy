@@ -22,7 +22,7 @@ function App() {
   const activeTab = useAppStore((s) => s.activeTab)
   const setUserId = useAppStore((s) => s.setUserId)
   const loadFromSupabase = useAppStore((s) => s.loadFromSupabase)
-  const { user, loading, signInWithGoogle } = useAuth()
+  const { user, loading, error, signInWithGoogle } = useAuth()
 
   useEffect(() => {
     if (user) {
@@ -40,7 +40,7 @@ function App() {
   }
 
   if (!user) {
-    return <Login onGoogleLogin={signInWithGoogle} loading={false} />
+    return <Login onGoogleLogin={signInWithGoogle} loading={false} error={error} />
   }
 
   const Page = pages[activeTab] ?? Dashboard

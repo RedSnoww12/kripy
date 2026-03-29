@@ -3,9 +3,10 @@ import { Loader2 } from 'lucide-react'
 interface LoginProps {
   onGoogleLogin: () => void
   loading: boolean
+  error?: string | null
 }
 
-export function Login({ onGoogleLogin, loading }: LoginProps) {
+export function Login({ onGoogleLogin, loading, error }: LoginProps) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6">
       <div className="text-center mb-10">
@@ -32,6 +33,12 @@ export function Login({ onGoogleLogin, loading }: LoginProps) {
           Continuer avec Google
         </button>
       </div>
+
+      {error && (
+        <div className="mt-4 bg-danger/10 border border-danger/30 rounded-xl p-3 max-w-sm w-full">
+          <p className="text-danger text-xs break-all">{error}</p>
+        </div>
+      )}
 
       <p className="text-dark-600 text-[10px] mt-8 text-center max-w-xs">
         En continuant, tes données nutritionnelles seront sauvegardées dans le cloud et accessibles sur tous tes appareils.
