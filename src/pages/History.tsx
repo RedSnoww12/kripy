@@ -57,7 +57,16 @@ export function History() {
               </div>
               <div>
                 <p className="text-dark-500">Calories</p>
-                <p className="text-white font-semibold">{log.calories_consumed} kcal</p>
+                <p className="text-white font-semibold tabular-nums">{log.calories_consumed}</p>
+                {(() => {
+                  const diff = log.calories_consumed - log.calorie_target
+                  return (
+                    <p className={`text-[10px] tabular-nums ${diff > 0 ? 'text-warning' : diff < 0 ? 'text-success' : 'text-dark-500'}`}>
+                      {diff > 0 ? `+${diff}` : diff < 0 ? `${diff}` : '='}
+                      {' / '}{log.calorie_target}
+                    </p>
+                  )
+                })()}
               </div>
               <div>
                 <p className="text-dark-500">Pas</p>
@@ -114,6 +123,7 @@ function HistoryEntryModal({ existing, onSave, onClose }: HistoryEntryModalProps
   const { profile } = useAppStore()
   const [date, setDate] = useState(existing?.date ?? '')
   const [weight, setWeight] = useState(existing?.morning_weight?.toString() ?? '')
+  const [calorieTarget, setCalorieTarget] = useState(existing?.calorie_target?.toString() ?? profile.calorie_target.toString())
   const [calories, setCalories] = useState(existing?.calories_consumed?.toString() ?? '0')
   const [steps, setSteps] = useState(existing?.daily_steps?.toString() ?? '0')
   const [workout, setWorkout] = useState(existing?.workout_done ?? false)
@@ -125,6 +135,7 @@ function HistoryEntryModal({ existing, onSave, onClose }: HistoryEntryModalProps
     if (!date) return
     onSave(date, {
       morning_weight: weight ? parseFloat(weight) : null,
+      calorie_target: parseInt(calorieTarget) || profile.calorie_target,
       calories_consumed: parseInt(calories) || 0,
       daily_steps: parseInt(steps) || 0,
       workout_done: workout,
@@ -161,21 +172,32 @@ function HistoryEntryModal({ existing, onSave, onClose }: HistoryEntryModalProps
               />
             </div>
 
-            {/* Weight & Calories row */}
+            {/* Weight */}
+            <div>
+              <p className="text-xs text-dark-500 mb-1">Poids (kg)</p>
+              <input
+                type="number"
+                step="0.1"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder="--"
+                className="w-full bg-dark-700 rounded-xl px-4 py-3 text-white text-sm outline-none tabular-nums placeholder:text-dark-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+            </div>
+
+            {/* Calories objectif + réel */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-xs text-dark-500 mb-1">Poids (kg)</p>
+                <p className="text-xs text-dark-500 mb-1">Objectif <span className="text-dark-600">(kcal)</span></p>
                 <input
                   type="number"
-                  step="0.1"
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  placeholder="--"
-                  className="w-full bg-dark-700 rounded-xl px-4 py-3 text-white text-sm outline-none tabular-nums placeholder:text-dark-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  value={calorieTarget}
+                  onChange={(e) => setCalorieTarget(e.target.value)}
+                  className="w-full bg-dark-700 rounded-xl px-4 py-3 text-white text-sm outline-none tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
               <div>
-                <p className="text-xs text-dark-500 mb-1">Calories (kcal)</p>
+                <p className="text-xs text-dark-500 mb-1">Consommé <span className="text-dark-600">(kcal)</span></p>
                 <input
                   type="number"
                   value={calories}
