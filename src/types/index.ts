@@ -1,84 +1,64 @@
-export type Phase = 'pre_prep' | 'deficit' | 'remontee' | 'reverse_diet' | 'prise_masse'
-
-export const PHASE_LABELS: Record<Phase, string> = {
-  pre_prep: 'Pré-Prep',
-  deficit: 'Descente',
-  remontee: 'Remontée',
-  reverse_diet: 'Reverse Diet',
-  prise_masse: 'Prise de Masse',
+export interface DayTotals {
+  kcal: number;
+  prot: number;
+  gluc: number;
+  lip: number;
+  fib: number;
 }
 
-export interface DailyLog {
-  id: string
-  user_id: string
-  date: string
-  morning_weight: number | null
-  calories_consumed: number
-  daily_steps: number
-  current_phase: Phase
-  calorie_target: number
-  protein_g: number
-  fat_g: number
-  carbs_g: number
-  workout_done: boolean
-  created_at: string
+export interface MealItemData {
+  id: string;
+  food: string;
+  meal: number;
+  qty: number;
+  kcal: number;
+  prot: number;
+  gluc: number;
+  lip: number;
+  fib: number;
 }
 
-export interface Meal {
-  id: string
-  user_id: string
-  log_date: string
-  description: string
-  calories: number
-  protein_g: number
-  fat_g: number
-  carbs_g: number
-  source: 'photo' | 'audio' | 'manual'
-  ai_raw_response: Record<string, unknown> | null
-  created_at: string
+export interface TargetsData {
+  kcal: number;
+  prot: number;
+  gluc: number;
+  lip: number;
+  fib: number;
 }
 
-export interface AIEstimation {
-  calories: number
-  protein_g: number
-  fat_g: number
-  carbs_g: number
-  items: { name: string; calories: number; grams: number }[]
-  description: string
+export interface ProfileData {
+  id: string;
+  height: number;
+  goalWeight: number;
+  stepsGoal: number;
+  activityLevel: string;
+  phase: string;
+  theme: string;
+  setupDone: boolean;
 }
 
-export type Trend = 'baisse' | 'stagne' | 'hausse'
-export type AlgoAction = 'maintain' | 'increase' | 'decrease'
-export type StatusColor = 'green' | 'orange' | 'blue'
-
-export interface AlgorithmResult {
-  action: AlgoAction
-  amount: number
-  message: string
-  color: StatusColor
-  trend: Trend
+export interface WeightData {
+  id: string;
+  date: string;
+  weight: number;
 }
 
-export type AIProvider = 'openai' | 'gemini' | 'anthropic'
-
-export const AI_PROVIDER_LABELS: Record<AIProvider, string> = {
-  openai: 'OpenAI (GPT-4o)',
-  gemini: 'Google Gemini',
-  anthropic: 'Anthropic (Claude)',
+export interface WorkoutData {
+  id: string;
+  date: string;
+  type: string;
+  duration: number;
+  calories: number | null;
+  notes: string | null;
+  muscles: { name: string; sets: number }[];
 }
 
-export interface UserProfile {
-  calorie_target: number
-  protein_pct: number
-  fat_pct: number
-  carbs_pct: number
-  protein_g: number
-  fat_g: number
-  carbs_g: number
-  step_goal: number
-  current_phase: Phase
-  ai_provider: AIProvider
-  openai_api_key: string
-  gemini_api_key: string
-  anthropic_api_key: string
+export interface RecipeData {
+  id: string;
+  name: string;
+  kcal: number;
+  prot: number;
+  gluc: number;
+  lip: number;
+  fib: number;
 }

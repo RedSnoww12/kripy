@@ -1,0 +1,91 @@
+// ─── Repas, items, recettes et repas sauvegardés ───
+
+model MealLogDay {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  date      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  items   MealItem[]
+  profile Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date])
+  @@index([profileId, date])
+  @@map("meal_log_days")
+}
+
+model MealItem {
+  id       String @id @default(uuid())
+  logDayId String @map("log_day_id")
+  food     String
+  meal     Int
+  qty      Float
+  kcal     Float
+  prot     Float
+  gluc     Float
+  lip      Float
+  fib      Float  @default(0)
+
+  logDay MealLogDay @relation(fields: [logDayId], references: [id], onDelete: Cascade)
+
+  @@index([logDayId])
+  @@map("meal_items")
+}
+
+model Recipe {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  name      String
+  kcal      Float
+  prot      Float
+  gluc      Float
+  lip       Float
+  fib       Float    @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, name])
+  @@map("recipes")
+}
+
+model SavedMeal {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  items   SavedMealItem[]
+  profile Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, name])
+  @@map("saved_meals")
+}
+
+model SavedMealItem {
+  id          String @id @default(uuid())
+  savedMealId String @map("saved_meal_id")
+  food        String
+  qty         Float
+  kcal        Float
+  prot        Float
+  gluc        Float
+  lip         Float
+  fib         Float  @default(0)
+
+  savedMeal SavedMeal @relation(fields: [savedMealId], references: [id], onDelete: Cascade)
+
+  @@map("saved_meal_items")
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  foodName  String   @map("food_name")
+  usedAt    DateTime @default(now()) @map("used_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, foodName])
+  @@map("favorites")
+}

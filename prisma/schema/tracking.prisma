@@ -1,0 +1,39 @@
+// ─── Suivi poids, eau et pas ───
+
+model Weight {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  date      String
+  weight    Float
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date])
+  @@index([profileId, date])
+  @@map("weights")
+}
+
+model WaterLog {
+  id        String @id @default(uuid())
+  profileId String @map("profile_id")
+  date      String
+  glasses   Int    @default(0)
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date])
+  @@map("water_logs")
+}
+
+model StepsLog {
+  id        String @id @default(uuid())
+  profileId String @map("profile_id")
+  date      String
+  steps     Int    @default(0)
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date])
+  @@map("steps_logs")
+}
