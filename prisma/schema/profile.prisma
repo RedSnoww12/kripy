@@ -1,0 +1,58 @@
+// ─── Profil utilisateur, objectifs et palier ───
+
+model Profile {
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  displayName   String?  @map("display_name")
+  email         String?
+  photoUrl      String?  @map("photo_url")
+  height        Int      @default(175)
+  goalWeight    Float    @default(75) @map("goal_weight")
+  stepsGoal     Int      @default(10000) @map("steps_goal")
+  activityLevel String   @default("moderate") @map("activity_level")
+  phase         String   @default("A")
+  theme         String   @default("dark")
+  setupDone     Boolean  @default(false) @map("setup_done")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  targets    Targets?
+  palier     Palier?
+  weights    Weight[]
+  mealDays   MealLogDay[]
+  waterLogs  WaterLog[]
+  stepsLogs  StepsLog[]
+  workouts   Workout[]
+  recipes    Recipe[]
+  savedMeals SavedMeal[]
+  favorites  Favorite[]
+
+  @@map("profiles")
+}
+
+model Targets {
+  id        String   @id @default(uuid())
+  profileId String   @unique @map("profile_id")
+  kcal      Int      @default(2200)
+  prot      Int      @default(150)
+  gluc      Int      @default(250)
+  lip       Int      @default(75)
+  fib       Int      @default(30)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("targets")
+}
+
+model Palier {
+  id        String   @id @default(uuid())
+  profileId String   @unique @map("profile_id")
+  kcal      Int
+  startDate String   @map("start_date")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("paliers")
+}

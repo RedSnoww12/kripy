@@ -1,0 +1,29 @@
+// ─── Séances sport et volume musculaire ───
+
+model Workout {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  date      String
+  type      String
+  duration  Int      @default(0)
+  calories  Int?
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  muscles WorkoutMuscle[]
+  profile Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, date])
+  @@map("workouts")
+}
+
+model WorkoutMuscle {
+  id        String @id @default(uuid())
+  workoutId String @map("workout_id")
+  name      String
+  sets      Int
+
+  workout Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  @@map("workout_muscles")
+}
