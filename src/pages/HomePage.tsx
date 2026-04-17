@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import WelcomeHeader from '@/components/home/WelcomeHeader';
 import StreakBar from '@/components/home/StreakBar';
 import CalorieRing from '@/components/home/CalorieRing';
@@ -9,6 +9,7 @@ import WeightCard from '@/components/home/WeightCard';
 import TodayMealsSummary from '@/components/home/TodayMealsSummary';
 import RecommendationAlert from '@/components/home/RecommendationAlert';
 import AnalysisCard from '@/components/home/AnalysisCard';
+import GettingStartedCard from '@/components/home/GettingStartedCard';
 import { computeStreak, dayTotals } from '@/features/nutrition/totals';
 import { buildHomeAnalysis } from '@/features/analysis/home-analysis';
 import { weightStats } from '@/features/analysis/trend';
@@ -42,6 +43,17 @@ export default function HomePage() {
   const todayEntries = log[today] ?? [];
   const streak = useMemo(() => computeStreak(log, today), [log, today]);
 
+  const weightRef = useRef<HTMLDivElement>(null);
+  const isFresh = weights.length === 0 && todayEntries.length === 0;
+
+  const focusWeightInput = () => {
+    const el = weightRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const input = el.querySelector<HTMLInputElement>('input');
+    input?.focus({ preventScroll: true });
+  };
+
   const analysis = useMemo(() => {
     if (!palier) return null;
     return buildHomeAnalysis({
@@ -62,6 +74,7 @@ export default function HomePage() {
   return (
     <div className="tp active">
       <WelcomeHeader />
+      {isFresh && <GettingStartedCard onWeighIn={focusWeightInput} />}
       <StreakBar streak={streak} />
       <CalorieRing consumed={totals.kcal} target={targets.kcal} />
       <MacroRow totals={totals} targets={targets} />
@@ -71,7 +84,9 @@ export default function HomePage() {
         <StepsCard steps={steps} goal={stepsGoal} />
       </section>
 
-      <WeightCard />
+      <div ref={weightRef}>
+        <WeightCard />
+      </div>
 
       {analysis?.trend && analysis.recommendation && (
         <RecommendationAlert

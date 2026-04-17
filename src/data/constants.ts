@@ -25,12 +25,12 @@ export const DEFAULT_PROFILE: UserProfile = {
 };
 
 export const PHASE_NAMES: Record<Phase, string> = {
-  A: 'Pre-prep',
-  B: 'Deficit',
+  A: 'Maintien',
+  B: 'Déficit',
   C: 'Reverse',
-  D: 'PDM',
+  D: 'Prise de masse',
   E: 'Reset',
-  F: 'Remonte',
+  F: 'Remontée',
 };
 
 export const PHASE_MULTIPLIERS: Record<Phase, number> = {
@@ -175,12 +175,12 @@ export const MACRO_PRESETS: Record<string, MacroPreset> = {
 };
 
 export const PHASE_DESCRIPTIONS: Record<Phase, string> = {
-  A: 'Maintenance et préparation',
-  B: 'Sèche contrôlée progressive',
-  C: 'Reverse diet graduel',
-  D: 'Prise de masse propre',
-  E: 'Reset métabolique',
-  F: 'Remonte post-sèche',
+  A: 'Maintenir mon poids',
+  B: 'Perdre du poids',
+  C: 'Arrêter un déficit',
+  D: 'Gagner de la masse',
+  E: 'Sèche rapide',
+  F: 'Perdre en remontant les kcal',
 };
 
 export const PHASE_DETAIL: Record<
@@ -188,7 +188,7 @@ export const PHASE_DETAIL: Record<
   { title: string; description: string }
 > = {
   A: {
-    title: 'Pre-prep (x1.0)',
+    title: 'Maintien (x1.0)',
     description: 'Baisse : rien. Stagne : +200 kcal.',
   },
   B: {
@@ -196,7 +196,7 @@ export const PHASE_DETAIL: Record<
     description: 'Stagne : -200 kcal. Remontée : vérifier.',
   },
   F: {
-    title: 'Remonte (x0.92)',
+    title: 'Remontée (x0.92)',
     description:
       'Remonte les kcal en continuant à perdre. Stable = +200, prise = -200.',
   },
@@ -205,7 +205,7 @@ export const PHASE_DETAIL: Record<
     description: 'Baisse = +200 kcal. Stable : rien.',
   },
   D: {
-    title: 'PDM (x1.075)',
+    title: 'Prise de masse (x1.075)',
     description: 'Baisse : +200 kcal.',
   },
   E: {

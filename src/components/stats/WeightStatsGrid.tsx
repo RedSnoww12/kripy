@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import EmptyState from '@/components/ui/EmptyState';
 import { weightStats } from '@/features/analysis/trend';
 import { useTrackingStore } from '@/store/useTrackingStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -37,7 +38,11 @@ function Metric({ label, value, unit, color }: MetricProps) {
   );
 }
 
-export default function WeightStatsGrid() {
+interface Props {
+  onAdd?: () => void;
+}
+
+export default function WeightStatsGrid({ onAdd }: Props = {}) {
   const weights = useTrackingStore((s) => s.weights);
   const height = useSettingsStore((s) => s.height);
   const startWeight = useSettingsStore((s) => s.startWeight);
@@ -55,9 +60,20 @@ export default function WeightStatsGrid() {
 
   if (!stats) {
     return (
-      <section className="stat-metrics">
-        <div className="stat-metric stat-metric-empty">Aucune pesée</div>
-      </section>
+      <EmptyState
+        icon="monitor_weight"
+        title="Pas encore de pesée"
+        subtitle="Ajoute ta première pesée pour voir tendance, IMC et projections."
+        cta={
+          onAdd
+            ? {
+                label: 'Ajouter ma première pesée',
+                icon: 'add',
+                onClick: onAdd,
+              }
+            : undefined
+        }
+      />
     );
   }
 

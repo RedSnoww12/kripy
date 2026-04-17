@@ -70,7 +70,11 @@ export default function WeightHistoryTable({ onEdit }: Props) {
   );
 
   if (rows.length === 0) {
-    return <div className="stat-wh-empty">Aucune pesée enregistrée</div>;
+    return (
+      <div className="stat-wh-empty">
+        Aucune pesée enregistrée. Appuie sur « Ajouter » pour commencer.
+      </div>
+    );
   }
 
   return (

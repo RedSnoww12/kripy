@@ -369,6 +369,105 @@
   transition: width var(--dur-slow) var(--ease-out);
 }
 
+/* Getting started card — shown on empty Home */
+.getstart {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--m3-tertiary) 16%, var(--s2)),
+    var(--s2)
+  );
+  border-radius: 24px;
+  padding: 20px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--m3-tertiary) 22%, transparent);
+}
+.getstart-h {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.getstart-ico {
+  font-size: 28px;
+  color: var(--m3-tertiary);
+  flex-shrink: 0;
+}
+.getstart-t {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--t1);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.getstart-s {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--m3-on-surface-variant);
+  margin: 2px 0 0;
+}
+.getstart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.getstart-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: var(--s1);
+  border: none;
+  border-radius: 14px;
+  padding: 12px 14px;
+  color: var(--t1);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.getstart-item:hover {
+  background: var(--s3);
+}
+.getstart-item:active {
+  transform: scale(0.98);
+}
+.getstart-item-ico {
+  font-size: 22px;
+  color: var(--m3-tertiary);
+  flex-shrink: 0;
+}
+.getstart-item-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.getstart-item-t {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--t1);
+  letter-spacing: -0.01em;
+}
+.getstart-item-s {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.66rem;
+  font-weight: 500;
+  color: var(--m3-on-surface-variant);
+}
+.getstart-item-chev {
+  font-size: 20px;
+  color: var(--m3-on-surface-variant);
+  flex-shrink: 0;
+}
+
 /* Weight card */
 .weight-home {
   display: flex;
@@ -992,6 +1091,53 @@
   font-family: 'Inter', sans-serif;
   font-size: 0.78rem;
   font-weight: 500;
+}
+
+/* Generic EmptyState component */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 20px;
+  background: var(--s1);
+  border-radius: 18px;
+  text-align: center;
+  margin-bottom: 16px;
+  box-shadow: inset 0 0 0 1px var(--outline-variant);
+}
+.empty-state-ico {
+  font-size: 40px;
+  color: var(--m3-on-surface-variant);
+  opacity: 0.75;
+  margin-bottom: 2px;
+}
+.empty-state-t {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--t1);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+.empty-state-s {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--m3-on-surface-variant);
+  line-height: 1.45;
+  max-width: 320px;
+  margin: 0;
+}
+.empty-state-cta {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+}
+.empty-state-cta .material-symbols-outlined {
+  font-size: 18px;
 }
 
 /* Stat card (analytics container) */

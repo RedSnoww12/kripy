@@ -71,7 +71,7 @@ export default function StatsPage() {
         <p>Biometric data stream · analyse de tendance</p>
       </section>
 
-      <WeightStatsGrid />
+      <WeightStatsGrid onAdd={() => setAddOpen(true)} />
 
       <section className="stat-card stat-card-big">
         <div className="stat-card-head">

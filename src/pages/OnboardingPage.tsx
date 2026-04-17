@@ -4,18 +4,13 @@ import { useSettingsStore } from '@/store/useSettingsStore';
 import {
   computeTargetsFromKcal,
   DEFAULT_PROFILE,
+  PHASE_COLORS,
+  PHASE_DESCRIPTIONS,
   PHASE_NAMES,
 } from '@/data/constants';
 import type { Phase } from '@/types';
 
-const PHASE_LABELS: Record<Phase, string> = {
-  A: `${PHASE_NAMES.A} (x1.0)`,
-  B: `${PHASE_NAMES.B} (x0.85)`,
-  C: `${PHASE_NAMES.C} (x0.90)`,
-  D: `${PHASE_NAMES.D} (x1.075)`,
-  E: `${PHASE_NAMES.E} (x0.88)`,
-  F: `${PHASE_NAMES.F} (x0.92)`,
-};
+const PHASE_ORDER: readonly Phase[] = ['A', 'B', 'F', 'C', 'D', 'E'];
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
@@ -91,19 +86,28 @@ export default function OnboardingPage() {
           placeholder="2200"
         />
 
-        <label htmlFor="obPh">Phase</label>
-        <select
-          id="obPh"
-          className="inp"
-          value={phase}
-          onChange={(e) => setPhase(e.target.value as Phase)}
-        >
-          {(Object.keys(PHASE_LABELS) as Phase[]).map((key) => (
-            <option key={key} value={key}>
-              {key} — {PHASE_LABELS[key]}
-            </option>
-          ))}
-        </select>
+        <label>Quel est ton objectif&nbsp;?</label>
+        <div className="set-ph-grid" role="radiogroup" aria-label="Phase">
+          {PHASE_ORDER.map((key) => {
+            const color = PHASE_COLORS[key];
+            const selected = key === phase;
+            return (
+              <button
+                key={key}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                className={`set-ph-card${selected ? ' sel' : ''}`}
+                style={{ ['--ph-color' as string]: color }}
+                onClick={() => setPhase(key)}
+              >
+                <span className="ph-letter">{key}</span>
+                <span className="ph-name">{PHASE_NAMES[key]}</span>
+                <span className="ph-desc">{PHASE_DESCRIPTIONS[key]}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <button
@@ -111,7 +115,7 @@ export default function OnboardingPage() {
         className="btn btn-p"
         style={{
           width: '100%',
-          maxWidth: 320,
+          maxWidth: 360,
           padding: 14,
           fontSize: '.92rem',
           marginTop: 22,
