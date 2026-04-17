@@ -44,6 +44,22 @@ export const ACTIVITY_LEVELS: readonly { key: ActivityLevel; label: string }[] =
     { key: 'very_active', label: 'Athlète' },
   ] as const;
 
+export const MEAL_LABELS = [
+  'Petit-déj',
+  'Déjeuner',
+  'Dîner',
+  'Collation',
+] as const;
+
+export const PHASE_COLORS: Record<Phase, string> = {
+  A: '#6AEFAF',
+  B: '#FF6B9D',
+  C: '#9F9BFF',
+  D: '#FFB347',
+  E: '#6C5CE7',
+  F: '#4DD0E1',
+};
+
 export function computeTargetsFromKcal(
   kcalTarget: number,
   weight: number,
