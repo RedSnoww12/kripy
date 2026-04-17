@@ -9,7 +9,7 @@ export default function AppLayout() {
     <AuthGate>
       <RequireSetup>
         <Header />
-        <main className="tc" style={{ display: 'block' }}>
+        <main className="tc">
           <Outlet />
         </main>
         <BottomNav />

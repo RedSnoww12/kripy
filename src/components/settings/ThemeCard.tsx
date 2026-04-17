@@ -12,26 +12,22 @@ export default function ThemeCard() {
   const setTheme = useSettingsStore((s) => s.setTheme);
 
   return (
-    <SettingsSection icon="palette" title="Thème">
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 8,
-        }}
-      >
-        {OPTIONS.map((opt) => (
-          <button
-            key={opt.key}
-            type="button"
-            className={`set-theme-btn${theme === opt.key ? ' sel' : ''}`}
-            onClick={() => setTheme(opt.key)}
-          >
-            <span className="material-symbols-outlined">{opt.icon}</span>
-            {opt.label}
-          </button>
-        ))}
-      </div>
+    <SettingsSection
+      icon="palette"
+      title="Thème"
+      cardClassName="set-theme-card"
+    >
+      {OPTIONS.map((opt) => (
+        <button
+          key={opt.key}
+          type="button"
+          className={`set-theme-btn${theme === opt.key ? ' sel' : ''}`}
+          onClick={() => setTheme(opt.key)}
+        >
+          <span className="material-symbols-outlined">{opt.icon}</span>
+          {opt.label}
+        </button>
+      ))}
     </SettingsSection>
   );
 }

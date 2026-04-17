@@ -12,7 +12,7 @@ export default function Header() {
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
   return (
-    <div className="hdr" style={{ display: 'flex' }}>
+    <div className="hdr">
       <div className="hdr-l">
         <div className="logo">KRIPY</div>
         <div

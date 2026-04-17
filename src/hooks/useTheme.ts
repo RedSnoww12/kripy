@@ -5,11 +5,6 @@ export function useTheme(): void {
   const theme = useSettingsStore((s) => s.theme);
 
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'light') {
-      root.classList.add('light');
-    } else {
-      root.classList.remove('light');
-    }
+    document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 }

@@ -19,14 +19,7 @@ export default function PhaseCard() {
 
   return (
     <SettingsSection icon="trending_up" title="Phase métabolique">
-      <div
-        className="set-ph-grid"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 8,
-        }}
-      >
+      <div className="set-ph-grid">
         {ORDERED.map((k) => {
           const color = PHASE_COLORS[k];
           const selected = k === phase;

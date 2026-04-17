@@ -1,22 +1,23 @@
 import { NavLink } from 'react-router-dom';
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Home', icon: 'home' },
-  { to: '/meals', label: 'Repas', icon: 'restaurant' },
-  { to: '/sport', label: 'Sport', icon: 'fitness_center' },
-  { to: '/stats', label: 'Stats', icon: 'monitoring' },
-  { to: '/settings', label: 'Réglages', icon: 'settings' },
+  { to: '/', label: 'Accueil', icon: 'home', end: true },
+  { to: '/stats', label: 'Stats', icon: 'monitoring', end: false },
+  { to: '/meals', label: 'Repas', icon: 'restaurant', end: false },
+  { to: '/recipes', label: 'Recettes', icon: 'menu_book', end: false },
+  { to: '/sport', label: 'Sport', icon: 'fitness_center', end: false },
+  { to: '/settings', label: 'Réglages', icon: 'settings', end: false },
 ] as const;
 
 export default function BottomNav() {
   return (
-    <nav className="nav" style={{ display: 'flex' }}>
+    <nav className="nav">
       {NAV_ITEMS.map((item) => (
         <NavLink
           key={item.to}
           to={item.to}
-          end={item.to === '/'}
-          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+          end={item.end}
+          className={({ isActive }) => (isActive ? 'active' : '')}
         >
           <span className="material-symbols-outlined">{item.icon}</span>
           <span>{item.label}</span>
