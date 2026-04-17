@@ -59,6 +59,7 @@ export const STORAGE_KEYS = {
   activity: 'nt_activity',
   aiKey: 'nt_aikey',
   googleToken: 'nt_gtoken',
+  tdeeConfirmed: 'nt_tdee_ok',
 } as const;
 
 export const SYNC_KEYS: readonly string[] = [
@@ -80,4 +81,5 @@ export const SYNC_KEYS: readonly string[] = [
   STORAGE_KEYS.savedMeals,
   STORAGE_KEYS.palier,
   STORAGE_KEYS.barcodes,
+  STORAGE_KEYS.tdeeConfirmed,
 ];

@@ -12,6 +12,7 @@ export default function TdeeCalcCard() {
   const activity = useSettingsStore((s) => s.activity);
   const phase = useSettingsStore((s) => s.phase);
   const setTargets = useSettingsStore((s) => s.setTargets);
+  const confirmTdee = useSettingsStore((s) => s.confirmTdee);
 
   const weights = useTrackingStore((s) => s.weights);
   const currentWeight = weights.length
@@ -34,11 +35,12 @@ export default function TdeeCalcCard() {
   const handleApply = () => {
     if (!result) return;
     setTargets(result.targets);
+    confirmTdee();
     toast('Macros auto appliquées', 'success');
   };
 
   return (
-    <SettingsSection icon="calculate" title="TDEE + macros auto">
+    <SettingsSection id="tdee" icon="calculate" title="TDEE + macros auto">
       <button type="button" className="set-btn-ghost" onClick={handleCalc}>
         <span className="material-symbols-outlined">calculate</span>
         Calculer TDEE + macros

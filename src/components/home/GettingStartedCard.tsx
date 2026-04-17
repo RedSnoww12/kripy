@@ -12,18 +12,31 @@ interface Props {
   onWeighIn: () => void;
   hasWeight: boolean;
   hasMeal: boolean;
+  hasTdee: boolean;
 }
+
+const TOTAL_STEPS = 3;
 
 export default function GettingStartedCard({
   onWeighIn,
   hasWeight,
   hasMeal,
+  hasTdee,
 }: Props) {
   const navigate = useNavigate();
 
-  const checkedCount = Number(hasWeight) + Number(hasMeal);
+  const checkedCount = Number(hasTdee) + Number(hasWeight) + Number(hasMeal);
 
   const actions: Action[] = [
+    {
+      icon: 'calculate',
+      title: 'Configurer mes calories',
+      sub: hasTdee
+        ? 'TDEE et macros enregistrés \u2014 nickel'
+        : 'Calcule ton TDEE et applique tes cibles',
+      onClick: () => navigate('/settings#tdee'),
+      done: hasTdee,
+    },
     {
       icon: 'monitor_weight',
       title: 'Me peser',
@@ -42,12 +55,6 @@ export default function GettingStartedCard({
       onClick: () => navigate('/meals'),
       done: hasMeal,
     },
-    {
-      icon: 'monitoring',
-      title: 'Voir mes stats',
-      sub: 'Découvre les graphes disponibles',
-      onClick: () => navigate('/stats'),
-    },
   ];
 
   return (
@@ -60,15 +67,18 @@ export default function GettingStartedCard({
           <h2 className="getstart-t">Premiers pas</h2>
           <p className="getstart-s">
             {checkedCount === 0 && 'Choisis une action pour démarrer'}
-            {checkedCount === 1 && 'Une étape sur deux \u2014 continue !'}
-            {checkedCount === 2 && 'Tout est prêt, bienvenue \u{1F389}'}
+            {checkedCount > 0 &&
+              checkedCount < TOTAL_STEPS &&
+              `Plus que ${TOTAL_STEPS - checkedCount} étape${TOTAL_STEPS - checkedCount > 1 ? 's' : ''} \u2014 continue !`}
+            {checkedCount === TOTAL_STEPS &&
+              'Tout est prêt, bienvenue \u{1F389}'}
           </p>
         </div>
         <span
           className="getstart-progress"
-          aria-label={`${checkedCount} sur 2`}
+          aria-label={`${checkedCount} sur ${TOTAL_STEPS}`}
         >
-          {checkedCount}/2
+          {checkedCount}/{TOTAL_STEPS}
         </span>
       </div>
       <ul className="getstart-list">

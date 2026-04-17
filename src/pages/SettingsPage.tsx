@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import AccountCard from '@/components/settings/AccountCard';
 import AiKeyCard from '@/components/settings/AiKeyCard';
 import DataCard from '@/components/settings/DataCard';
@@ -9,6 +11,18 @@ import TdeeCalcCard from '@/components/settings/TdeeCalcCard';
 import ThemeCard from '@/components/settings/ThemeCard';
 
 export default function SettingsPage() {
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (!hash) return;
+    const el = document.getElementById(hash.slice(1));
+    if (!el) return;
+    const timer = window.setTimeout(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+    return () => window.clearTimeout(timer);
+  }, [hash]);
+
   return (
     <div className="tp active">
       <section className="set-head">

@@ -18,6 +18,7 @@ interface SettingsState {
   theme: Theme;
   targets: Targets;
   setup: boolean;
+  tdeeConfirmed: boolean;
 
   setHeight: (v: number) => void;
   setStartWeight: (v: number) => void;
@@ -26,6 +27,7 @@ interface SettingsState {
   setActivity: (a: ActivityLevel) => void;
   setTheme: (t: Theme) => void;
   setTargets: (t: Targets) => void;
+  confirmTdee: () => void;
   completeOnboarding: (profile: UserProfile, targets: Targets) => void;
   rehydrate: () => void;
 }
@@ -46,6 +48,7 @@ function readAll() {
     theme: loadJSON<Theme>(STORAGE_KEYS.theme, DEFAULT_PROFILE.theme),
     targets: loadJSON<Targets>(STORAGE_KEYS.targets, DEFAULT_TARGETS),
     setup: loadJSON<boolean>(STORAGE_KEYS.setup, false),
+    tdeeConfirmed: loadJSON<boolean>(STORAGE_KEYS.tdeeConfirmed, false),
   };
 }
 
@@ -79,6 +82,10 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setTargets: (t) => {
     saveJSON(STORAGE_KEYS.targets, t);
     set({ targets: t });
+  },
+  confirmTdee: () => {
+    saveJSON(STORAGE_KEYS.tdeeConfirmed, true);
+    set({ tdeeConfirmed: true });
   },
   completeOnboarding: (profile, targets) => {
     saveJSON(STORAGE_KEYS.height, profile.height);

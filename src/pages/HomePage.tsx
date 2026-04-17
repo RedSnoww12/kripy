@@ -27,6 +27,7 @@ export default function HomePage() {
   const height = useSettingsStore((s) => s.height);
   const startWeight = useSettingsStore((s) => s.startWeight);
   const stepsGoal = useSettingsStore((s) => s.stepsGoal);
+  const tdeeConfirmed = useSettingsStore((s) => s.tdeeConfirmed);
 
   const log = useNutritionStore((s) => s.log);
   const weights = useTrackingStore((s) => s.weights);
@@ -49,7 +50,8 @@ export default function HomePage() {
     () => Object.values(log).some((arr) => arr && arr.length > 0),
     [log],
   );
-  const showGettingStarted = !(hasWeight && hasMeal);
+  const hasTdee = tdeeConfirmed;
+  const showGettingStarted = !(hasWeight && hasMeal && hasTdee);
 
   const focusWeightInput = () => {
     const el = weightRef.current;
@@ -84,6 +86,7 @@ export default function HomePage() {
           onWeighIn={focusWeightInput}
           hasWeight={hasWeight}
           hasMeal={hasMeal}
+          hasTdee={hasTdee}
         />
       )}
       <StreakBar streak={streak} />
