@@ -11,6 +11,7 @@ interface TrackingState {
   addWeight: (entry: WeightEntry) => void;
   setWeights: (weights: WeightEntry[]) => void;
   addWorkout: (workout: Workout) => void;
+  removeWorkout: (id: number) => void;
   setWorkouts: (workouts: Workout[]) => void;
   setStepsForDate: (date: string, value: number) => void;
   setWaterForDate: (date: string, value: number) => void;
@@ -40,6 +41,11 @@ export const useTrackingStore = create<TrackingState>((set, get) => ({
   },
   addWorkout: (workout) => {
     const workouts = [...get().workouts, workout];
+    saveJSON(STORAGE_KEYS.workouts, workouts);
+    set({ workouts });
+  },
+  removeWorkout: (id) => {
+    const workouts = get().workouts.filter((w) => w.id !== id);
     saveJSON(STORAGE_KEYS.workouts, workouts);
     set({ workouts });
   },
