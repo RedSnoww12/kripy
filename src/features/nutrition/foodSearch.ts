@@ -1,0 +1,105 @@
+import { FOODS } from '@/data/foods';
+import type {
+  BarcodesDict,
+  FoodTuple,
+  FoodsDict,
+  MealEntry,
+  MealSlot,
+  RecipesDict,
+} from '@/types';
+
+const SEARCH_LIMIT = 14;
+
+function normalize(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function recipesToTuples(recipes: RecipesDict): FoodsDict {
+  const out: FoodsDict = {};
+  for (const [name, r] of Object.entries(recipes)) {
+    out[name] = [r.kcal, r.p, r.g, r.l, r.f ?? 0];
+  }
+  return out;
+}
+
+function barcodesToTuples(barcodes: BarcodesDict): FoodsDict {
+  const out: FoodsDict = {};
+  for (const entry of Object.values(barcodes)) {
+    out[entry.name] = [entry.kcal, entry.p, entry.g, entry.l, entry.f ?? 0];
+  }
+  return out;
+}
+
+export function getAllFoods(
+  recipes: RecipesDict,
+  barcodes: BarcodesDict,
+): FoodsDict {
+  return {
+    ...FOODS,
+    ...recipesToTuples(recipes),
+    ...barcodesToTuples(barcodes),
+  };
+}
+
+export function searchFoods(
+  query: string,
+  recipes: RecipesDict,
+  barcodes: BarcodesDict,
+): { name: string; tuple: FoodTuple }[] {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  const needle = normalize(trimmed);
+  const foods = getAllFoods(recipes, barcodes);
+
+  return Object.entries(foods)
+    .filter(([name]) => normalize(name).includes(needle))
+    .slice(0, SEARCH_LIMIT)
+    .map(([name, tuple]) => ({ name, tuple }));
+}
+
+function round1(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
+export function computeMealEntry(
+  food: string,
+  tuple: FoodTuple,
+  qty: number,
+  slot: MealSlot,
+): MealEntry {
+  const m = qty / 100;
+  const [kcal, p, g, l, f] = tuple;
+  return {
+    id: Date.now(),
+    food,
+    qty: Math.round(qty),
+    kcal: round1(kcal * m),
+    p: round1(p * m),
+    g: round1(g * m),
+    l: round1(l * m),
+    f: round1(f * m),
+    meal: slot,
+  };
+}
+
+export function applyQtyChange(
+  entry: MealEntry,
+  tuple: FoodTuple,
+  newQty: number,
+): MealEntry {
+  const m = newQty / 100;
+  const [kcal, p, g, l, f] = tuple;
+  return {
+    ...entry,
+    qty: Math.round(newQty),
+    kcal: round1(kcal * m),
+    p: round1(p * m),
+    g: round1(g * m),
+    l: round1(l * m),
+    f: round1(f * m),
+  };
+}

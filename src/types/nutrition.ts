@@ -22,7 +22,8 @@ export type FoodsDict = Record<string, FoodTuple>;
 export type MealSlot = 0 | 1 | 2 | 3;
 
 export interface MealEntry extends Macros {
-  name: string;
+  id: number;
+  food: string;
   qty: number;
   meal: MealSlot;
 }
