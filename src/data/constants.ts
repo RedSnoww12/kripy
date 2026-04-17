@@ -160,6 +160,68 @@ export const SPORT_CATEGORY_LABELS: Record<SportCategory, string> = {
   combat: '🥊 Combat',
 };
 
+export interface MacroPreset {
+  p: number;
+  g: number;
+  l: number;
+}
+
+export const MACRO_PRESETS: Record<string, MacroPreset> = {
+  Équilibre: { p: 30, g: 40, l: 30 },
+  'High Prot': { p: 40, g: 35, l: 25 },
+  Keto: { p: 25, g: 5, l: 70 },
+  'Low Fat': { p: 35, g: 50, l: 15 },
+  Zone: { p: 30, g: 40, l: 30 },
+};
+
+export const PHASE_DESCRIPTIONS: Record<Phase, string> = {
+  A: 'Maintenance et préparation',
+  B: 'Sèche contrôlée progressive',
+  C: 'Reverse diet graduel',
+  D: 'Prise de masse propre',
+  E: 'Reset métabolique',
+  F: 'Remonte post-sèche',
+};
+
+export const PHASE_DETAIL: Record<
+  Phase,
+  { title: string; description: string }
+> = {
+  A: {
+    title: 'Pre-prep (x1.0)',
+    description: 'Baisse : rien. Stagne : +200 kcal.',
+  },
+  B: {
+    title: 'Déficit (x0.85)',
+    description: 'Stagne : -200 kcal. Remontée : vérifier.',
+  },
+  F: {
+    title: 'Remonte (x0.92)',
+    description:
+      'Remonte les kcal en continuant à perdre. Stable = +200, prise = -200.',
+  },
+  C: {
+    title: 'Reverse (x0.90)',
+    description: 'Baisse = +200 kcal. Stable : rien.',
+  },
+  D: {
+    title: 'PDM (x1.075)',
+    description: 'Baisse : +200 kcal.',
+  },
+  E: {
+    title: 'Reset (x0.88)',
+    description: 'Déficit + Reverse.',
+  },
+};
+
+export const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
+  sedentary: 1.2,
+  light: 1.375,
+  moderate: 1.55,
+  active: 1.725,
+  very_active: 1.9,
+};
+
 export function computeTargetsFromKcal(
   kcalTarget: number,
   weight: number,
