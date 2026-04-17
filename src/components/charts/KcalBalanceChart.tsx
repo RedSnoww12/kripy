@@ -45,13 +45,13 @@ export default function KcalBalanceChart({ range }: Props) {
     [log, weights, currentKcal, today, range],
   );
 
-  const tickSize = range > 14 ? 7 : 9;
+  const tickSize = range > 14 ? 7 : 8;
 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart
         data={built.points}
-        margin={{ top: 8, right: 12, left: 4, bottom: 8 }}
+        margin={{ top: 6, right: 8, left: 0, bottom: 4 }}
       >
         <CartesianGrid
           stroke={CHART_TOKENS.gridMute}
@@ -69,16 +69,16 @@ export default function KcalBalanceChart({ range }: Props) {
           tickLine={false}
           axisLine={false}
           interval="preserveStartEnd"
-          tickMargin={6}
-          height={22}
+          tickMargin={4}
+          height={18}
         />
         <YAxis
           stroke={CHART_TOKENS.tickMute}
           tick={{ ...MONO_FONT, fill: CHART_TOKENS.tickMute }}
           tickLine={false}
           axisLine={false}
-          width={52}
-          tickMargin={4}
+          width={38}
+          tickMargin={2}
         />
         <Tooltip
           cursor={{ fill: 'var(--l1)', opacity: 0.4 }}

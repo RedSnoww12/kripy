@@ -20,7 +20,7 @@ export const MACRO_COLORS = {
 
 export const MONO_FONT = {
   fontFamily: 'JetBrains Mono',
-  fontSize: 9,
+  fontSize: 8,
 } as const;
 
 export function rateColor(value: number): string {

@@ -71,7 +71,7 @@ export default function PhaseChart() {
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={built.points}
-            margin={{ top: 8, right: 12, left: 4, bottom: 8 }}
+            margin={{ top: 6, right: 8, left: 0, bottom: 4 }}
           >
             <CartesianGrid
               stroke={CHART_TOKENS.gridMute}
@@ -85,8 +85,8 @@ export default function PhaseChart() {
               interval="preserveStartEnd"
               tickLine={false}
               axisLine={false}
-              tickMargin={6}
-              height={22}
+              tickMargin={4}
+              height={18}
             />
             <YAxis
               stroke={CHART_TOKENS.tickMute}
@@ -94,8 +94,8 @@ export default function PhaseChart() {
               tickLine={false}
               axisLine={false}
               domain={['dataMin - 0.5', 'dataMax + 0.5']}
-              width={44}
-              tickMargin={4}
+              width={30}
+              tickMargin={2}
             />
             <Tooltip
               contentStyle={{
