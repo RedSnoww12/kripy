@@ -60,7 +60,7 @@ export function palierDays(palier: Palier, today: string): number {
 }
 
 export function palierTimeline(
-  weights: WeightEntry[],
+  weights: readonly WeightEntry[],
   currentKcal: number,
   today: string,
 ): PalierTimelinePoint[] {
@@ -77,7 +77,7 @@ export function palierTimeline(
 
 export function targetForDate(
   date: string,
-  weights: WeightEntry[],
+  weights: readonly WeightEntry[],
   currentKcal: number,
   today: string,
 ): number {

@@ -46,6 +46,8 @@ const ADAPTIVE_WINDOWS: readonly {
   { w: 3, maxNoise: Infinity, minN: 3, conf: 'low' },
 ];
 
+export type { LinRegPoint } from '@/types';
+
 export function linReg(pts: LinRegPoint[]): LinRegResult {
   const n = pts.length;
   if (n === 0) return { slope: 0, intercept: 0, r2: 0, ssRes: 0, n: 0 };
