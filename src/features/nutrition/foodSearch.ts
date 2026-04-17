@@ -17,14 +17,6 @@ function normalize(str: string): string {
     .replace(/[\u0300-\u036f]/g, '');
 }
 
-function recipesToTuples(recipes: RecipesDict): FoodsDict {
-  const out: FoodsDict = {};
-  for (const [name, r] of Object.entries(recipes)) {
-    out[name] = [r.kcal, r.p, r.g, r.l, r.f ?? 0];
-  }
-  return out;
-}
-
 function barcodesToTuples(barcodes: BarcodesDict): FoodsDict {
   const out: FoodsDict = {};
   for (const entry of Object.values(barcodes)) {
@@ -39,7 +31,7 @@ export function getAllFoods(
 ): FoodsDict {
   return {
     ...FOODS,
-    ...recipesToTuples(recipes),
+    ...recipes,
     ...barcodesToTuples(barcodes),
   };
 }

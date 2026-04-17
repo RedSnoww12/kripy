@@ -39,12 +39,7 @@ export interface Targets {
   fib: number;
 }
 
-export interface Recipe extends Macros {
-  name: string;
-  ingredients?: string[];
-}
-
-export type RecipesDict = Record<string, Recipe>;
+export type RecipesDict = Record<string, FoodTuple>;
 
 export interface BarcodeEntry {
   name: string;

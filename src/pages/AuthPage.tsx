@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { isFirebaseConfigured } from '@/lib/firebase';
 import { signInWithGoogle } from '@/features/auth/useAuth';
 import { useSessionStore } from '@/store/useSessionStore';
@@ -82,14 +82,9 @@ export default function AuthPage() {
       {error && <div className="auth-err show">{error}</div>}
 
       <div className="auth-legal">
-        En continuant, vous acceptez nos
-        <a href="/terms" target="_blank" rel="noopener">
-          CGU
-        </a>
+        En continuant, vous acceptez nos <Link to="/terms">CGU</Link>
         &nbsp;·&nbsp;
-        <a href="/privacy" target="_blank" rel="noopener">
-          Politique de Confidentialité
-        </a>
+        <Link to="/privacy">Politique de Confidentialité</Link>
       </div>
     </div>
   );
