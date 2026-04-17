@@ -13,7 +13,10 @@ function entryDetails(entry: MealEntry): string {
   const parts: string[] = [];
   if (entry.qty) parts.push(`${entry.qty}g`);
   parts.push(`${Math.round(entry.kcal)} kcal`);
-  if (entry.p) parts.push(`${Math.round(entry.p)}g P`);
+  if (entry.p) parts.push(`${Math.round(entry.p)}P`);
+  if (entry.g) parts.push(`${Math.round(entry.g)}G`);
+  if (entry.l) parts.push(`${Math.round(entry.l)}L`);
+  if (entry.f) parts.push(`${Math.round(entry.f)}F`);
   return parts.join(' · ');
 }
 

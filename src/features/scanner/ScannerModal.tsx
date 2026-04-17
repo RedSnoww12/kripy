@@ -1,4 +1,4 @@
-import { useCallback, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import Modal from '@/components/ui/Modal';
 import { useBarcodeScanner } from './useBarcodeScanner';
 import { lookupBarcode } from './openFoodFacts';
@@ -13,6 +13,12 @@ interface Props {
   onProductResolved: (name: string, tuple: FoodTuple) => void;
 }
 
+interface ResolvedProduct {
+  code: string;
+  name: string;
+  tuple: FoodTuple;
+}
+
 function vibrate(ms: number) {
   if (navigator.vibrate) {
     try {
@@ -23,6 +29,10 @@ function vibrate(ms: number) {
   }
 }
 
+function toTuple(entry: BarcodeEntry): FoodTuple {
+  return [entry.kcal, entry.p, entry.g, entry.l, entry.f ?? 0];
+}
+
 export default function ScannerModal({
   open,
   onClose,
@@ -31,27 +41,31 @@ export default function ScannerModal({
   const barcodes = useNutritionStore((s) => s.barcodes);
   const recipes = useNutritionStore((s) => s.recipes);
   const setBarcodes = useNutritionStore((s) => s.setBarcodes);
+  const setRecipes = useNutritionStore((s) => s.setRecipes);
 
   const [manualCode, setManualCode] = useState('');
   const [manualError, setManualError] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [resolved, setResolved] = useState<ResolvedProduct | null>(null);
+  const [saveAsRecipe, setSaveAsRecipe] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      setResolved(null);
+      setSaveAsRecipe(false);
+      setManualCode('');
+      setBusy(false);
+    }
+  }, [open]);
 
   const handleCode = useCallback(
     async (code: string) => {
-      if (busy) return;
+      if (busy || resolved) return;
       vibrate(60);
 
       const cached = barcodes[code];
       if (cached) {
-        const tuple: FoodTuple = [
-          cached.kcal,
-          cached.p,
-          cached.g,
-          cached.l,
-          cached.f ?? 0,
-        ];
-        onProductResolved(cached.name, tuple);
-        onClose();
+        setResolved({ code, name: cached.name, tuple: toTuple(cached) });
         return;
       }
 
@@ -74,22 +88,13 @@ export default function ScannerModal({
 
       const entry: BarcodeEntry = { ...result.entry };
       setBarcodes({ ...barcodes, [code]: entry });
-      const tuple: FoodTuple = [
-        entry.kcal,
-        entry.p,
-        entry.g,
-        entry.l,
-        entry.f ?? 0,
-      ];
-      toast(`${entry.name} ajouté`, 'success');
-      onProductResolved(entry.name, tuple);
-      onClose();
+      setResolved({ code, name: entry.name, tuple: toTuple(entry) });
     },
-    [barcodes, busy, onClose, onProductResolved, recipes, setBarcodes],
+    [barcodes, busy, recipes, resolved, setBarcodes],
   );
 
   const { videoRef, state } = useBarcodeScanner({
-    enabled: open,
+    enabled: open && !resolved,
     onCodeFound: handleCode,
   });
 
@@ -105,12 +110,135 @@ export default function ScannerModal({
     handleCode(v);
   };
 
+  const saveRecipe = () => {
+    if (!resolved) return;
+    if (recipes[resolved.name]) {
+      toast(`${resolved.name} déjà en recettes`, 'info');
+      return;
+    }
+    setRecipes({ ...recipes, [resolved.name]: resolved.tuple });
+    toast(`${resolved.name} enregistrée en recette`, 'success');
+  };
+
+  const handleAddToMeal = () => {
+    if (!resolved) return;
+    if (saveAsRecipe) saveRecipe();
+    onProductResolved(resolved.name, resolved.tuple);
+    onClose();
+  };
+
+  const handleRecipeOnly = () => {
+    if (!resolved) return;
+    saveRecipe();
+    onClose();
+  };
+
   const messageColor =
     state.status === 'error' ||
     state.status === 'unsupported' ||
     state.status === 'denied'
       ? 'var(--red)'
       : 'var(--t2)';
+
+  if (resolved) {
+    const [kcal, p, g, l, f] = resolved.tuple;
+    return (
+      <Modal open={open} onClose={onClose}>
+        <h3>✅ Produit trouvé</h3>
+        <div
+          style={{
+            marginTop: 8,
+            padding: 12,
+            background: 'var(--b2)',
+            borderRadius: 'var(--r)',
+            border: '1px solid var(--l1)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '.95rem',
+              fontWeight: 600,
+              color: 'var(--t1)',
+            }}
+          >
+            {resolved.name}
+          </div>
+          <div
+            style={{
+              fontSize: '.7rem',
+              color: 'var(--t3)',
+              marginTop: 2,
+            }}
+          >
+            Code {resolved.code} · par 100 g
+          </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: 8,
+              marginTop: 10,
+              fontSize: '.72rem',
+            }}
+          >
+            <Macro label="kcal" value={kcal} color="var(--t1)" />
+            <Macro label="prot" value={`${p}g`} color="var(--grn)" />
+            <Macro label="gluc" value={`${g}g`} color="var(--cyan)" />
+            <Macro label="lip" value={`${l}g`} color="var(--pnk)" />
+            <Macro label="fib" value={`${f}g`} color="var(--org)" />
+          </div>
+        </div>
+
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            margin: '14px 0 10px',
+            fontSize: '.78rem',
+            color: 'var(--t2)',
+            cursor: 'pointer',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={saveAsRecipe}
+            onChange={(e) => setSaveAsRecipe(e.target.checked)}
+          />
+          Aussi l'enregistrer en recette
+        </label>
+
+        <div style={{ display: 'grid', gap: 8 }}>
+          <button
+            type="button"
+            className="btn btn-p"
+            onClick={handleAddToMeal}
+            style={{ width: '100%' }}
+          >
+            <span className="material-symbols-outlined">restaurant</span>
+            Ajouter au repas
+          </button>
+          <button
+            type="button"
+            className="btn btn-o"
+            onClick={handleRecipeOnly}
+            style={{ width: '100%' }}
+          >
+            <span className="material-symbols-outlined">bookmark_add</span>
+            Enregistrer en recette seulement
+          </button>
+          <button
+            type="button"
+            className="btn btn-o"
+            onClick={() => setResolved(null)}
+            style={{ width: '100%' }}
+          >
+            Scanner un autre produit
+          </button>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -184,5 +312,22 @@ export default function ScannerModal({
         Fermer
       </button>
     </Modal>
+  );
+}
+
+function Macro({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: string | number;
+  color: string;
+}) {
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ color: 'var(--t3)', fontSize: '.6rem' }}>{label}</div>
+      <div style={{ color, fontWeight: 600 }}>{value}</div>
+    </div>
   );
 }
