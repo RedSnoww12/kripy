@@ -1,11 +1,16 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, type CSSProperties, type ReactNode } from 'react';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
-  contentStyle?: React.CSSProperties;
+  contentStyle?: CSSProperties;
 }
+
+const DEFAULT_CONTENT_STYLE: CSSProperties = {
+  maxHeight: 'calc(100dvh - 24px)',
+  overflowY: 'auto',
+};
 
 export default function Modal({
   open,
@@ -29,12 +34,17 @@ export default function Modal({
 
   if (!open) return null;
 
+  const mergedStyle: CSSProperties = {
+    ...DEFAULT_CONTENT_STYLE,
+    ...contentStyle,
+  };
+
   return (
     <div className="mo show" role="dialog" aria-modal="true" onClick={onClose}>
       <div
         className="modal"
         onClick={(e) => e.stopPropagation()}
-        style={contentStyle}
+        style={mergedStyle}
       >
         {children}
       </div>

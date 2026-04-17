@@ -78,11 +78,7 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
   };
 
   return (
-    <Modal
-      open={open}
-      onClose={close}
-      contentStyle={{ maxHeight: '90vh', overflowY: 'auto' }}
-    >
+    <Modal open={open} onClose={close}>
       <h3>✨ Analyse IA</h3>
 
       {status.kind !== 'result' && (

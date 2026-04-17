@@ -6,14 +6,17 @@ const ORDERED_PHASES: readonly Phase[] = ['A', 'B', 'F', 'C', 'D', 'E'];
 interface Props {
   value: Phase;
   onChange: (phase: Phase) => void;
+  compact?: boolean;
 }
 
-export default function PhaseSelector({ value, onChange }: Props) {
+export default function PhaseSelector({
+  value,
+  onChange,
+  compact = true,
+}: Props) {
+  const className = compact ? 'ph-sel compact' : 'ph-sel';
   return (
-    <div
-      className="ph-row"
-      style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}
-    >
+    <div className={className}>
       {ORDERED_PHASES.map((k) => {
         const color = PHASE_COLORS[k];
         const selected = k === value;
@@ -24,13 +27,12 @@ export default function PhaseSelector({ value, onChange }: Props) {
             className={`ph-btn${selected ? ' sel' : ''}`}
             onClick={() => onChange(k)}
             style={{
-              borderColor: selected ? color : 'var(--s3)',
-              background: selected ? `${color}22` : undefined,
+              boxShadow: selected ? `inset 0 -2px 0 0 ${color}` : undefined,
             }}
           >
             <span className="pl" style={{ color }}>
               {k}
-            </span>{' '}
+            </span>
             {PHASE_NAMES[k]}
           </button>
         );
