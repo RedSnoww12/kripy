@@ -1,7 +1,12 @@
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { toast } from '@/components/ui/toastStore';
+import type { FoodTuple } from '@/types';
 
-export default function RecipeList() {
+interface Props {
+  onEdit: (name: string, tuple: FoodTuple) => void;
+}
+
+export default function RecipeList({ onEdit }: Props) {
   const recipes = useNutritionStore((s) => s.recipes);
   const setRecipes = useNutritionStore((s) => s.setRecipes);
 
@@ -42,10 +47,15 @@ export default function RecipeList() {
       </div>
       <div id="rcList">
         {names.map((name) => {
-          const [kcal, p, g, l, f] = recipes[name];
+          const tuple = recipes[name];
+          const [kcal, p, g, l, f] = tuple;
           return (
             <div key={name} className="rc-item">
-              <div className="rc-body">
+              <div
+                className="rc-body"
+                onClick={() => onEdit(name, tuple)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="rc-h">
                   <h4 className="rc-name">{name}</h4>
                   <span className="rc-kcal">{kcal} kcal</span>
@@ -69,14 +79,25 @@ export default function RecipeList() {
                   </div>
                 </div>
               </div>
-              <button
-                type="button"
-                className="rc-del"
-                aria-label={`Supprimer ${name}`}
-                onClick={() => handleDelete(name)}
-              >
-                <span className="material-symbols-outlined">delete</span>
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <button
+                  type="button"
+                  className="rc-del"
+                  aria-label={`Modifier ${name}`}
+                  onClick={() => onEdit(name, tuple)}
+                  style={{ color: 'var(--acc)' }}
+                >
+                  <span className="material-symbols-outlined">edit</span>
+                </button>
+                <button
+                  type="button"
+                  className="rc-del"
+                  aria-label={`Supprimer ${name}`}
+                  onClick={() => handleDelete(name)}
+                >
+                  <span className="material-symbols-outlined">delete</span>
+                </button>
+              </div>
             </div>
           );
         })}

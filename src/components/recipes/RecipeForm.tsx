@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { toast } from '@/components/ui/toastStore';
 import type { FoodTuple } from '@/types';
+import type { EditingRecipe } from '@/pages/RecipesPage';
 
 const INITIAL = {
   name: '',
@@ -12,18 +13,53 @@ const INITIAL = {
   f: '',
 };
 
+type FormState = typeof INITIAL;
+
 function parseNum(value: string): number {
   const n = parseFloat(value.replace(',', '.'));
   return Number.isFinite(n) ? n : 0;
 }
 
-export default function RecipeForm() {
+function tupleToForm(name: string, tuple: FoodTuple): FormState {
+  const [kcal, p, g, l, f] = tuple;
+  return {
+    name,
+    kcal: String(kcal),
+    p: String(p),
+    g: String(g),
+    l: String(l),
+    f: String(f),
+  };
+}
+
+interface Props {
+  editing: EditingRecipe | null;
+  onDone: () => void;
+}
+
+export default function RecipeForm({ editing, onDone }: Props) {
   const recipes = useNutritionStore((s) => s.recipes);
   const setRecipes = useNutritionStore((s) => s.setRecipes);
-  const [form, setForm] = useState(INITIAL);
+  const [form, setForm] = useState<FormState>(INITIAL);
 
-  const patch = (v: Partial<typeof INITIAL>) =>
+  useEffect(() => {
+    if (editing) {
+      setForm(tupleToForm(editing.name, editing.tuple));
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else {
+      setForm(INITIAL);
+    }
+  }, [editing]);
+
+  const patch = (v: Partial<FormState>) =>
     setForm((state) => ({ ...state, ...v }));
+
+  const reset = () => {
+    setForm(INITIAL);
+    onDone();
+  };
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -44,14 +80,27 @@ export default function RecipeForm() {
     }
 
     const tuple: FoodTuple = [kcal, p, g, l, f];
-    setRecipes({ ...recipes, [name]: tuple });
-    setForm(INITIAL);
-    toast(`${name} enregistrée`, 'success');
+
+    if (editing && editing.name !== name) {
+      const next = { ...recipes };
+      delete next[editing.name];
+      next[name] = tuple;
+      setRecipes(next);
+    } else {
+      setRecipes({ ...recipes, [name]: tuple });
+    }
+
+    toast(editing ? `${name} mise à jour` : `${name} enregistrée`, 'success');
+    reset();
   };
+
+  const isEditing = editing !== null;
 
   return (
     <section className="rcp-form">
-      <h2 className="rcp-form-l">Nouvelle recette</h2>
+      <h2 className="rcp-form-l">
+        {isEditing ? 'Modifier la recette' : 'Nouvelle recette'}
+      </h2>
       <form
         onSubmit={handleSubmit}
         style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
@@ -141,9 +190,25 @@ export default function RecipeForm() {
             />
           </div>
         </div>
-        <button type="submit" className="rcp-cta">
-          Ajouter à la bibliothèque
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            type="submit"
+            className="rcp-cta"
+            style={{ flex: isEditing ? 2 : 1 }}
+          >
+            {isEditing ? 'Enregistrer' : 'Ajouter à la bibliothèque'}
+          </button>
+          {isEditing && (
+            <button
+              type="button"
+              className="btn btn-o"
+              onClick={reset}
+              style={{ flex: 1 }}
+            >
+              Annuler
+            </button>
+          )}
+        </div>
       </form>
     </section>
   );
