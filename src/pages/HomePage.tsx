@@ -44,7 +44,12 @@ export default function HomePage() {
   const streak = useMemo(() => computeStreak(log, today), [log, today]);
 
   const weightRef = useRef<HTMLDivElement>(null);
-  const isFresh = weights.length === 0 && todayEntries.length === 0;
+  const hasWeight = weights.length > 0;
+  const hasMeal = useMemo(
+    () => Object.values(log).some((arr) => arr && arr.length > 0),
+    [log],
+  );
+  const showGettingStarted = !(hasWeight && hasMeal);
 
   const focusWeightInput = () => {
     const el = weightRef.current;
@@ -74,7 +79,13 @@ export default function HomePage() {
   return (
     <div className="tp active">
       <WelcomeHeader />
-      {isFresh && <GettingStartedCard onWeighIn={focusWeightInput} />}
+      {showGettingStarted && (
+        <GettingStartedCard
+          onWeighIn={focusWeightInput}
+          hasWeight={hasWeight}
+          hasMeal={hasMeal}
+        />
+      )}
       <StreakBar streak={streak} />
       <CalorieRing consumed={totals.kcal} target={targets.kcal} />
       <MacroRow totals={totals} targets={targets} />

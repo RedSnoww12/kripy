@@ -46,7 +46,7 @@ export function buildWeightChartData({
   goalWeight,
 }: BuildArgs): WeightChartResult | null {
   const slice = sliceWeights(weights, range);
-  if (slice.length === 0) return null;
+  if (slice.length < 2) return null;
 
   const values = slice.map((w) => w.w);
   const hasEma = slice.length >= 3;

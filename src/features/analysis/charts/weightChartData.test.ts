@@ -34,6 +34,16 @@ describe('weightChartData', () => {
     ).toBeNull();
   });
 
+  it('returns null with a single weight (min 2 points needed)', () => {
+    expect(
+      buildWeightChartData({
+        weights: [mkWeight('2026-04-10', 75)],
+        range: 7,
+        goalWeight: 70,
+      }),
+    ).toBeNull();
+  });
+
   it('includes EMA and goal fields when conditions match', () => {
     const res = buildWeightChartData({ weights, range: 9999, goalWeight: 70 });
     expect(res).not.toBeNull();

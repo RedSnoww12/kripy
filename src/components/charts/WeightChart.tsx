@@ -32,9 +32,11 @@ export default function WeightChart({ weights, range, goalWeight }: Props) {
   );
 
   if (!result) {
-    return (
-      <div className="stat-chart-empty">Aucune pesée sur cette fenêtre</div>
-    );
+    const need =
+      weights.length < 2
+        ? 'Il faut au moins 2 pesées pour tracer une tendance'
+        : 'Aucune pesée sur cette fenêtre';
+    return <div className="stat-chart-empty">{need}</div>;
   }
 
   const dotSize = result.dense ? 0 : 3;

@@ -390,6 +390,21 @@
   align-items: center;
   gap: 12px;
 }
+.getstart-head-text {
+  flex: 1;
+  min-width: 0;
+}
+.getstart-progress {
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--m3-tertiary);
+  background: color-mix(in srgb, var(--m3-tertiary) 14%, transparent);
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
 .getstart-ico {
   font-size: 28px;
   color: var(--m3-tertiary);
@@ -414,6 +429,12 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.getstart-list > li {
+  list-style: none;
 }
 .getstart-item {
   display: flex;
@@ -429,7 +450,8 @@
   text-align: left;
   transition:
     background var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
+    transform var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
 }
 .getstart-item:hover {
   background: var(--s3);
@@ -441,6 +463,30 @@
   font-size: 22px;
   color: var(--m3-tertiary);
   flex-shrink: 0;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.getstart-item.checkable .getstart-item-ico {
+  color: var(--m3-on-surface-variant);
+}
+.getstart-item.done .getstart-item-ico {
+  color: var(--m3-tertiary);
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 500,
+    'GRAD' 0,
+    'opsz' 24;
+}
+.getstart-item.done .getstart-item-t {
+  color: var(--m3-on-surface-variant);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--m3-on-surface-variant) 55%,
+    transparent
+  );
+}
+.getstart-item.done {
+  background: color-mix(in srgb, var(--m3-tertiary) 8%, var(--s1));
 }
 .getstart-item-text {
   flex: 1;

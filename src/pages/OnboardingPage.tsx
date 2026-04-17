@@ -53,7 +53,17 @@ export default function OnboardingPage() {
       <p>Configure tes objectifs</p>
 
       <div className="ob-f">
-        <label htmlFor="obW">Poids (kg)</label>
+        <label htmlFor="obW">Poids cible (kg)</label>
+        <p
+          style={{
+            margin: '-2px 0 8px',
+            fontSize: '.68rem',
+            color: 'var(--t3)',
+            fontWeight: 500,
+          }}
+        >
+          Le poids que tu veux atteindre — sert de référence pour l'objectif.
+        </p>
         <input
           id="obW"
           className="inp"
@@ -61,7 +71,7 @@ export default function OnboardingPage() {
           inputMode="decimal"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
-          placeholder="75"
+          placeholder="70"
         />
 
         <label htmlFor="obH">Taille (cm)</label>
