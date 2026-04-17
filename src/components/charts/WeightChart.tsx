@@ -43,7 +43,7 @@ export default function WeightChart({ weights, range, goalWeight }: Props) {
     <ResponsiveContainer width="100%" height="100%">
       <LineChart
         data={result.points}
-        margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
+        margin={{ top: 8, right: 12, left: 4, bottom: 8 }}
       >
         <CartesianGrid stroke={CHART_TOKENS.gridMute} strokeDasharray="3 3" />
         <XAxis
@@ -53,6 +53,8 @@ export default function WeightChart({ weights, range, goalWeight }: Props) {
           interval="preserveStartEnd"
           tickLine={false}
           axisLine={false}
+          tickMargin={6}
+          height={22}
         />
         <YAxis
           stroke={CHART_TOKENS.tickMute}
@@ -60,7 +62,9 @@ export default function WeightChart({ weights, range, goalWeight }: Props) {
           tickLine={false}
           axisLine={false}
           domain={['dataMin - 1', 'dataMax + 1']}
-          width={32}
+          width={44}
+          tickMargin={4}
+          tickFormatter={(v: number) => `${v}`}
         />
         <Tooltip
           contentStyle={{

@@ -51,7 +51,7 @@ export default function KcalBalanceChart({ range }: Props) {
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart
         data={built.points}
-        margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
+        margin={{ top: 8, right: 12, left: 4, bottom: 8 }}
       >
         <CartesianGrid
           stroke={CHART_TOKENS.gridMute}
@@ -69,13 +69,16 @@ export default function KcalBalanceChart({ range }: Props) {
           tickLine={false}
           axisLine={false}
           interval="preserveStartEnd"
+          tickMargin={6}
+          height={22}
         />
         <YAxis
           stroke={CHART_TOKENS.tickMute}
           tick={{ ...MONO_FONT, fill: CHART_TOKENS.tickMute }}
           tickLine={false}
           axisLine={false}
-          width={40}
+          width={52}
+          tickMargin={4}
         />
         <Tooltip
           cursor={{ fill: 'var(--l1)', opacity: 0.4 }}
