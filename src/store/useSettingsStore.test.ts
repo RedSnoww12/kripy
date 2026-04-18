@@ -34,6 +34,7 @@ describe('useSettingsStore', () => {
         stepsGoal: 12000,
         activity: 'active',
         theme: 'dark',
+        sex: 'M',
       },
       { kcal: 2600, prot: 164, gluc: 280, lip: 82, fib: 36 },
     );
