@@ -8,7 +8,7 @@ interface Props {
 
 export default function MealTabs({ value, onChange }: Props) {
   return (
-    <div className="mt meal-tabs">
+    <div className="meal-tabs" role="tablist">
       {MEAL_LABELS.map((label, idx) => {
         const slot = idx as MealSlot;
         const active = slot === value;
@@ -16,6 +16,8 @@ export default function MealTabs({ value, onChange }: Props) {
           <button
             key={slot}
             type="button"
+            role="tab"
+            aria-selected={active}
             className={`meal-tab${active ? ' active' : ''}`}
             onClick={() => onChange(slot)}
           >

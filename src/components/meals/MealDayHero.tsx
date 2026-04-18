@@ -10,65 +10,54 @@ function fmt(n: number): string {
 }
 
 export default function MealDayHero({ totals, targets }: Props) {
-  const remaining = Math.max(0, Math.round(targets.kcal - totals.kcal));
-  const over = totals.kcal > targets.kcal;
-  const overBy = Math.round(totals.kcal - targets.kcal);
-  const pct = targets.kcal
-    ? Math.min(100, Math.round((totals.kcal / targets.kcal) * 100))
-    : 0;
+  const kcal = Math.round(totals.kcal);
+  const target = targets.kcal;
+  const pct = target ? Math.min(999, Math.round((kcal / target) * 100)) : 0;
+  const over = kcal > target;
 
-  const heroNumber = over ? `+${fmt(overBy)}` : fmt(remaining);
+  const macroKcal = {
+    p: totals.p * 4,
+    g: totals.g * 4,
+    l: totals.l * 9,
+  };
+  const macroTotal = Math.max(1, macroKcal.p + macroKcal.g + macroKcal.l) || 1;
+  const pctP = (macroKcal.p / macroTotal) * 100;
+  const pctG = (macroKcal.g / macroTotal) * 100;
+  const pctL = (macroKcal.l / macroTotal) * 100;
 
   return (
-    <section className="meal-bento">
-      <div className="meal-bento-hero">
-        <div className="meal-bento-hero-l">
-          <p className="meal-bento-cap">
-            {over ? 'Dépassement' : 'Calories restantes'}
-          </p>
-          <h2 className="meal-bento-v">
-            <span>{heroNumber}</span>
-            <span className="meal-bento-u">kcal</span>
+    <section className={`meal-hero${over ? ' over' : ''}`}>
+      <div className="meal-hero-head">
+        <div className="meal-hero-l">
+          <p className="meal-hero-cap">Consommé</p>
+          <h2 className="meal-hero-v mono">
+            <span>{fmt(kcal)}</span>
+            <span className="meal-hero-t">/ {fmt(target)}</span>
           </h2>
         </div>
-        <div className="meal-bento-hero-r">
-          <p className="meal-bento-cap meal-bento-cap-acc">
-            Objectif : {fmt(targets.kcal)}
-          </p>
-          <div className="meal-bento-bar">
-            <div className="meal-bento-bar-f" style={{ width: `${pct}%` }} />
-          </div>
-        </div>
+        <span className={`meal-hero-pct${over ? ' over' : ''}`}>{pct}%</span>
       </div>
 
-      <div className="meal-bento-m">
-        <span className="meal-bento-l">Prot</span>
-        <span className="meal-bento-m-v" style={{ color: 'var(--acc)' }}>
-          {Math.round(totals.p)}
-          <span className="meal-bento-m-u">g</span>
-        </span>
+      <div className="meal-macro-bar" aria-hidden="true">
+        <span className="meal-macro-seg prot" style={{ width: `${pctP}%` }} />
+        <span className="meal-macro-seg gluc" style={{ width: `${pctG}%` }} />
+        <span className="meal-macro-seg lip" style={{ width: `${pctL}%` }} />
       </div>
-      <div className="meal-bento-m">
-        <span className="meal-bento-l">Gluc</span>
-        <span className="meal-bento-m-v" style={{ color: 'var(--cyan)' }}>
-          {Math.round(totals.g)}
-          <span className="meal-bento-m-u">g</span>
-        </span>
-      </div>
-      <div className="meal-bento-m">
-        <span className="meal-bento-l">Lip</span>
-        <span className="meal-bento-m-v" style={{ color: 'var(--pnk)' }}>
-          {Math.round(totals.l)}
-          <span className="meal-bento-m-u">g</span>
-        </span>
-      </div>
-      <div className="meal-bento-m">
-        <span className="meal-bento-l">Fib</span>
-        <span className="meal-bento-m-v" style={{ color: 'var(--org)' }}>
-          {Math.round(totals.f ?? 0)}
-          <span className="meal-bento-m-u">g</span>
-        </span>
-      </div>
+
+      <ul className="meal-macro-legend mono">
+        <li>
+          <span className="meal-dot prot" />P {Math.round(totals.p)}g
+        </li>
+        <li>
+          <span className="meal-dot gluc" />G {Math.round(totals.g)}g
+        </li>
+        <li>
+          <span className="meal-dot lip" />L {Math.round(totals.l)}g
+        </li>
+        <li>
+          <span className="meal-dot fib" />F {Math.round(totals.f ?? 0)}g
+        </li>
+      </ul>
     </section>
   );
 }

@@ -9,14 +9,12 @@ interface Props {
   onDelete: (entry: MealEntry) => void;
 }
 
-function entryDetails(entry: MealEntry): string {
+function entryMeta(entry: MealEntry): string {
   const parts: string[] = [];
   if (entry.qty) parts.push(`${entry.qty}g`);
-  parts.push(`${Math.round(entry.kcal)} kcal`);
-  if (entry.p) parts.push(`${Math.round(entry.p)}P`);
-  if (entry.g) parts.push(`${Math.round(entry.g)}G`);
-  if (entry.l) parts.push(`${Math.round(entry.l)}L`);
-  if (entry.f) parts.push(`${Math.round(entry.f)}F`);
+  if (entry.p) parts.push(`P${Math.round(entry.p)}`);
+  if (entry.g) parts.push(`G${Math.round(entry.g)}`);
+  if (entry.l) parts.push(`L${Math.round(entry.l)}`);
   return parts.join(' · ');
 }
 
@@ -28,60 +26,76 @@ export default function MealEntriesList({
   onDelete,
 }: Props) {
   const currentEntries = entries.filter((e) => e.meal === currentSlot);
-  const currentKcal = currentEntries.reduce((s, e) => s + e.kcal, 0);
-  const currentLabel = MEAL_LABELS[currentSlot];
+  const sum = currentEntries.reduce(
+    (a, e) => ({
+      kcal: a.kcal + e.kcal,
+      p: a.p + (e.p ?? 0),
+      g: a.g + (e.g ?? 0),
+      l: a.l + (e.l ?? 0),
+    }),
+    { kcal: 0, p: 0, g: 0, l: 0 },
+  );
 
   return (
-    <div className="meal-list">
-      <div className="meal-section-head">
-        <h3 className="meal-section-t">{currentLabel}</h3>
-        <span className="meal-section-k">{Math.round(currentKcal)} kcal</span>
-      </div>
+    <>
+      <header className="meal-sh">
+        <span className="meal-sh-l">
+          <span className="meal-sh-dash" />
+          Repas
+        </span>
+        <span className="meal-sh-r">{MEAL_LABELS[currentSlot]}</span>
+      </header>
 
-      {currentEntries.length > 0 ? (
-        <div className="meal-entries">
-          {currentEntries.map((entry) => (
-            <div key={entry.id} className="meal-entry">
-              <div
-                className="meal-entry-l"
-                onClick={() => onEdit(entry)}
-                style={{ cursor: 'pointer' }}
-              >
-                <div className="meal-entry-ico">
-                  <span className="material-symbols-outlined">restaurant</span>
-                </div>
-                <div className="meal-entry-m">
-                  <h4 className="meal-entry-n">{entry.food}</h4>
-                  <p className="meal-entry-d">{entryDetails(entry)}</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="meal-entry-del"
-                aria-label="Supprimer"
-                onClick={() => onDelete(entry)}
-              >
-                <span className="material-symbols-outlined">
-                  delete_outline
-                </span>
-              </button>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="meal-empty">
-          <div className="meal-empty-ico">
-            <span className="material-symbols-outlined">restaurant</span>
-          </div>
-          <p className="meal-empty-t">{currentLabel} vide</p>
-          <p className="meal-empty-s">
-            Utilise la recherche ou (+) pour ajouter
-          </p>
-        </div>
-      )}
+      <section className="meal-card">
+        <header className="meal-card-head">
+          <span className="meal-card-count">
+            {currentEntries.length}{' '}
+            {currentEntries.length > 1 ? 'items' : 'item'}
+          </span>
+          <span className="meal-card-sum mono">
+            {Math.round(sum.kcal)} kcal · P{Math.round(sum.p)} G
+            {Math.round(sum.g)} L{Math.round(sum.l)}
+          </span>
+        </header>
+
+        {currentEntries.length === 0 ? (
+          <p className="meal-card-empty mono">// aucun item sur ce repas</p>
+        ) : (
+          <ul className="meal-card-list">
+            {currentEntries.map((entry) => (
+              <li key={entry.id} className="meal-row">
+                <button
+                  type="button"
+                  className="meal-row-main"
+                  onClick={() => onEdit(entry)}
+                >
+                  <span className="meal-row-dot" aria-hidden="true" />
+                  <span className="meal-row-body">
+                    <span className="meal-row-n">{entry.food}</span>
+                    <span className="meal-row-meta mono">
+                      {entryMeta(entry) || '—'}
+                    </span>
+                  </span>
+                  <span className="meal-row-k mono">
+                    {Math.round(entry.kcal)}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="meal-row-del"
+                  aria-label="Supprimer"
+                  onClick={() => onDelete(entry)}
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {renderOtherMealsRecap(entries, currentSlot, onSelectSlot)}
-    </div>
+    </>
   );
 }
 
@@ -103,22 +117,21 @@ function renderOtherMealsRecap(
   }).filter((x): x is NonNullable<typeof x> => x !== null);
 
   return (
-    <>
-      <div className="meal-recap-head">Autres repas du jour</div>
-      <div className="meal-recap-list">
-        {others.map((item) => (
-          <button
-            key={item.slot}
-            type="button"
-            className="meal-recap"
-            onClick={() => onSelectSlot(item.slot)}
-          >
-            <span className="meal-recap-n">{item.name}</span>
-            <span className="meal-recap-c">{item.count} items</span>
-            <span className="meal-recap-k">{Math.round(item.kcal)} kcal</span>
-          </button>
-        ))}
-      </div>
-    </>
+    <section className="meal-other">
+      {others.map((item) => (
+        <button
+          key={item.slot}
+          type="button"
+          className="meal-other-row"
+          onClick={() => onSelectSlot(item.slot)}
+        >
+          <span className="meal-other-n">{item.name}</span>
+          <span className="meal-other-c mono">{item.count} items</span>
+          <span className="meal-other-k mono">
+            {Math.round(item.kcal)} kcal
+          </span>
+        </button>
+      ))}
+    </section>
   );
 }

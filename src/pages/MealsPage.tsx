@@ -120,11 +120,11 @@ export default function MealsPage() {
   };
 
   return (
-    <div className="tp active">
+    <div className="tp active meal-tp">
       <DateNavigator date={date} onChange={setDate} />
       <MealDayHero totals={totals} targets={targets} />
 
-      <section className="meal-search-row" style={{ display: 'flex', gap: 8 }}>
+      <section className="meal-search-row">
         <FoodSearchBar onSelect={handleSelectFood} />
         <button
           type="button"
@@ -136,26 +136,22 @@ export default function MealsPage() {
         </button>
       </section>
 
-      <section className="meal-chips">
+      <section className="meal-actions">
         <button
           type="button"
-          className="meal-chip"
+          className="meal-action meal-action-ai"
           onClick={() => setAiOpen(true)}
         >
-          <span className="material-symbols-outlined meal-chip-ico chip-ai">
-            auto_awesome
-          </span>
-          <span>Analyse IA</span>
+          <span className="material-symbols-outlined">auto_awesome</span>
+          Analyse IA
         </button>
         <button
           type="button"
-          className="meal-chip"
+          className="meal-action meal-action-manual"
           onClick={() => setManualOpen(true)}
         >
-          <span className="material-symbols-outlined meal-chip-ico chip-add">
-            add
-          </span>
-          <span>Manuel</span>
+          <span className="material-symbols-outlined">edit</span>
+          Manuel
         </button>
       </section>
 

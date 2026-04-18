@@ -23,11 +23,11 @@ export default function FoodSearchBar({ onSelect }: Props) {
   };
 
   return (
-    <div className="sw meal-sw">
+    <div className="meal-sw">
       <span className="material-symbols-outlined si">search</span>
       <input
         type="text"
-        placeholder="Chercher un aliment..."
+        placeholder="Chercher un aliment…"
         autoComplete="off"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -42,8 +42,7 @@ export default function FoodSearchBar({ onSelect }: Props) {
             >
               <span className="fn">{name}</span>
               <span className="fm mono">
-                {tuple[0]}kcal P{tuple[1]} G{tuple[2]} L{tuple[3]} F
-                {tuple[4] ?? 0}
+                {tuple[0]}kcal · P{tuple[1]} G{tuple[2]} L{tuple[3]}
               </span>
             </div>
           ))}
