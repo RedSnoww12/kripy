@@ -68,10 +68,9 @@ src/
 ├── lib/              # firebase.ts, storage.ts, date.ts (pas de JSX)
 ├── types/            # types TS partagés, re-exportés depuis index.ts
 ├── data/             # constantes & datasets (foods.ts, constants.ts)
-├── styles/           # CSS legacy importé une fois dans main.tsx
+├── styles/           # CSS importé une fois dans main.tsx
 └── test/setup.ts     # matchers jest-dom pour Vitest
 
-legacy/               # ancienne version vanilla, référence de migration (exclue du lint)
 public/icons/         # PWA icons (à fournir en prod)
 ```
 
@@ -248,20 +247,7 @@ Détails complets dans `README.md`. Règles à respecter en codant :
 
 ---
 
-## 12. Migration depuis `legacy/`
-
-Le dossier `legacy/` contient l'app vanilla **intacte**. Quand tu reprends une feature :
-
-1. Ouvre le fichier vanilla correspondant pour comprendre la logique et les clés localStorage utilisées.
-2. Crée le feature React dans `src/features/<domaine>/`.
-3. Utilise le même nom de clé `nt_*` (contrat Firestore).
-4. Écris un test Vitest pour la logique pure (trend, calculs).
-5. Supprime **rien** dans `legacy/` tant que la V2 n'a pas atteint la parité fonctionnelle.
-
----
-
-## 13. En cas de doute
+## 12. En cas de doute
 
 - Checker si la donnée est déjà dans un store Zustand avant d'ajouter un `useEffect` qui lit localStorage.
-- Checker `legacy/js/...` pour voir l'implémentation vanilla de référence.
 - Checker les règles Firestore avant d'ajouter une nouvelle clé `nt_*`.

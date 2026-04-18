@@ -9,6 +9,13 @@ import type {
   UserProfile,
 } from '@/types';
 
+interface OnboardingExtras {
+  name?: string;
+  age?: number;
+  goalWeight?: number;
+  sportSessions?: number;
+}
+
 interface SettingsState {
   height: number;
   startWeight: number;
@@ -19,6 +26,10 @@ interface SettingsState {
   targets: Targets;
   setup: boolean;
   tdeeConfirmed: boolean;
+  name: string;
+  age: number;
+  goalWeight: number;
+  sportSessions: number;
 
   setHeight: (v: number) => void;
   setStartWeight: (v: number) => void;
@@ -27,10 +38,20 @@ interface SettingsState {
   setActivity: (a: ActivityLevel) => void;
   setTheme: (t: Theme) => void;
   setTargets: (t: Targets) => void;
+  setName: (v: string) => void;
+  setAge: (v: number) => void;
+  setGoalWeight: (v: number) => void;
+  setSportSessions: (v: number) => void;
   confirmTdee: () => void;
   completeOnboarding: (profile: UserProfile, targets: Targets) => void;
+  setExtras: (extras: OnboardingExtras) => void;
   rehydrate: () => void;
 }
+
+const DEFAULT_NAME = '';
+const DEFAULT_AGE = 30;
+const DEFAULT_GOAL_WEIGHT = DEFAULT_PROFILE.startWeight;
+const DEFAULT_SPORT_SESSIONS = 0;
 
 function readAll() {
   return {
@@ -49,6 +70,13 @@ function readAll() {
     targets: loadJSON<Targets>(STORAGE_KEYS.targets, DEFAULT_TARGETS),
     setup: loadJSON<boolean>(STORAGE_KEYS.setup, false),
     tdeeConfirmed: loadJSON<boolean>(STORAGE_KEYS.tdeeConfirmed, false),
+    name: loadJSON<string>(STORAGE_KEYS.name, DEFAULT_NAME),
+    age: loadJSON<number>(STORAGE_KEYS.age, DEFAULT_AGE),
+    goalWeight: loadJSON<number>(STORAGE_KEYS.goalWeight, DEFAULT_GOAL_WEIGHT),
+    sportSessions: loadJSON<number>(
+      STORAGE_KEYS.sportSessions,
+      DEFAULT_SPORT_SESSIONS,
+    ),
   };
 }
 
@@ -83,6 +111,22 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     saveJSON(STORAGE_KEYS.targets, t);
     set({ targets: t });
   },
+  setName: (v) => {
+    saveJSON(STORAGE_KEYS.name, v);
+    set({ name: v });
+  },
+  setAge: (v) => {
+    saveJSON(STORAGE_KEYS.age, v);
+    set({ age: v });
+  },
+  setGoalWeight: (v) => {
+    saveJSON(STORAGE_KEYS.goalWeight, v);
+    set({ goalWeight: v });
+  },
+  setSportSessions: (v) => {
+    saveJSON(STORAGE_KEYS.sportSessions, v);
+    set({ sportSessions: v });
+  },
   confirmTdee: () => {
     saveJSON(STORAGE_KEYS.tdeeConfirmed, true);
     set({ tdeeConfirmed: true });
@@ -95,7 +139,36 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     saveJSON(STORAGE_KEYS.activity, profile.activity);
     saveJSON(STORAGE_KEYS.targets, targets);
     saveJSON(STORAGE_KEYS.setup, true);
-    set({ ...profile, targets, setup: true });
+    set({
+      height: profile.height,
+      startWeight: profile.startWeight,
+      phase: profile.phase,
+      stepsGoal: profile.stepsGoal,
+      activity: profile.activity,
+      theme: profile.theme,
+      targets,
+      setup: true,
+    });
+  },
+  setExtras: (extras) => {
+    const patch: Partial<SettingsState> = {};
+    if (extras.name !== undefined) {
+      saveJSON(STORAGE_KEYS.name, extras.name);
+      patch.name = extras.name;
+    }
+    if (extras.age !== undefined) {
+      saveJSON(STORAGE_KEYS.age, extras.age);
+      patch.age = extras.age;
+    }
+    if (extras.goalWeight !== undefined) {
+      saveJSON(STORAGE_KEYS.goalWeight, extras.goalWeight);
+      patch.goalWeight = extras.goalWeight;
+    }
+    if (extras.sportSessions !== undefined) {
+      saveJSON(STORAGE_KEYS.sportSessions, extras.sportSessions);
+      patch.sportSessions = extras.sportSessions;
+    }
+    set(patch as SettingsState);
   },
   rehydrate: () => set(readAll()),
 }));

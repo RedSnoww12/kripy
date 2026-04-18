@@ -242,9 +242,8 @@ kripy/
 │   ├── lib/                # firebase, storage, date
 │   ├── types/              # analysis, nutrition, tracking, user, index
 │   ├── data/               # foods (~500 aliments), constants
-│   ├── styles/             # base, layout, pages, components, legal (CSS legacy)
+│   ├── styles/             # base, layout, pages, components, legal
 │   └── test/setup.ts       # jest-dom matchers pour Vitest
-├── legacy/                 # version vanilla de référence (scrubbed, non bundlée)
 ├── index.html              # shell Vite, entry /src/app/main.tsx
 ├── vite.config.ts          # React + PWA + alias @/ + manual chunks
 ├── vitest.config.ts        # config tests séparée

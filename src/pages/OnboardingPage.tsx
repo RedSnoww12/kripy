@@ -1,138 +1,251 @@
-import { useState, type FormEvent } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import {
-  computeTargetsFromKcal,
-  DEFAULT_PROFILE,
-  PHASE_COLORS,
-  PHASE_DESCRIPTIONS,
-  PHASE_NAMES,
-} from '@/data/constants';
+import { useSessionStore } from '@/store/useSessionStore';
+import { cloudSave } from '@/features/auth/cloudSync';
+import { DEFAULT_PROFILE } from '@/data/constants';
+import { deriveActivity } from '@/features/settings/activityFromInputs';
 import type { Phase } from '@/types';
+import BootScreen from '@/components/onboarding/steps/BootScreen';
+import NameAgeScreen from '@/components/onboarding/steps/NameAgeScreen';
+import WeightScreen from '@/components/onboarding/steps/WeightScreen';
+import HeightScreen from '@/components/onboarding/steps/HeightScreen';
+import ActivityScreen from '@/components/onboarding/steps/ActivityScreen';
+import PhaseScreen from '@/components/onboarding/steps/PhaseScreen';
+import TargetScreen from '@/components/onboarding/steps/TargetScreen';
+import CalibrateScreen from '@/components/onboarding/steps/CalibrateScreen';
+import type { CalibrationResult } from '@/features/settings/calibration';
+import ReadyScreen from '@/components/onboarding/steps/ReadyScreen';
 
-const PHASE_ORDER: readonly Phase[] = ['A', 'B', 'F', 'C', 'D', 'E'];
+const ONB_STEPS = [
+  'boot',
+  'name',
+  'weight',
+  'height',
+  'activity',
+  'phase',
+  'target',
+  'calibrate',
+  'ready',
+] as const;
+type StepKey = (typeof ONB_STEPS)[number];
+
+interface OnbData {
+  name: string;
+  age: number;
+  weight: number;
+  height: number;
+  steps: number;
+  sport: number;
+  phase: Phase;
+  targetWeight: number;
+}
+
+const INITIAL_DATA: OnbData = {
+  name: '',
+  age: 28,
+  weight: 75.0,
+  height: 178,
+  steps: 8000,
+  sport: 3,
+  phase: DEFAULT_PROFILE.phase,
+  targetWeight: 75.0,
+};
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
   const completeOnboarding = useSettingsStore((s) => s.completeOnboarding);
+  const setExtras = useSettingsStore((s) => s.setExtras);
+  const confirmTdee = useSettingsStore((s) => s.confirmTdee);
+  const user = useSessionStore((s) => s.user);
 
-  const [weight, setWeight] = useState(String(DEFAULT_PROFILE.startWeight));
-  const [height, setHeight] = useState(String(DEFAULT_PROFILE.height));
-  const [kcal, setKcal] = useState('2200');
-  const [phase, setPhase] = useState<Phase>(DEFAULT_PROFILE.phase);
+  const [stepIdx, setStepIdx] = useState(0);
+  const [data, setData] = useState<OnbData>(INITIAL_DATA);
+  const [calibration, setCalibration] = useState<CalibrationResult | null>(
+    null,
+  );
 
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault();
+  const total = ONB_STEPS.length;
+  const stepKey: StepKey = ONB_STEPS[stepIdx];
+  const next = () => setStepIdx((i) => Math.min(total - 1, i + 1));
+  const back = () => setStepIdx((i) => Math.max(0, i - 1));
 
-    const w =
-      parseFloat(weight.replace(',', '.')) || DEFAULT_PROFILE.startWeight;
-    const h = parseInt(height, 10) || DEFAULT_PROFILE.height;
-    const k = parseInt(kcal, 10) || 2200;
-    const targets = computeTargetsFromKcal(k, w);
+  const patch = useCallback(<K extends keyof OnbData>(k: K, v: OnbData[K]) => {
+    setData((d) => ({ ...d, [k]: v }));
+  }, []);
 
+  const finalize = useCallback(async () => {
+    if (!calibration) return;
+    const activity = deriveActivity(data.steps, data.sport);
+    const targets = {
+      kcal: calibration.kcal,
+      prot: calibration.prot,
+      gluc: calibration.gluc,
+      lip: calibration.lip,
+      fib: calibration.fib,
+    };
     completeOnboarding(
       {
-        height: h,
-        startWeight: w,
-        phase,
-        stepsGoal: DEFAULT_PROFILE.stepsGoal,
-        activity: DEFAULT_PROFILE.activity,
+        height: data.height,
+        startWeight: data.weight,
+        phase: data.phase,
+        stepsGoal: data.steps,
+        activity,
         theme: DEFAULT_PROFILE.theme,
       },
       targets,
     );
+    setExtras({
+      name: data.name.trim(),
+      age: data.age,
+      goalWeight: data.targetWeight,
+      sportSessions: data.sport,
+    });
+    confirmTdee();
+
+    if (user) {
+      try {
+        await cloudSave(user);
+      } catch (e) {
+        console.warn('cloudSave after onboarding failed', e);
+      }
+    }
 
     navigate('/', { replace: true });
-  };
+  }, [
+    calibration,
+    completeOnboarding,
+    confirmTdee,
+    data,
+    navigate,
+    setExtras,
+    user,
+  ]);
+
+  let body: React.ReactNode;
+  switch (stepKey) {
+    case 'boot':
+      body = <BootScreen onDone={next} />;
+      break;
+    case 'name':
+      body = (
+        <NameAgeScreen
+          step={stepIdx}
+          total={total}
+          name={data.name}
+          setName={(v) => patch('name', v)}
+          age={data.age}
+          setAge={(v) => patch('age', v)}
+          onNext={next}
+          onBack={back}
+        />
+      );
+      break;
+    case 'weight':
+      body = (
+        <WeightScreen
+          step={stepIdx}
+          total={total}
+          value={data.weight}
+          setValue={(v) =>
+            setData((d) => ({
+              ...d,
+              weight: v,
+              targetWeight:
+                Math.abs(d.targetWeight - d.weight) < 0.01 ? v : d.targetWeight,
+            }))
+          }
+          onNext={next}
+          onBack={back}
+        />
+      );
+      break;
+    case 'height':
+      body = (
+        <HeightScreen
+          step={stepIdx}
+          total={total}
+          value={data.height}
+          setValue={(v) => patch('height', v)}
+          onNext={next}
+          onBack={back}
+        />
+      );
+      break;
+    case 'activity':
+      body = (
+        <ActivityScreen
+          step={stepIdx}
+          total={total}
+          steps={data.steps}
+          setSteps={(v) => patch('steps', v)}
+          sport={data.sport}
+          setSport={(v) => patch('sport', v)}
+          onNext={next}
+          onBack={back}
+        />
+      );
+      break;
+    case 'phase':
+      body = (
+        <PhaseScreen
+          step={stepIdx}
+          total={total}
+          value={data.phase}
+          setValue={(v) => patch('phase', v)}
+          onNext={next}
+          onBack={back}
+        />
+      );
+      break;
+    case 'target':
+      body = (
+        <TargetScreen
+          step={stepIdx}
+          total={total}
+          value={data.targetWeight}
+          setValue={(v) => patch('targetWeight', v)}
+          currentWeight={data.weight}
+          phase={data.phase}
+          onNext={next}
+          onBack={back}
+        />
+      );
+      break;
+    case 'calibrate':
+      body = (
+        <CalibrateScreen
+          step={stepIdx}
+          total={total}
+          data={data}
+          onNext={(result) => {
+            setCalibration(result);
+            next();
+          }}
+          onBack={back}
+        />
+      );
+      break;
+    case 'ready':
+      body = (
+        <ReadyScreen
+          name={data.name}
+          phase={data.phase}
+          kcal={calibration?.kcal ?? 0}
+          targetWeight={data.targetWeight}
+          onNext={() => {
+            void finalize();
+          }}
+        />
+      );
+      break;
+  }
 
   return (
-    <form className="ob" onSubmit={handleSubmit}>
-      <div className="brand brand-g" style={{ fontSize: '1.8rem' }}>
-        Kripy
+    <div className="onb-root">
+      <div key={stepKey} className="onb-screen">
+        {body}
       </div>
-      <p>Configure tes objectifs</p>
-
-      <div className="ob-f">
-        <label htmlFor="obW">Poids cible (kg)</label>
-        <p
-          style={{
-            margin: '-2px 0 8px',
-            fontSize: '.68rem',
-            color: 'var(--t3)',
-            fontWeight: 500,
-          }}
-        >
-          Le poids que tu veux atteindre — sert de référence pour l'objectif.
-        </p>
-        <input
-          id="obW"
-          className="inp"
-          type="text"
-          inputMode="decimal"
-          value={weight}
-          onChange={(e) => setWeight(e.target.value)}
-          placeholder="70"
-        />
-
-        <label htmlFor="obH">Taille (cm)</label>
-        <input
-          id="obH"
-          className="inp"
-          type="number"
-          inputMode="numeric"
-          value={height}
-          onChange={(e) => setHeight(e.target.value)}
-          placeholder="175"
-        />
-
-        <label htmlFor="obK">Calories</label>
-        <input
-          id="obK"
-          className="inp"
-          type="number"
-          inputMode="numeric"
-          value={kcal}
-          onChange={(e) => setKcal(e.target.value)}
-          placeholder="2200"
-        />
-
-        <label>Quel est ton objectif&nbsp;?</label>
-        <div className="set-ph-grid" role="radiogroup" aria-label="Phase">
-          {PHASE_ORDER.map((key) => {
-            const color = PHASE_COLORS[key];
-            const selected = key === phase;
-            return (
-              <button
-                key={key}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                className={`set-ph-card${selected ? ' sel' : ''}`}
-                style={{ ['--ph-color' as string]: color }}
-                onClick={() => setPhase(key)}
-              >
-                <span className="ph-letter">{key}</span>
-                <span className="ph-name">{PHASE_NAMES[key]}</span>
-                <span className="ph-desc">{PHASE_DESCRIPTIONS[key]}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <button
-        type="submit"
-        className="btn btn-p"
-        style={{
-          width: '100%',
-          maxWidth: 360,
-          padding: 14,
-          fontSize: '.92rem',
-          marginTop: 22,
-        }}
-      >
-        C'est parti
-      </button>
-    </form>
+    </div>
   );
 }

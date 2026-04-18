@@ -541,3 +541,206 @@
     animation: none !important;
   }
 }
+
+/* ── Toasts: Kinetic Lab terminal-push ───────────────────────── */
+.kripy-toast-root {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  padding: max(14px, env(safe-area-inset-top)) var(--gutter) 0;
+  z-index: 500;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.kripy-toast {
+  pointer-events: auto;
+  position: relative;
+  background: var(--s1);
+  color: var(--t1);
+  border: 1px solid var(--outline-variant);
+  border-left: 2px solid var(--toast-color);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px var(--outline-variant),
+    0 0 24px color-mix(in srgb, var(--toast-color) 13%, transparent);
+  cursor: pointer;
+  transform: translateY(-24px) scale(0.94);
+  opacity: 0;
+  transition:
+    transform 0.42s cubic-bezier(0.2, 1.25, 0.3, 1),
+    opacity 0.28s;
+  will-change: transform, opacity;
+}
+.kripy-toast--in {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.kripy-toast--leaving {
+  transform: translateY(-12px) scale(0.96);
+  opacity: 0;
+  transition:
+    transform 0.32s cubic-bezier(0.55, 0, 0.8, 0.5),
+    opacity 0.32s;
+}
+[data-theme='light'] .kripy-toast {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    0 0 0 1px var(--outline-variant),
+    0 0 24px color-mix(in srgb, var(--toast-color) 13%, transparent);
+}
+
+.kripy-toast-tint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 0% 0%,
+    var(--toast-tint) 0%,
+    transparent 55%
+  );
+}
+.kripy-toast-scanline {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background: linear-gradient(
+    color-mix(in srgb, var(--toast-color) 0%, transparent) 50%,
+    color-mix(in srgb, var(--toast-color) 9%, transparent) 50%
+  );
+  background-size: 100% 4px;
+  transition: opacity 0.4s ease-out;
+}
+.kripy-toast--in .kripy-toast-scanline {
+  opacity: 0;
+}
+
+.kripy-toast-row {
+  position: relative;
+  padding: 10px 12px 9px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.kripy-toast-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 2px;
+  min-width: 20px;
+}
+.kripy-toast-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 6px;
+  background: var(--toast-color);
+  box-shadow:
+    0 0 6px var(--toast-color),
+    0 0 12px color-mix(in srgb, var(--toast-color) 40%, transparent);
+}
+.kripy-toast-led--pulse {
+  animation: toastPulse 1.2s ease-in-out infinite;
+}
+.kripy-toast-sym {
+  font-size: 15px !important;
+  color: var(--toast-color);
+  line-height: 1;
+}
+.kripy-toast-text {
+  flex: 1;
+  min-width: 0;
+}
+.kripy-toast-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+.kripy-toast-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--toast-color);
+}
+.kripy-toast-ts {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 9px;
+  color: var(--t3);
+  letter-spacing: 0.04em;
+}
+.kripy-toast-meta {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--t3);
+}
+.kripy-toast-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--t1);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kripy-toast-body {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--t2);
+  margin-top: 2px;
+  line-height: 1.35;
+}
+.kripy-toast-action {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--toast-color);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--toast-color) 33%, transparent);
+  border-radius: 6px;
+  padding: 5px 8px;
+  cursor: pointer;
+  align-self: center;
+  white-space: nowrap;
+}
+.kripy-toast-edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: color-mix(in srgb, var(--toast-color) 13%, transparent);
+}
+.kripy-toast-edge-fill {
+  height: 100%;
+  background: var(--toast-color);
+  box-shadow: 0 0 6px var(--toast-color);
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kripy-toast {
+    transition: opacity 0.2s !important;
+    transform: none !important;
+  }
+  .kripy-toast-led--pulse {
+    animation: none !important;
+  }
+}

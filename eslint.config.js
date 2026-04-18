@@ -9,7 +9,6 @@ export default tseslint.config(
   {
     ignores: [
       'dist',
-      'legacy',
       'coverage',
       'node_modules',
       '.yarn',

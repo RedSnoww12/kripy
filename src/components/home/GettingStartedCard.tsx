@@ -12,31 +12,20 @@ interface Props {
   onWeighIn: () => void;
   hasWeight: boolean;
   hasMeal: boolean;
-  hasTdee: boolean;
 }
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 2;
 
 export default function GettingStartedCard({
   onWeighIn,
   hasWeight,
   hasMeal,
-  hasTdee,
 }: Props) {
   const navigate = useNavigate();
 
-  const checkedCount = Number(hasTdee) + Number(hasWeight) + Number(hasMeal);
+  const checkedCount = Number(hasWeight) + Number(hasMeal);
 
   const actions: Action[] = [
-    {
-      icon: 'calculate',
-      title: 'Configurer mes calories',
-      sub: hasTdee
-        ? 'TDEE et macros enregistrés \u2014 nickel'
-        : 'Calcule ton TDEE et applique tes cibles',
-      onClick: () => navigate('/settings#tdee'),
-      done: hasTdee,
-    },
     {
       icon: 'monitor_weight',
       title: 'Me peser',

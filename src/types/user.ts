@@ -16,6 +16,10 @@ export interface UserProfile {
   stepsGoal: number;
   activity: ActivityLevel;
   theme: Theme;
+  name?: string;
+  age?: number;
+  goalWeight?: number;
+  sportSessions?: number;
 }
 
 export interface AuthUser {
