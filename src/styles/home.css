@@ -50,10 +50,10 @@
   animation: klPulse 2s infinite;
 }
 .kl-head-hi {
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
-  font-size: 1.6rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   line-height: 1;
   color: var(--t1);
   margin: 0;
@@ -65,17 +65,14 @@
   text-overflow: ellipsis;
 }
 .kl-head-name {
-  background: var(--grad-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--acc);
 }
 .kl-head-sub {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--t2);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
   margin-top: 4px;
 }
 .kl-head-pill {
@@ -186,7 +183,7 @@
 .kl-hero-sub {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--t2);
   margin-top: 2px;
 }
@@ -246,7 +243,7 @@
 .kl-hero-ring-val {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
-  font-size: 52px;
+  font-size: 54px;
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.03em;
@@ -712,7 +709,7 @@
   color: #0a1410;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
