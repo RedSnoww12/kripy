@@ -7,12 +7,12 @@ export default function ProfileCard() {
   const height = useSettingsStore((s) => s.height);
   const stepsGoal = useSettingsStore((s) => s.stepsGoal);
   const activity = useSettingsStore((s) => s.activity);
-  const startWeight = useSettingsStore((s) => s.startWeight);
+  const goalWeight = useSettingsStore((s) => s.goalWeight);
 
   const setHeight = useSettingsStore((s) => s.setHeight);
   const setStepsGoal = useSettingsStore((s) => s.setStepsGoal);
   const setActivity = useSettingsStore((s) => s.setActivity);
-  const setStartWeight = useSettingsStore((s) => s.setStartWeight);
+  const setGoalWeight = useSettingsStore((s) => s.setGoalWeight);
 
   const weights = useTrackingStore((s) => s.weights);
   const latestWeight = weights.length ? weights[weights.length - 1].w : null;
@@ -77,10 +77,10 @@ export default function ProfileCard() {
           type="text"
           inputMode="decimal"
           className="set-in set-in-num"
-          value={startWeight}
+          value={goalWeight}
           onChange={(e) => {
             const parsed = parseFloat(e.target.value.replace(',', '.'));
-            if (Number.isFinite(parsed)) setStartWeight(parsed);
+            if (Number.isFinite(parsed)) setGoalWeight(parsed);
           }}
         />
       </div>

@@ -2,9 +2,11 @@ import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useSessionStore } from '@/store/useSessionStore';
+import { useTrackingStore } from '@/store/useTrackingStore';
 import { cloudSave } from '@/features/auth/cloudSync';
 import { DEFAULT_PROFILE } from '@/data/constants';
 import { deriveActivity } from '@/features/settings/activityFromInputs';
+import { todayISO } from '@/lib/date';
 import type { Phase } from '@/types';
 import BootScreen from '@/components/onboarding/steps/BootScreen';
 import NameAgeScreen from '@/components/onboarding/steps/NameAgeScreen';
@@ -58,6 +60,8 @@ export default function OnboardingPage() {
   const setExtras = useSettingsStore((s) => s.setExtras);
   const confirmTdee = useSettingsStore((s) => s.confirmTdee);
   const user = useSessionStore((s) => s.user);
+  const addWeight = useTrackingStore((s) => s.addWeight);
+  const trackedWeights = useTrackingStore((s) => s.weights);
 
   const [stepIdx, setStepIdx] = useState(0);
   const [data, setData] = useState<OnbData>(INITIAL_DATA);
@@ -101,6 +105,15 @@ export default function OnboardingPage() {
       goalWeight: data.targetWeight,
       sportSessions: data.sport,
     });
+    const today = todayISO();
+    if (!trackedWeights.some((w) => w.date === today)) {
+      addWeight({
+        date: today,
+        w: data.weight,
+        tgKcal: calibration.kcal,
+        phase: data.phase,
+      });
+    }
     confirmTdee();
 
     if (user) {
@@ -113,12 +126,14 @@ export default function OnboardingPage() {
 
     navigate('/', { replace: true });
   }, [
+    addWeight,
     calibration,
     completeOnboarding,
     confirmTdee,
     data,
     navigate,
     setExtras,
+    trackedWeights,
     user,
   ]);
 
