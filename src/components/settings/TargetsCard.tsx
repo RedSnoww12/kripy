@@ -8,16 +8,12 @@ import {
 import { MACRO_COLORS } from '@/features/analysis/charts/chartDefaults';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { toast } from '@/components/ui/toastStore';
+import NumInput from '@/components/ui/NumInput';
 import type { Targets } from '@/types';
 import MacroPreviewPanel from './MacroPreviewPanel';
 import SettingsSection from './SettingsSection';
 
 const DEFAULT_PCT: MacroPercentages = { p: 30, g: 40, l: 30 };
-
-function numberOrZero(value: string): number {
-  const n = parseInt(value, 10);
-  return Number.isFinite(n) ? n : 0;
-}
 
 export default function TargetsCard() {
   const storeTargets = useSettingsStore((s) => s.targets);
@@ -58,13 +54,11 @@ export default function TargetsCard() {
       <div className="set-f">
         <label htmlFor="sK">Calories cibles</label>
         <div className="set-kcal-wrap">
-          <input
+          <NumInput
             id="sK"
-            type="number"
-            inputMode="numeric"
             className="set-kcal-in"
             value={draft.kcal}
-            onChange={(e) => patch({ kcal: numberOrZero(e.target.value) })}
+            onCommit={(v) => patch({ kcal: v })}
           />
           <span className="set-kcal-u">KCAL</span>
         </div>
@@ -96,32 +90,23 @@ export default function TargetsCard() {
       <div className="set-f">
         <label>Répartition manuelle (%)</label>
         <div className="set-pct-row">
-          <input
-            type="number"
-            inputMode="numeric"
+          <NumInput
             className="set-in set-in-num set-pct-in"
             value={pct.p}
-            onChange={(e) =>
-              setPct((p) => ({ ...p, p: numberOrZero(e.target.value) }))
-            }
+            onCommit={(v) => setPct((p) => ({ ...p, p: v }))}
+            allowZero
           />
-          <input
-            type="number"
-            inputMode="numeric"
+          <NumInput
             className="set-in set-in-num set-pct-in"
             value={pct.g}
-            onChange={(e) =>
-              setPct((p) => ({ ...p, g: numberOrZero(e.target.value) }))
-            }
+            onCommit={(v) => setPct((p) => ({ ...p, g: v }))}
+            allowZero
           />
-          <input
-            type="number"
-            inputMode="numeric"
+          <NumInput
             className="set-in set-in-num set-pct-in"
             value={pct.l}
-            onChange={(e) =>
-              setPct((p) => ({ ...p, l: numberOrZero(e.target.value) }))
-            }
+            onCommit={(v) => setPct((p) => ({ ...p, l: v }))}
+            allowZero
           />
           <button
             type="button"
@@ -208,12 +193,11 @@ function MacroInput({ label, color, value, onChange }: MacroInputProps) {
       >
         <span />
       </div>
-      <input
-        type="number"
-        inputMode="numeric"
+      <NumInput
         className="set-macro-in"
         value={value}
-        onChange={(e) => onChange(numberOrZero(e.target.value))}
+        onCommit={onChange}
+        allowZero
       />
       <p className="set-macro-l">{label}</p>
     </div>

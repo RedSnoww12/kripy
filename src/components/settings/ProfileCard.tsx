@@ -1,6 +1,7 @@
 import { ACTIVITY_LEVELS } from '@/data/constants';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useTrackingStore } from '@/store/useTrackingStore';
+import NumInput from '@/components/ui/NumInput';
 import SettingsSection from './SettingsSection';
 
 export default function ProfileCard() {
@@ -22,13 +23,11 @@ export default function ProfileCard() {
       <div className="set-grid-3">
         <div className="set-f">
           <label htmlFor="sH">Taille (cm)</label>
-          <input
+          <NumInput
             id="sH"
-            type="number"
-            inputMode="numeric"
             className="set-in set-in-num"
             value={height}
-            onChange={(e) => setHeight(parseInt(e.target.value, 10) || 0)}
+            onCommit={setHeight}
           />
         </div>
         <div className="set-f">
@@ -45,13 +44,11 @@ export default function ProfileCard() {
         </div>
         <div className="set-f">
           <label htmlFor="sSt">Pas / jour</label>
-          <input
+          <NumInput
             id="sSt"
-            type="number"
-            inputMode="numeric"
             className="set-in set-in-num"
             value={stepsGoal}
-            onChange={(e) => setStepsGoal(parseInt(e.target.value, 10) || 0)}
+            onCommit={setStepsGoal}
           />
         </div>
       </div>
@@ -72,16 +69,12 @@ export default function ProfileCard() {
       </div>
       <div className="set-f">
         <label htmlFor="sPW">Poids objectif (kg)</label>
-        <input
+        <NumInput
           id="sPW"
-          type="text"
-          inputMode="decimal"
           className="set-in set-in-num"
           value={goalWeight}
-          onChange={(e) => {
-            const parsed = parseFloat(e.target.value.replace(',', '.'));
-            if (Number.isFinite(parsed)) setGoalWeight(parsed);
-          }}
+          onCommit={setGoalWeight}
+          decimal
         />
       </div>
     </SettingsSection>
