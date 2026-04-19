@@ -121,7 +121,7 @@ export default function WeightScreen({
           justifyContent: 'center',
         }}
       >
-        {[-1, -0.1, +0.1, +1].map((d) => (
+        {[-1, -0.5, -0.1, +0.1, +0.5, +1].map((d) => (
           <button
             type="button"
             key={d}

@@ -168,7 +168,7 @@ export default function HeightScreen({
               textShadow: `0 0 24px color-mix(in srgb, var(--acc) 20%, transparent)`,
             }}
           >
-            {value}
+            {value.toFixed(1)}
             <span
               style={{
                 fontSize: 18,
@@ -188,10 +188,45 @@ export default function HeightScreen({
           min={140}
           max={210}
           value={value}
-          onChange={(v) => setValue(Math.round(v))}
-          step={1}
+          onChange={(v) => setValue(+(Math.round(v * 2) / 2).toFixed(1))}
+          step={0.5}
           unit="cm"
         />
+      </div>
+
+      <div
+        style={{
+          ...onbFadeUp(3),
+          marginTop: 16,
+          display: 'flex',
+          gap: 8,
+          justifyContent: 'center',
+        }}
+      >
+        {[-1, -0.5, +0.5, +1].map((d) => (
+          <button
+            type="button"
+            key={d}
+            onClick={() =>
+              setValue(+Math.max(140, Math.min(210, value + d)).toFixed(1))
+            }
+            style={{
+              flex: 1,
+              padding: '10px 0',
+              background: T.s1,
+              border: `1px solid ${T.outline}`,
+              borderRadius: 10,
+              color: d < 0 ? T.pnk : T.grn,
+              cursor: 'pointer',
+              ...mono,
+              fontSize: 11,
+              fontWeight: 700,
+            }}
+          >
+            {d > 0 ? '+' : ''}
+            {d}
+          </button>
+        ))}
       </div>
       <div style={{ height: 20 }} />
     </OnbLayout>

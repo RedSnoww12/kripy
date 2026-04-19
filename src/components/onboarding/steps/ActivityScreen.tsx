@@ -122,8 +122,11 @@ export default function ActivityScreen({
           step={500}
         />
         <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
-          {STEP_PRESETS.map((p) => {
-            const on = Math.abs(steps - p.v) < 500;
+          {STEP_PRESETS.map((p, i) => {
+            const isLast = i === STEP_PRESETS.length - 1;
+            const on = isLast
+              ? steps >= p.v - 500
+              : Math.abs(steps - p.v) < 500;
             return (
               <button
                 type="button"
