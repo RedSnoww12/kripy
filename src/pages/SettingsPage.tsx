@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import AccountCard from '@/components/settings/AccountCard';
 import AiKeyCard from '@/components/settings/AiKeyCard';
 import DataCard from '@/components/settings/DataCard';
+import FeedbackCard from '@/components/settings/FeedbackCard';
 import ImportCard from '@/components/settings/ImportCard';
 import PhaseCard from '@/components/settings/PhaseCard';
 import ProfileCard from '@/components/settings/ProfileCard';
@@ -39,6 +40,7 @@ export default function SettingsPage() {
       <AiKeyCard />
       <ImportCard />
       <DataCard />
+      <FeedbackCard />
     </div>
   );
 }
