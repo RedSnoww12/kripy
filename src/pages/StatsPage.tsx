@@ -3,6 +3,7 @@ import WeightStatsGrid from '@/components/stats/WeightStatsGrid';
 import WeightChart from '@/components/charts/WeightChart';
 import PalierChart from '@/components/charts/PalierChart';
 import PhaseChart from '@/components/charts/PhaseChart';
+import PhaseComparisonChart from '@/components/charts/PhaseComparisonChart';
 import KcalBalanceChart from '@/components/charts/KcalBalanceChart';
 import CalorieSummary from '@/components/stats/CalorieSummary';
 import MacroDonutChart from '@/components/charts/MacroDonutChart';
@@ -119,6 +120,19 @@ export default function StatsPage() {
           </div>
         </div>
         <PhaseChart />
+      </section>
+
+      <section className="stat-card">
+        <div className="stat-card-head">
+          <div className="stat-card-title">
+            <h3>
+              <span className="stat-dot" style={{ background: 'var(--pur)' }} />
+              Comparaison phases
+            </h3>
+            <p>Superposition des segments · delta depuis J0</p>
+          </div>
+        </div>
+        <PhaseComparisonChart />
       </section>
 
       <section className="stat-card">

@@ -1,6 +1,7 @@
 import type { Phase, WeightEntry } from '@/types';
 import { formatShortDate } from '@/lib/date';
 import { linReg, type LinRegPoint } from '../trend';
+import { currentPhaseSegment } from '../phaseSegments';
 import { CHART_TOKENS } from './chartDefaults';
 
 const MS_PER_DAY = 86_400_000;
@@ -49,14 +50,14 @@ export function selectPhaseWeights(
   phase: Phase,
   currentKcal: number,
 ): EnrichedPoint[] {
-  return weights
-    .filter((e) => (typeof e.phase === 'string' ? e.phase === phase : true))
-    .map((e) => ({
-      date: e.date,
-      w: e.w,
-      tgKcal:
-        typeof e.tgKcal === 'number' && e.tgKcal > 0 ? e.tgKcal : currentKcal,
-    }));
+  const segment = currentPhaseSegment(weights, phase);
+  if (!segment) return [];
+  return segment.entries.map((e) => ({
+    date: e.date,
+    w: e.w,
+    tgKcal:
+      typeof e.tgKcal === 'number' && e.tgKcal > 0 ? e.tgKcal : currentKcal,
+  }));
 }
 
 export function buildPhaseChartData({

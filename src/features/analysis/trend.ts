@@ -14,6 +14,7 @@ import type {
   WeightStats,
 } from '@/types';
 import { palierDays } from './palier';
+import { currentPhaseSegment } from './phaseSegments';
 
 interface EnrichedWeight extends WeightEntry {
   tgKcal: number;
@@ -267,10 +268,11 @@ export function phaseTrend(deps: PhaseTrendDeps): PhaseTrendResult | null {
   const { weights, phase, currentKcal, log } = deps;
   if (!weights.length) return null;
 
+  const segment = currentPhaseSegment(weights, phase);
+  if (!segment) return null;
+
   const defaults = { tgKcal: currentKcal, phase };
-  const matched = weights
-    .filter((e) => (typeof e.phase === 'string' ? e.phase === phase : true))
-    .map((e) => enrichWeight(e, defaults, log));
+  const matched = segment.entries.map((e) => enrichWeight(e, defaults, log));
 
   if (matched.length < 2) return { count: matched.length, phase };
 

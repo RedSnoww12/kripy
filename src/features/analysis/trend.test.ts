@@ -143,6 +143,28 @@ describe('phaseTrend', () => {
     expect(r?.count).toBe(2);
     expect(r?.totalChange).toBe(-2);
   });
+
+  it('ignores older phase segments and uses only the current phase run', () => {
+    const weights: WeightEntry[] = [
+      { date: '2026-03-01', w: 70.0, phase: 'F', tgKcal: 2400 },
+      { date: '2026-03-05', w: 70.5, phase: 'F', tgKcal: 2400 },
+      { date: '2026-03-10', w: 71.0, phase: 'F', tgKcal: 2400 },
+      { date: '2026-03-12', w: 70.8, phase: 'B', tgKcal: 2200 },
+      { date: '2026-03-20', w: 69.0, phase: 'B', tgKcal: 2200 },
+      { date: '2026-04-01', w: 69.2, phase: 'F', tgKcal: 2400 },
+      { date: '2026-04-05', w: 69.6, phase: 'F', tgKcal: 2400 },
+    ];
+    const r = phaseTrend({
+      weights,
+      phase: 'F',
+      currentKcal: 2400,
+      log: {},
+    });
+    expect(r?.count).toBe(2);
+    expect(r?.startDate).toBe('2026-04-01');
+    expect(r?.endDate).toBe('2026-04-05');
+    expect(r?.totalChange).toBe(0.4);
+  });
 });
 
 describe('weightStats', () => {
