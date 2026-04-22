@@ -65,6 +65,7 @@ export const STORAGE_KEYS = {
   goalWeight: 'nt_goal_w',
   sportSessions: 'nt_sport_freq',
   sex: 'nt_sex',
+  weightSkipped: 'nt_weight_skipped',
 } as const;
 
 export const SYNC_KEYS: readonly string[] = [
@@ -92,4 +93,5 @@ export const SYNC_KEYS: readonly string[] = [
   STORAGE_KEYS.goalWeight,
   STORAGE_KEYS.sportSessions,
   STORAGE_KEYS.sex,
+  STORAGE_KEYS.weightSkipped,
 ];

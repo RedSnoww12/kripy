@@ -665,6 +665,58 @@
   transform: scale(0.96);
   filter: brightness(0.94);
 }
+.kl-weight-skip {
+  height: 36px;
+  padding: 0 14px;
+  background: var(--redG);
+  border: none;
+  border-radius: 10px;
+  color: var(--red);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    filter var(--dur-fast) var(--ease-out);
+}
+.kl-weight-skip:active {
+  transform: scale(0.96);
+  filter: brightness(0.92);
+}
+.kl-weight-skipped {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  height: 36px;
+  padding: 0 14px;
+  background: var(--redG);
+  border-radius: 10px;
+}
+.kl-weight-skipped-msg {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--red);
+  letter-spacing: 0.06em;
+}
+.kl-weight-skipped-undo {
+  background: transparent;
+  border: none;
+  color: var(--t2);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.kl-weight-skipped-undo:hover {
+  color: var(--t1);
+}
 
 /* ── Analysis card ───────────────────────────────────── */
 .kl-analysis {

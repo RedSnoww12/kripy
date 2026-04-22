@@ -91,6 +91,9 @@ function Sparkline({ data, goal }: SparkProps) {
 export default function WeightCard() {
   const weights = useTrackingStore((s) => s.weights);
   const setWeights = useTrackingStore((s) => s.setWeights);
+  const weightSkipped = useTrackingStore((s) => s.weightSkipped);
+  const skipWeightForDate = useTrackingStore((s) => s.skipWeightForDate);
+  const unskipWeightForDate = useTrackingStore((s) => s.unskipWeightForDate);
   const targets = useSettingsStore((s) => s.targets);
   const phase = useSettingsStore((s) => s.phase);
   const goalWeight = useSettingsStore((s) => s.goalWeight);
@@ -99,6 +102,7 @@ export default function WeightCard() {
 
   const today = todayISO();
   const todayEntry = weights.find((x) => x.date === today);
+  const isSkippedToday = weightSkipped.includes(today);
   const [value, setValue] = useState<string>(
     todayEntry ? String(todayEntry.w) : '',
   );
@@ -136,9 +140,20 @@ export default function WeightCard() {
       (a, b) => a.date.localeCompare(b.date),
     );
     setWeights(next);
+    if (isSkippedToday) unskipWeightForDate(today);
     extendPalier(today, targets.kcal, phase);
     recomputePalier(targets.kcal, phase, next);
     toast(`Poids ${entry.w} kg enregistré`, 'success');
+  };
+
+  const handleSkip = () => {
+    skipWeightForDate(today);
+    setValue('');
+    toast('Ok, passé pour aujourd’hui', 'success');
+  };
+
+  const handleUnskip = () => {
+    unskipWeightForDate(today);
   };
 
   const deltaColor =
@@ -178,23 +193,47 @@ export default function WeightCard() {
       <div className="kl-weight-chart">
         <Sparkline data={sparkData} goal={goalWeight} />
       </div>
-      <form className="kl-weight-form" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          inputMode="decimal"
-          className="kl-weight-input"
-          value={value}
-          onChange={(e) => setValue(sanitizeDecimal(e.target.value))}
-          placeholder="Nouveau poids..."
-        />
-        <button
-          type="submit"
-          className="kl-weight-log"
-          aria-label="Valider poids"
-        >
-          LOG
-        </button>
-      </form>
+      {isSkippedToday && !todayEntry ? (
+        <div className="kl-weight-skipped" role="status">
+          <span className="kl-weight-skipped-msg">
+            Pesée passée pour aujourd’hui
+          </span>
+          <button
+            type="button"
+            className="kl-weight-skipped-undo"
+            onClick={handleUnskip}
+          >
+            Annuler
+          </button>
+        </div>
+      ) : (
+        <form className="kl-weight-form" onSubmit={handleSubmit}>
+          <input
+            type="text"
+            inputMode="decimal"
+            className="kl-weight-input"
+            value={value}
+            onChange={(e) => setValue(sanitizeDecimal(e.target.value))}
+            placeholder="Nouveau poids..."
+          />
+          <button
+            type="submit"
+            className="kl-weight-log"
+            aria-label="Valider poids"
+          >
+            LOG
+          </button>
+          <button
+            type="button"
+            className="kl-weight-skip"
+            onClick={handleSkip}
+            aria-label="Je ne peux pas me peser aujourd’hui"
+            title="Je ne peux pas me peser aujourd’hui"
+          >
+            PASS
+          </button>
+        </form>
+      )}
     </section>
   );
 }
