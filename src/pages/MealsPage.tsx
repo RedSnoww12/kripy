@@ -20,7 +20,7 @@ import { toast } from '@/components/ui/toastStore';
 import { todayISO } from '@/lib/date';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import type { FoodTuple, MealEntry, MealSlot } from '@/types';
+import type { FoodTuple, MealEntry, MealEntryUnit, MealSlot } from '@/types';
 
 type EditingState =
   | { mode: 'create'; food: string; tuple: FoodTuple }
@@ -37,6 +37,7 @@ export default function MealsPage() {
   const targets = useSettingsStore((s) => s.targets);
   const log = useNutritionStore((s) => s.log);
   const recipes = useNutritionStore((s) => s.recipes);
+  const recipePortions = useNutritionStore((s) => s.recipePortions);
   const barcodes = useNutritionStore((s) => s.barcodes);
   const addMealEntry = useNutritionStore((s) => s.addMealEntry);
   const removeMealEntry = useNutritionStore((s) => s.removeMealEntry);
@@ -59,15 +60,26 @@ export default function MealsPage() {
     setEditing({ mode: 'update', entry, tuple });
   };
 
-  const handleConfirmQty = (qty: number) => {
+  const handleConfirmQty = (qty: number, unit?: MealEntryUnit) => {
     if (!editing) return;
     if (editing.mode === 'create') {
-      const entry = computeMealEntry(editing.food, editing.tuple, qty, slot);
+      const entry = computeMealEntry(
+        editing.food,
+        editing.tuple,
+        qty,
+        slot,
+        unit,
+      );
       addMealEntry(date, entry);
       pushRecent(editing.food);
       toast(`${editing.food} ajouté`, 'success');
     } else {
-      const updated = applyQtyChange(editing.entry, editing.tuple, qty);
+      const updated = applyQtyChange(
+        editing.entry,
+        editing.tuple,
+        qty,
+        unit ?? null,
+      );
       updateMealEntry(date, editing.entry.id, updated);
       toast(`${editing.entry.food} mis à jour`, 'success');
     }
@@ -178,6 +190,18 @@ export default function MealsPage() {
         }
         tuple={editing?.tuple ?? null}
         initialQty={editing?.mode === 'update' ? editing.entry.qty || 100 : 100}
+        initialUnit={
+          editing?.mode === 'update' ? editing.entry.unit : undefined
+        }
+        extraUnits={(() => {
+          const name =
+            editing?.mode === 'create'
+              ? editing.food
+              : editing?.mode === 'update'
+                ? editing.entry.food
+                : null;
+          return name ? recipePortions[name] : undefined;
+        })()}
         onClose={() => setEditing(null)}
         onConfirm={handleConfirmQty}
       />

@@ -1,34 +1,55 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import Modal from '@/components/ui/Modal';
+import { getUnitPresets, type UnitPreset } from '@/data/unitPresets';
 import { sanitizeDecimal } from '@/lib/numericInput';
-import type { FoodTuple } from '@/types';
+import type { FoodTuple, MealEntryUnit } from '@/types';
 
 interface Props {
   open: boolean;
   food: string | null;
   tuple: FoodTuple | null;
   initialQty?: number;
+  initialUnit?: MealEntryUnit;
+  extraUnits?: UnitPreset[];
   onClose: () => void;
-  onConfirm: (qty: number) => void;
+  onConfirm: (qty: number, unit?: MealEntryUnit) => void;
 }
 
-const PRESETS = [50, 100, 150, 200, 250];
+const GRAM_PRESETS = [50, 100, 150, 200, 250];
+const UNIT_COUNTS = [1, 2, 3];
+
+function pluralize(label: string, count: number): string {
+  if (count <= 1) return label;
+  if (label.endsWith('s') || label.endsWith('x')) return label;
+  return `${label}s`;
+}
 
 export default function QuantityModal({
   open,
   food,
   tuple,
   initialQty = 100,
+  initialUnit,
+  extraUnits,
   onClose,
   onConfirm,
 }: Props) {
   const [qty, setQty] = useState(String(initialQty));
+  const [unit, setUnit] = useState<MealEntryUnit | null>(initialUnit ?? null);
 
   useEffect(() => {
-    if (open) setQty(String(initialQty));
-  }, [open, initialQty]);
+    if (open) {
+      setQty(String(initialQty));
+      setUnit(initialUnit ?? null);
+    }
+  }, [open, initialQty, initialUnit]);
 
   if (!food || !tuple) return null;
+
+  const presets: UnitPreset[] = [
+    ...(extraUnits ?? []),
+    ...getUnitPresets(food),
+  ];
 
   const [kcal, p, g, l, f] = tuple;
   const parsed = parseFloat(qty.replace(',', '.'));
@@ -41,10 +62,22 @@ export default function QuantityModal({
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!Number.isFinite(parsed) || parsed <= 0) return;
-    onConfirm(parsed);
+    onConfirm(parsed, unit ?? undefined);
   };
 
-  const preset = PRESETS.includes(parsed) ? parsed : null;
+  const pickGrams = (v: number) => {
+    setQty(String(v));
+    setUnit(null);
+  };
+
+  const pickUnit = (preset: UnitPreset, count: number) => {
+    const grams = +(preset.grams * count).toFixed(1);
+    setQty(String(grams));
+    setUnit({ label: preset.label, count, grams: preset.grams });
+  };
+
+  const gramPreset =
+    unit === null && GRAM_PRESETS.includes(parsed) ? parsed : null;
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -55,14 +88,38 @@ export default function QuantityModal({
       </p>
 
       <form onSubmit={handleSubmit}>
+        {presets.length > 0 && (
+          <>
+            <div className="meal-qm-lbl">Unités</div>
+            <div className="meal-qm-presets">
+              {presets.flatMap((preset) =>
+                UNIT_COUNTS.map((count) => {
+                  const active =
+                    unit?.label === preset.label && unit.count === count;
+                  return (
+                    <button
+                      key={`${preset.label}-${count}`}
+                      type="button"
+                      className={`meal-qm-preset${active ? ' active' : ''}`}
+                      onClick={() => pickUnit(preset, count)}
+                    >
+                      {count} {pluralize(preset.label, count)}
+                    </button>
+                  );
+                }),
+              )}
+            </div>
+          </>
+        )}
+
         <div className="meal-qm-lbl">Quantité (g)</div>
         <div className="meal-qm-presets">
-          {PRESETS.map((v) => (
+          {GRAM_PRESETS.map((v) => (
             <button
               key={v}
               type="button"
-              className={`meal-qm-preset${preset === v ? ' active' : ''}`}
-              onClick={() => setQty(String(v))}
+              className={`meal-qm-preset${gramPreset === v ? ' active' : ''}`}
+              onClick={() => pickGrams(v)}
             >
               {v}g
             </button>
@@ -74,7 +131,10 @@ export default function QuantityModal({
           inputMode="decimal"
           className="inp meal-qm-inp"
           value={qty}
-          onChange={(e) => setQty(sanitizeDecimal(e.target.value))}
+          onChange={(e) => {
+            setQty(sanitizeDecimal(e.target.value));
+            setUnit(null);
+          }}
           placeholder="Quantité"
         />
 

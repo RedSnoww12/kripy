@@ -21,11 +21,18 @@ export type FoodsDict = Record<string, FoodTuple>;
 
 export type MealSlot = 0 | 1 | 2 | 3;
 
+export interface MealEntryUnit {
+  label: string;
+  count: number;
+  grams: number;
+}
+
 export interface MealEntry extends Macros {
   id: number;
   food: string;
   qty: number;
   meal: MealSlot;
+  unit?: MealEntryUnit;
 }
 
 export type DayLog = MealEntry[];
@@ -40,6 +47,13 @@ export interface Targets {
 }
 
 export type RecipesDict = Record<string, FoodTuple>;
+
+export interface RecipePortion {
+  label: string;
+  grams: number;
+}
+
+export type RecipePortionsDict = Record<string, RecipePortion[]>;
 
 export interface BarcodeEntry {
   name: string;

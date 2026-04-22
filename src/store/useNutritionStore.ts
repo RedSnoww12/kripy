@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
-import type { BarcodesDict, LogByDate, MealEntry, RecipesDict } from '@/types';
+import type {
+  BarcodesDict,
+  LogByDate,
+  MealEntry,
+  RecipePortionsDict,
+  RecipesDict,
+} from '@/types';
 
 const RECENT_MAX = 10;
 const FAV_MAX = 30;
@@ -8,6 +14,7 @@ const FAV_MAX = 30;
 interface NutritionState {
   log: LogByDate;
   recipes: RecipesDict;
+  recipePortions: RecipePortionsDict;
   barcodes: BarcodesDict;
   favs: string[];
   recent: string[];
@@ -22,6 +29,7 @@ interface NutritionState {
   removeMealEntry: (date: string, id: number) => void;
   setDayLog: (date: string, entries: MealEntry[]) => void;
   setRecipes: (recipes: RecipesDict) => void;
+  setRecipePortions: (portions: RecipePortionsDict) => void;
   setBarcodes: (barcodes: BarcodesDict) => void;
   toggleFav: (food: string) => void;
   pushRecent: (food: string) => void;
@@ -33,6 +41,10 @@ function readAll() {
   return {
     log: loadJSON<LogByDate>(STORAGE_KEYS.log, {}),
     recipes: loadJSON<RecipesDict>(STORAGE_KEYS.recipes, {}),
+    recipePortions: loadJSON<RecipePortionsDict>(
+      STORAGE_KEYS.recipePortions,
+      {},
+    ),
     barcodes: loadJSON<BarcodesDict>(STORAGE_KEYS.barcodes, {}),
     favs: loadJSON<string[]>(STORAGE_KEYS.favs, []),
     recent: loadJSON<string[]>(STORAGE_KEYS.recent, []),
@@ -83,6 +95,11 @@ export const useNutritionStore = create<NutritionState>((set, get) => ({
   setRecipes: (recipes) => {
     saveJSON(STORAGE_KEYS.recipes, recipes);
     set({ recipes });
+  },
+
+  setRecipePortions: (recipePortions) => {
+    saveJSON(STORAGE_KEYS.recipePortions, recipePortions);
+    set({ recipePortions });
   },
 
   setBarcodes: (barcodes) => {

@@ -9,9 +9,21 @@ interface Props {
   onDelete: (entry: MealEntry) => void;
 }
 
+function pluralize(label: string, count: number): string {
+  if (count <= 1) return label;
+  if (label.endsWith('s') || label.endsWith('x')) return label;
+  return `${label}s`;
+}
+
 function entryMeta(entry: MealEntry): string {
   const parts: string[] = [];
-  if (entry.qty) parts.push(`${entry.qty}g`);
+  if (entry.unit) {
+    parts.push(
+      `${entry.unit.count} ${pluralize(entry.unit.label, entry.unit.count)}`,
+    );
+  } else if (entry.qty) {
+    parts.push(`${entry.qty}g`);
+  }
   if (entry.p) parts.push(`P${Math.round(entry.p)}`);
   if (entry.g) parts.push(`G${Math.round(entry.g)}`);
   if (entry.l) parts.push(`L${Math.round(entry.l)}`);

@@ -11,6 +11,8 @@ const INITIAL = {
   g: '',
   l: '',
   f: '',
+  portionLabel: '',
+  portionGrams: '',
 };
 
 type FormState = typeof INITIAL;
@@ -29,6 +31,8 @@ function tupleToForm(name: string, tuple: FoodTuple): FormState {
     g: String(g),
     l: String(l),
     f: String(f),
+    portionLabel: '',
+    portionGrams: '',
   };
 }
 
@@ -40,18 +44,26 @@ interface Props {
 export default function RecipeForm({ editing, onDone }: Props) {
   const recipes = useNutritionStore((s) => s.recipes);
   const setRecipes = useNutritionStore((s) => s.setRecipes);
+  const recipePortions = useNutritionStore((s) => s.recipePortions);
+  const setRecipePortions = useNutritionStore((s) => s.setRecipePortions);
   const [form, setForm] = useState<FormState>(INITIAL);
 
   useEffect(() => {
     if (editing) {
-      setForm(tupleToForm(editing.name, editing.tuple));
+      const next = tupleToForm(editing.name, editing.tuple);
+      const existing = recipePortions[editing.name]?.[0];
+      if (existing) {
+        next.portionLabel = existing.label;
+        next.portionGrams = String(existing.grams);
+      }
+      setForm(next);
       if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } else {
       setForm(INITIAL);
     }
-  }, [editing]);
+  }, [editing, recipePortions]);
 
   const patch = (v: Partial<FormState>) =>
     setForm((state) => ({ ...state, ...v }));
@@ -81,13 +93,29 @@ export default function RecipeForm({ editing, onDone }: Props) {
 
     const tuple: FoodTuple = [kcal, p, g, l, f];
 
+    const portionLabel = form.portionLabel.trim();
+    const portionGrams = parseNum(form.portionGrams);
+
     if (editing && editing.name !== name) {
       const next = { ...recipes };
       delete next[editing.name];
       next[name] = tuple;
       setRecipes(next);
+      const nextPortions = { ...recipePortions };
+      delete nextPortions[editing.name];
+      if (portionLabel && portionGrams > 0) {
+        nextPortions[name] = [{ label: portionLabel, grams: portionGrams }];
+      }
+      setRecipePortions(nextPortions);
     } else {
       setRecipes({ ...recipes, [name]: tuple });
+      const nextPortions = { ...recipePortions };
+      if (portionLabel && portionGrams > 0) {
+        nextPortions[name] = [{ label: portionLabel, grams: portionGrams }];
+      } else {
+        delete nextPortions[name];
+      }
+      setRecipePortions(nextPortions);
     }
 
     toast(editing ? `${name} mise à jour` : `${name} enregistrée`, 'success');
@@ -187,6 +215,35 @@ export default function RecipeForm({ editing, onDone }: Props) {
               placeholder="0.0"
               value={form.f}
               onChange={(e) => patch({ f: e.target.value })}
+            />
+          </div>
+        </div>
+        <div className="rcp-grid">
+          <div className="rcp-f">
+            <label className="rcp-label" htmlFor="rcPortionLabel">
+              Portion (optionnel)
+            </label>
+            <input
+              id="rcPortionLabel"
+              type="text"
+              className="rcp-in"
+              placeholder="ex : part, bol, œuf"
+              value={form.portionLabel}
+              onChange={(e) => patch({ portionLabel: e.target.value })}
+            />
+          </div>
+          <div className="rcp-f">
+            <label className="rcp-label" htmlFor="rcPortionGrams">
+              Poids / portion (g)
+            </label>
+            <input
+              id="rcPortionGrams"
+              type="number"
+              inputMode="decimal"
+              className="rcp-in rcp-in-mono"
+              placeholder="0"
+              value={form.portionGrams}
+              onChange={(e) => patch({ portionGrams: e.target.value })}
             />
           </div>
         </div>

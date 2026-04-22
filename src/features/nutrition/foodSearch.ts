@@ -4,6 +4,7 @@ import type {
   FoodTuple,
   FoodsDict,
   MealEntry,
+  MealEntryUnit,
   MealSlot,
   RecipesDict,
 } from '@/types';
@@ -62,6 +63,7 @@ export function computeMealEntry(
   tuple: FoodTuple,
   qty: number,
   slot: MealSlot,
+  unit?: MealEntryUnit,
 ): MealEntry {
   const m = qty / 100;
   const [kcal, p, g, l, f] = tuple;
@@ -75,6 +77,7 @@ export function computeMealEntry(
     l: round1(l * m),
     f: round1(f * m),
     meal: slot,
+    ...(unit ? { unit } : {}),
   };
 }
 
@@ -82,10 +85,11 @@ export function applyQtyChange(
   entry: MealEntry,
   tuple: FoodTuple,
   newQty: number,
+  unit?: MealEntryUnit | null,
 ): MealEntry {
   const m = newQty / 100;
   const [kcal, p, g, l, f] = tuple;
-  return {
+  const next: MealEntry = {
     ...entry,
     qty: Math.round(newQty),
     kcal: round1(kcal * m),
@@ -94,4 +98,10 @@ export function applyQtyChange(
     l: round1(l * m),
     f: round1(f * m),
   };
+  if (unit === null) {
+    delete next.unit;
+  } else if (unit) {
+    next.unit = unit;
+  }
+  return next;
 }
