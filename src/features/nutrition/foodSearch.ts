@@ -44,13 +44,32 @@ export function searchFoods(
   const trimmed = query.trim();
   if (!trimmed) return [];
 
-  const needle = normalize(trimmed);
+  const normalizedQuery = normalize(trimmed);
+  const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
   const foods = getAllFoods(recipes, barcodes);
 
-  return Object.entries(foods)
-    .filter(([name]) => normalize(name).includes(needle))
+  const scored: { name: string; tuple: FoodTuple; score: number }[] = [];
+  for (const [name, tuple] of Object.entries(foods)) {
+    const haystack = normalize(name);
+    if (!tokens.every((t) => haystack.includes(t))) continue;
+
+    let score = 0;
+    if (haystack === normalizedQuery) score += 1000;
+    else if (haystack.startsWith(normalizedQuery)) score += 500;
+    else if (haystack.includes(normalizedQuery)) score += 200;
+    for (const t of tokens) {
+      if (haystack.startsWith(t)) score += 50;
+      if (new RegExp(`\\b${t}`).test(haystack)) score += 20;
+    }
+    score -= haystack.length;
+
+    scored.push({ name, tuple, score });
+  }
+
+  return scored
+    .sort((a, b) => b.score - a.score)
     .slice(0, SEARCH_LIMIT)
-    .map(([name, tuple]) => ({ name, tuple }));
+    .map(({ name, tuple }) => ({ name, tuple }));
 }
 
 function round1(value: number): number {

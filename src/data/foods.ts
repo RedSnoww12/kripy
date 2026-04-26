@@ -61,6 +61,14 @@ export const FOODS: FoodsDict = {
   Pigeon: [294, 18, 0, 24, 0],
   Caille: [227, 25, 0, 14, 0],
   Pintade: [170, 25, 0, 7, 0],
+  Mouton: [294, 25, 0, 21, 0],
+  Sanglier: [130, 28, 0, 2, 0],
+  Chevreuil: [120, 23, 0, 3, 0],
+  Coppa: [311, 28, 1, 22, 0],
+  Bresaola: [150, 33, 0, 2, 0],
+  Pancetta: [458, 11, 0, 46, 0],
+  Salami: [410, 22, 1, 35, 0],
+  Speck: [305, 28, 0.5, 22, 0],
 
   // Poissons
   Saumon: [208, 20, 0, 13, 0],
@@ -123,6 +131,11 @@ export const FOODS: FoodsDict = {
   Tilapia: [96, 20, 0, 1.7, 0],
   Pangasius: [90, 15, 0, 3, 0],
   Saumonette: [85, 19, 0, 1, 0],
+  Brochet: [81, 18, 0, 0.7, 0],
+  Sandre: [84, 19, 0, 0.7, 0],
+  Carrelet: [86, 18, 0, 1.5, 0],
+  Carpe: [162, 18, 0, 7, 0],
+  'Saumon sauvage': [142, 20, 0, 6, 0],
 
   // Oeufs & Proteines
   'Oeuf entier': [155, 13, 1.1, 11, 0],
@@ -225,6 +238,14 @@ export const FOODS: FoodsDict = {
   'Creme dessert': [135, 3, 18, 6, 0],
   'Creme brulee': [280, 5, 25, 18, 0],
   'Mousse chocolat': [250, 5, 20, 17, 1],
+  Cancoillotte: [124, 14, 4, 6, 0],
+  'Tomme Savoie': [380, 24, 0, 32, 0],
+  'Saint-Nectaire': [350, 22, 0, 28, 0],
+  Cantal: [380, 26, 0, 30, 0],
+  Manchego: [392, 26, 1, 32, 0],
+  Quark: [70, 12, 4, 0.4, 0],
+  'Lait sans lactose': [47, 3.3, 5, 1.6, 0],
+  'Lait noisette': [30, 0.4, 3, 1.6, 0.4],
 
   // Feculents
   'Riz blanc': [130, 2.7, 28, 0.3, 0.4],
@@ -315,6 +336,12 @@ export const FOODS: FoodsDict = {
   Igname: [118, 1.5, 28, 0.2, 4.1],
   Taro: [112, 1.5, 26, 0.1, 4.1],
   Plantain: [122, 1.3, 32, 0.4, 2.3],
+  'Riz noir': [130, 4, 28, 1, 2.2],
+  Coquillettes: [131, 5, 25, 1.1, 1.8],
+  Macaroni: [131, 5, 25, 1.1, 1.8],
+  Spatzle: [145, 5, 25, 3, 1.5],
+  'Pain levain': [240, 8, 47, 1.5, 4],
+  'Couscous complet': [124, 4.5, 25, 0.5, 3.5],
 
   // Legumineuses
   Lentilles: [116, 9, 20, 0.4, 7.9],
@@ -342,6 +369,7 @@ export const FOODS: FoodsDict = {
   Tempeh: [192, 20, 9, 11, 0],
   Seitan: [145, 25, 7, 2, 1.2],
   Houmous: [166, 8, 14, 9.6, 6],
+  Lupin: [119, 16, 9, 3, 5],
 
   // Legumes
   Brocoli: [34, 2.8, 7, 0.4, 2.6],
@@ -442,6 +470,12 @@ export const FOODS: FoodsDict = {
   'Olive farcie': [150, 1, 4, 15, 3],
   'Aubergine grillee': [25, 1, 6, 0.2, 3],
   Ratatouille: [55, 1.5, 7, 2.5, 2],
+  Blette: [19, 1.8, 3.7, 0.2, 1.6],
+  Pourpier: [16, 1.3, 3.4, 0.4, 1],
+  'Laitue iceberg': [14, 0.9, 3, 0.1, 1.2],
+  Pissenlit: [45, 2.7, 9, 0.7, 3.5],
+  'Chou Milan': [25, 1.4, 5.4, 0.1, 2.5],
+  Cardon: [17, 0.8, 4, 0.1, 1.6],
 
   // Fruits
   Banane: [89, 1.1, 23, 0.3, 2.6],
@@ -511,6 +545,12 @@ export const FOODS: FoodsDict = {
   Tamarillo: [50, 2, 11, 0.4, 3.3],
   Tamarin: [239, 2.8, 63, 0.6, 5.1],
   Dattier: [277, 1.8, 75, 0.2, 6.7],
+  Coing: [57, 0.4, 15, 0.1, 1.9],
+  Nefle: [47, 0.4, 12, 0.2, 1.7],
+  Acai: [70, 1.2, 4, 5, 2],
+  Durian: [147, 1.5, 27, 5.3, 3.8],
+  'Baie sureau': [73, 0.7, 18, 0.5, 7],
+  Yuzu: [53, 0.5, 13, 0.3, 1.8],
 
   // Fruits secs
   Datte: [277, 1.8, 75, 0.2, 6.7],
@@ -675,6 +715,11 @@ export const FOODS: FoodsDict = {
   Aioli: [550, 1, 3, 58, 0.1],
   Rouille: [560, 1, 3, 60, 0.1],
   'Tapenade olives': [250, 2, 5, 25, 4],
+  'Sauce hollandaise': [700, 1.5, 1, 76, 0],
+  'Sauce bearnaise': [700, 1.5, 1.5, 76, 0],
+  'Sauce hoisin': [220, 3.4, 44, 3.4, 2.8],
+  'Sauce ranch': [480, 1, 4, 50, 0.3],
+  Chimichurri: [290, 1.5, 5, 30, 1.8],
 
   // Desserts & Patisseries
   'Glace vanille': [207, 3.5, 24, 11, 0.7],
@@ -735,6 +780,13 @@ export const FOODS: FoodsDict = {
   Beignet: [308, 5, 38, 15, 1.2],
   Chichi: [308, 5, 38, 15, 1.2],
   Churros: [356, 5, 42, 18, 1.5],
+  Cheesecake: [321, 6, 26, 22, 0.4],
+  Mochi: [240, 1.5, 56, 0.5, 0.4],
+  Pavlova: [280, 3, 60, 5, 0.3],
+  'Cake yaourt': [330, 6, 45, 14, 1],
+  'Quatre-quarts': [415, 6, 50, 21, 1],
+  'Tarte chocolat': [380, 5, 38, 23, 2],
+  'Tarte poire': [220, 3, 32, 9, 2],
 
   // Snacks & Biscuits
   'Chips nature': [536, 6, 50, 35, 4.4],
@@ -1006,6 +1058,16 @@ export const FOODS: FoodsDict = {
   Ceviche: [85, 15, 5, 1.5, 0.5],
   'Guacamole maison': [160, 2, 9, 14, 7],
   'Huevos rancheros': [175, 9, 18, 8, 2],
+  'Pastilla poulet': [235, 12, 22, 12, 2],
+  'Tagine citron': [145, 12, 8, 7, 1.5],
+  Manakish: [290, 8, 38, 12, 2],
+  Rendang: [195, 14, 7, 13, 1],
+  Goulasch: [145, 13, 8, 7, 1],
+  'Saag paneer': [175, 8, 8, 13, 3],
+  'Aloo gobi': [95, 3, 12, 4, 3],
+  Pierogi: [175, 6, 25, 6, 1.5],
+  Borscht: [50, 2, 8, 1.5, 2],
+  'Kati roll': [220, 10, 28, 8, 2.5],
 
   // Burgers & Fast Food
   'Burger poulet': [260, 18, 25, 10, 1.5],
@@ -1062,6 +1124,9 @@ export const FOODS: FoodsDict = {
   'Pain perdu': [245, 8, 25, 12, 1.2],
   Chouquette: [420, 6, 42, 25, 1.2],
   'Kouign amann': [490, 5, 50, 30, 1],
+  'Pudding chia': [145, 5, 14, 7, 7],
+  'Acai bowl': [130, 3, 22, 4, 4],
+  'Bircher muesli': [175, 5, 28, 5, 3],
 
   // Boissons
   Eau: [0, 0, 0, 0, 0],
@@ -1120,4 +1185,9 @@ export const FOODS: FoodsDict = {
   Pastis: [235, 0, 0, 0, 0],
   Limonade: [40, 0, 10, 0, 0],
   Sirop: [260, 0, 65, 0, 0],
+  Mocha: [95, 3, 12, 4, 0.5],
+  'Flat white': [60, 3.5, 5, 3, 0],
+  'Smoothie proteine': [110, 12, 12, 1.5, 1],
+  Kombucha: [30, 0, 7, 0, 0],
+  Sangria: [110, 0.2, 11, 0, 0.2],
 };
