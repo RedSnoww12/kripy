@@ -28,6 +28,3 @@ export const auth = authInstance;
 export const db = dbInstance;
 
 export const googleProvider = new GoogleAuthProvider();
-googleProvider.addScope(
-  'https://www.googleapis.com/auth/fitness.activity.read',
-);
