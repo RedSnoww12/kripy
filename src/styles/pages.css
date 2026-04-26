@@ -1284,6 +1284,25 @@
   min-width: 0;
 }
 
+/* Phase comparison segment list */
+.stat-cmp-list {
+  list-style: none;
+  margin: 8px 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+.stat-cmp-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 /* Macros donut body */
 .stat-macros-body {
   display: flex;

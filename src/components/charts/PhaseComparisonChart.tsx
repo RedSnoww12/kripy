@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import {
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -66,14 +66,13 @@ export default function PhaseComparisonChart() {
               className="stat-dot"
               style={{ background: s.color, marginRight: 6 }}
             />
-            {s.label} · {s.sampleCount} pesées ·{' '}
-            {s.totalChange > 0 ? '+' : ''}
+            {s.label} · {s.sampleCount} pesées · {s.totalChange > 0 ? '+' : ''}
             {s.totalChange} kg · {s.rate > 0 ? '+' : ''}
             {s.rate} kg/sem
           </li>
         ))}
       </ul>
-      <div className="stat-chart-wrap" style={{ height: 200 }}>
+      <div className="stat-chart-wrap" style={{ height: 240 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={merged}
@@ -105,9 +104,14 @@ export default function PhaseComparisonChart() {
               tick={{ ...MONO_FONT, fill: CHART_TOKENS.tickMute }}
               tickLine={false}
               axisLine={false}
-              domain={['dataMin - 0.3', 'dataMax + 0.3']}
-              width={34}
+              domain={[
+                (min: number) => Math.floor((min - 0.3) * 10) / 10,
+                (max: number) => Math.ceil((max + 0.3) * 10) / 10,
+              ]}
+              width={38}
               tickMargin={2}
+              tickFormatter={(v: number) => v.toFixed(1)}
+              allowDecimals
               label={{
                 value: 'Δ kg',
                 angle: -90,
@@ -131,7 +135,15 @@ export default function PhaseComparisonChart() {
               }}
             />
             <Legend
-              wrapperStyle={{ ...MONO_FONT, color: CHART_TOKENS.tickMute }}
+              verticalAlign="bottom"
+              iconType="circle"
+              iconSize={8}
+              wrapperStyle={{
+                ...MONO_FONT,
+                color: CHART_TOKENS.tickMute,
+                paddingTop: 12,
+                lineHeight: 1.6,
+              }}
               formatter={(value) =>
                 data.series.find((s) => s.id === value)?.label ?? value
               }
