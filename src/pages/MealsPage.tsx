@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import DateNavigator from '@/components/meals/DateNavigator';
 import MealDayHero from '@/components/meals/MealDayHero';
 import MealTabs from '@/components/meals/MealTabs';
@@ -17,7 +17,7 @@ import {
   getAllFoods,
 } from '@/features/nutrition/foodSearch';
 import { toast } from '@/components/ui/toastStore';
-import { todayISO } from '@/lib/date';
+import { currentMealSlot, todayISO } from '@/lib/date';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import type { FoodTuple, MealEntry, MealEntryUnit, MealSlot } from '@/types';
@@ -28,7 +28,8 @@ type EditingState =
 
 export default function MealsPage() {
   const [date, setDate] = useState(todayISO());
-  const [slot, setSlot] = useState<MealSlot>(0);
+  const [slot, setSlot] = useState<MealSlot>(() => currentMealSlot());
+  const userPickedSlotRef = useRef(false);
   const [editing, setEditing] = useState<EditingState | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -47,6 +48,36 @@ export default function MealsPage() {
   const totals = useMemo(() => dayTotals(log, date), [log, date]);
   const entries = log[date] ?? [];
 
+  useEffect(() => {
+    if (date === todayISO()) {
+      userPickedSlotRef.current = false;
+      setSlot(currentMealSlot());
+    }
+  }, [date]);
+
+  useEffect(() => {
+    const sync = () => {
+      if (userPickedSlotRef.current) return;
+      if (date !== todayISO()) return;
+      const auto = currentMealSlot();
+      setSlot((prev) => (prev === auto ? prev : auto));
+    };
+    const onVis = () => {
+      if (document.visibilityState === 'visible') sync();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    const interval = window.setInterval(sync, 60_000);
+    return () => {
+      document.removeEventListener('visibilitychange', onVis);
+      window.clearInterval(interval);
+    };
+  }, [date]);
+
+  const handleSelectSlot = (next: MealSlot) => {
+    userPickedSlotRef.current = true;
+    setSlot(next);
+  };
+
   const handleSelectFood = (food: string, tuple: FoodTuple) => {
     setEditing({ mode: 'create', food, tuple });
   };
@@ -60,14 +91,18 @@ export default function MealsPage() {
     setEditing({ mode: 'update', entry, tuple });
   };
 
-  const handleConfirmQty = (qty: number, unit?: MealEntryUnit) => {
+  const handleConfirmQty = (
+    qty: number,
+    unit?: MealEntryUnit,
+    nextSlot?: MealSlot,
+  ) => {
     if (!editing) return;
     if (editing.mode === 'create') {
       const entry = computeMealEntry(
         editing.food,
         editing.tuple,
         qty,
-        slot,
+        nextSlot ?? slot,
         unit,
       );
       addMealEntry(date, entry);
@@ -80,6 +115,7 @@ export default function MealsPage() {
         qty,
         unit ?? null,
       );
+      if (nextSlot !== undefined) updated.meal = nextSlot;
       updateMealEntry(date, editing.entry.id, updated);
       toast(`${editing.entry.food} mis à jour`, 'success');
     }
@@ -169,12 +205,12 @@ export default function MealsPage() {
 
       <QuickPicks onSelect={handleSelectFood} />
 
-      <MealTabs value={slot} onChange={setSlot} />
+      <MealTabs value={slot} onChange={handleSelectSlot} />
 
       <MealEntriesList
         entries={entries}
         currentSlot={slot}
-        onSelectSlot={setSlot}
+        onSelectSlot={handleSelectSlot}
         onEdit={handleEditEntry}
         onDelete={handleDelete}
       />
@@ -192,6 +228,9 @@ export default function MealsPage() {
         initialQty={editing?.mode === 'update' ? editing.entry.qty || 100 : 100}
         initialUnit={
           editing?.mode === 'update' ? editing.entry.unit : undefined
+        }
+        initialSlot={
+          editing?.mode === 'update' ? editing.entry.meal : undefined
         }
         extraUnits={(() => {
           const name =

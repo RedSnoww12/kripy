@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import Modal from '@/components/ui/Modal';
+import { MEAL_LABELS } from '@/data/constants';
 import { getUnitPresets, type UnitPreset } from '@/data/unitPresets';
 import { sanitizeDecimal } from '@/lib/numericInput';
-import type { FoodTuple, MealEntryUnit } from '@/types';
+import type { FoodTuple, MealEntryUnit, MealSlot } from '@/types';
 
 interface Props {
   open: boolean;
@@ -10,9 +11,10 @@ interface Props {
   tuple: FoodTuple | null;
   initialQty?: number;
   initialUnit?: MealEntryUnit;
+  initialSlot?: MealSlot;
   extraUnits?: UnitPreset[];
   onClose: () => void;
-  onConfirm: (qty: number, unit?: MealEntryUnit) => void;
+  onConfirm: (qty: number, unit?: MealEntryUnit, slot?: MealSlot) => void;
 }
 
 const GRAM_PRESETS = [50, 100, 150, 200, 250];
@@ -30,19 +32,22 @@ export default function QuantityModal({
   tuple,
   initialQty = 100,
   initialUnit,
+  initialSlot,
   extraUnits,
   onClose,
   onConfirm,
 }: Props) {
   const [qty, setQty] = useState(String(initialQty));
   const [unit, setUnit] = useState<MealEntryUnit | null>(initialUnit ?? null);
+  const [slot, setSlot] = useState<MealSlot | null>(initialSlot ?? null);
 
   useEffect(() => {
     if (open) {
       setQty(String(initialQty));
       setUnit(initialUnit ?? null);
+      setSlot(initialSlot ?? null);
     }
-  }, [open, initialQty, initialUnit]);
+  }, [open, initialQty, initialUnit, initialSlot]);
 
   if (!food || !tuple) return null;
 
@@ -62,7 +67,7 @@ export default function QuantityModal({
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!Number.isFinite(parsed) || parsed <= 0) return;
-    onConfirm(parsed, unit ?? undefined);
+    onConfirm(parsed, unit ?? undefined, slot ?? undefined);
   };
 
   const pickGrams = (v: number) => {
@@ -88,6 +93,28 @@ export default function QuantityModal({
       </p>
 
       <form onSubmit={handleSubmit}>
+        {slot !== null && (
+          <>
+            <div className="meal-qm-lbl">Repas</div>
+            <div className="meal-qm-presets">
+              {MEAL_LABELS.map((label, idx) => {
+                const value = idx as MealSlot;
+                const active = slot === value;
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    className={`meal-qm-preset${active ? ' active' : ''}`}
+                    onClick={() => setSlot(value)}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
         {presets.length > 0 && (
           <>
             <div className="meal-qm-lbl">Unités</div>
