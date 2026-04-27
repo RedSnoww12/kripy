@@ -1,6 +1,6 @@
 import LegalLayout from '@/components/legal/LegalLayout';
 
-const UPDATED = '14 avril 2026';
+const UPDATED = '27 avril 2026';
 
 export default function PrivacyPage() {
   return (
@@ -175,8 +175,11 @@ export default function PrivacyPage() {
             supprimer toute trace locale.
           </li>
           <li>
-            Demander la suppression de vos données cloud en nous contactant
-            (voir section 9).
+            <strong>Supprimer définitivement votre compte</strong> et l'ensemble
+            de vos données cloud (Firestore + Firebase Authentication) via le
+            bouton <strong>«&nbsp;Supprimer mon compte&nbsp;»</strong> dans la
+            zone de danger des Réglages. Cette opération est immédiate et
+            irréversible.
           </li>
         </ul>
       </section>
@@ -209,11 +212,15 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Droit à l'effacement</strong> (droit à l'oubli) : supprimer
-            vos données.
+            vos données. Vous pouvez supprimer votre compte et l'intégralité de
+            vos données cloud directement depuis l'onglet Réglages →{' '}
+            «&nbsp;Supprimer mon compte&nbsp;».
           </li>
           <li>
             <strong>Droit à la portabilité</strong> : exporter vos données au
-            format JSON via le bouton «&nbsp;Exporter JSON&nbsp;».
+            format JSON via le bouton «&nbsp;Exporter JSON&nbsp;» (ainsi qu'au
+            sein du flux de suppression de compte, qui propose une sauvegarde
+            préalable).
           </li>
           <li>
             <strong>Droit d'opposition</strong> : vous opposer au traitement de
@@ -229,11 +236,11 @@ export default function PrivacyPage() {
         </ul>
         <p>
           Vous pouvez exercer ces droits directement depuis l'application
-          (export JSON, réinitialisation) ou en ouvrant une issue sur le dépôt
-          public du projet. Si vous estimez que vos droits ne sont pas
-          respectés, vous avez le droit d'introduire une réclamation auprès de
-          la <strong>CNIL</strong> (Commission Nationale de l'Informatique et
-          des Libertés) —{' '}
+          (export JSON, suppression de compte, réinitialisation) ou en ouvrant
+          une issue sur le dépôt public du projet. Si vous estimez que vos
+          droits ne sont pas respectés, vous avez le droit d'introduire une
+          réclamation auprès de la <strong>CNIL</strong> (Commission Nationale
+          de l'Informatique et des Libertés) —{' '}
           <a
             href="https://www.cnil.fr"
             target="_blank"

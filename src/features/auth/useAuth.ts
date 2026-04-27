@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import {
+  deleteUser,
   onAuthStateChanged,
+  reauthenticateWithPopup,
   signInWithPopup,
   signOut,
   type User,
@@ -8,7 +10,7 @@ import {
 import { auth, googleProvider } from '@/lib/firebase';
 import { useSessionStore } from '@/store/useSessionStore';
 import { rehydrateAll } from '@/store';
-import { cloudLoad, cloudSave } from './cloudSync';
+import { cloudDelete, cloudLoad, cloudSave } from './cloudSync';
 import type { AuthUser } from '@/types';
 
 function toAuthUser(user: User): AuthUser {
@@ -59,5 +61,28 @@ export async function signOutUser(): Promise<void> {
     await cloudSave(user);
   }
   await signOut(auth);
+  useSessionStore.getState().reset();
+}
+
+export async function deleteAccount(): Promise<void> {
+  if (!auth) throw new Error('Firebase non configuré');
+  const current = auth.currentUser;
+  if (!current) throw new Error('Aucun utilisateur connecté');
+
+  await cloudDelete(current.uid);
+
+  try {
+    await deleteUser(current);
+  } catch (e) {
+    const code = (e as { code?: string }).code;
+    if (code === 'auth/requires-recent-login') {
+      await reauthenticateWithPopup(current, googleProvider);
+      await deleteUser(current);
+    } else {
+      throw e;
+    }
+  }
+
+  localStorage.clear();
   useSessionStore.getState().reset();
 }

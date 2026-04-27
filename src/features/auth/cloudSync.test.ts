@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Firestore } from 'firebase/firestore';
-import { cloudLoad, cloudSave } from './cloudSync';
+import { cloudDelete, cloudLoad, cloudSave } from './cloudSync';
 import { STORAGE_KEYS } from '@/lib/storage';
 import type { AuthUser } from '@/types';
 
 const setDocMock = vi.fn();
 const getDocMock = vi.fn();
+const deleteDocMock = vi.fn();
 
 vi.mock('firebase/firestore', () => ({
   getFirestore: () => ({}),
@@ -13,6 +14,7 @@ vi.mock('firebase/firestore', () => ({
   setDoc: (ref: unknown, data: unknown, opts: unknown) =>
     setDocMock(ref, data, opts),
   getDoc: (ref: unknown) => getDocMock(ref),
+  deleteDoc: (ref: unknown) => deleteDocMock(ref),
 }));
 
 const fakeDb = {} as Firestore;
@@ -27,6 +29,7 @@ describe('cloudSync', () => {
   beforeEach(() => {
     setDocMock.mockReset();
     getDocMock.mockReset();
+    deleteDocMock.mockReset();
     localStorage.clear();
   });
 
@@ -77,5 +80,26 @@ describe('cloudSync', () => {
     getDocMock.mockResolvedValue({ exists: () => false });
     const loaded = await cloudLoad('user-1', fakeDb);
     expect(loaded).toBe(0);
+  });
+
+  it('cloudDelete removes the user doc from Firestore', async () => {
+    deleteDocMock.mockResolvedValue(undefined);
+    const ok = await cloudDelete('user-1', fakeDb);
+    expect(ok).toBe(true);
+    expect(deleteDocMock).toHaveBeenCalledOnce();
+    const [ref] = deleteDocMock.mock.calls[0];
+    expect(ref).toEqual({ col: 'users', id: 'user-1' });
+  });
+
+  it('cloudDelete returns false when Firestore is unavailable', async () => {
+    const ok = await cloudDelete('user-1', null);
+    expect(ok).toBe(false);
+    expect(deleteDocMock).not.toHaveBeenCalled();
+  });
+
+  it('cloudDelete returns false when Firestore throws', async () => {
+    deleteDocMock.mockRejectedValue(new Error('boom'));
+    const ok = await cloudDelete('user-1', fakeDb);
+    expect(ok).toBe(false);
   });
 });

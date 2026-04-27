@@ -1,6 +1,6 @@
 import LegalLayout from '@/components/legal/LegalLayout';
 
-const UPDATED = '14 avril 2026';
+const UPDATED = '27 avril 2026';
 
 export default function TermsPage() {
   return (
@@ -219,14 +219,26 @@ export default function TermsPage() {
         <p>L'utilisateur peut à tout moment :</p>
         <ul>
           <li>
+            Exporter ses données au format JSON via le bouton{' '}
+            <strong>«&nbsp;Exporter JSON&nbsp;»</strong> dans l'onglet Réglages
+            ;
+          </li>
+          <li>
             Réinitialiser l'ensemble de ses données locales via le bouton{' '}
             <strong>«&nbsp;Réinitialiser&nbsp;»</strong> dans l'onglet Réglages
             ;
           </li>
           <li>Se déconnecter de son compte Google ;</li>
           <li>
-            Demander la suppression complète de ses données cloud en ouvrant une
-            issue sur le dépôt public du projet.
+            <strong>
+              Supprimer définitivement son compte et l'intégralité de ses
+              données
+            </strong>{' '}
+            (cloud Firestore, authentification Firebase et données locales) via
+            le bouton <strong>«&nbsp;Supprimer mon compte&nbsp;»</strong> dans
+            la zone de danger des Réglages. Le flux propose une sauvegarde JSON
+            préalable puis demande une double confirmation. La suppression est
+            immédiate et irréversible.
           </li>
         </ul>
       </section>

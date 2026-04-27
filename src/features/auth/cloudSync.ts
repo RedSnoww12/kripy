@@ -1,4 +1,10 @@
-import { doc, getDoc, setDoc, type Firestore } from 'firebase/firestore';
+import {
+  deleteDoc,
+  doc,
+  getDoc,
+  setDoc,
+  type Firestore,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { SYNC_KEYS } from '@/lib/storage';
 import type { AuthUser } from '@/types';
@@ -66,5 +72,20 @@ export async function cloudLoad(
   } catch (e) {
     console.warn('cloudLoad failed', e);
     return 0;
+  }
+}
+
+export async function cloudDelete(
+  uid: string,
+  firestore: Firestore | null = db,
+): Promise<boolean> {
+  const database = getDb(firestore);
+  if (!database) return false;
+  try {
+    await deleteDoc(doc(database, 'users', uid));
+    return true;
+  } catch (e) {
+    console.warn('cloudDelete failed', e);
+    return false;
   }
 }

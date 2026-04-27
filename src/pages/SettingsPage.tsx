@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import AccountCard from '@/components/settings/AccountCard';
 import AiKeyCard from '@/components/settings/AiKeyCard';
+import DangerZoneCard from '@/components/settings/DangerZoneCard';
 import DataCard from '@/components/settings/DataCard';
 import FeedbackCard from '@/components/settings/FeedbackCard';
 import ImportCard from '@/components/settings/ImportCard';
@@ -41,6 +42,7 @@ export default function SettingsPage() {
       <ImportCard />
       <DataCard />
       <FeedbackCard />
+      <DangerZoneCard />
     </div>
   );
 }
