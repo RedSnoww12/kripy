@@ -106,4 +106,61 @@ describe('foodSearch', () => {
       expect(next.p).toBe(30);
     });
   });
+
+  describe('per-unit basis', () => {
+    const burger: FoodTuple = [500, 25, 40, 25, 2];
+
+    it('computeMealEntry scales by count when basis is perUnit', () => {
+      const e = computeMealEntry('Burger maison', burger, 2, 1, undefined, {
+        kind: 'perUnit',
+        label: 'burger',
+      });
+      expect(e.qty).toBe(0);
+      expect(e.kcal).toBe(1000);
+      expect(e.p).toBe(50);
+      expect(e.g).toBe(80);
+      expect(e.l).toBe(50);
+      expect(e.f).toBe(4);
+      expect(e.unit).toEqual({ label: 'burger', count: 2, grams: 0 });
+    });
+
+    it('computeMealEntry handles fractional count', () => {
+      const e = computeMealEntry('Burger maison', burger, 0.5, 0, undefined, {
+        kind: 'perUnit',
+        label: 'burger',
+      });
+      expect(e.kcal).toBe(250);
+      expect(e.unit?.count).toBe(0.5);
+    });
+
+    it('applyQtyChange in perUnit mode rescales and stores unit', () => {
+      const original: MealEntry = {
+        id: 7,
+        food: 'Burger maison',
+        qty: 0,
+        kcal: 500,
+        p: 25,
+        g: 40,
+        l: 25,
+        f: 2,
+        meal: 2,
+        unit: { label: 'burger', count: 1, grams: 0 },
+      };
+      const next = applyQtyChange(original, burger, 3, undefined, {
+        kind: 'perUnit',
+        label: 'burger',
+      });
+      expect(next.qty).toBe(0);
+      expect(next.kcal).toBe(1500);
+      expect(next.unit).toEqual({ label: 'burger', count: 3, grams: 0 });
+      expect(next.meal).toBe(2);
+    });
+
+    it('default basis (per100g) preserves legacy behavior', () => {
+      const e = computeMealEntry('Riz', [200, 20, 30, 5, 3], 100, 0);
+      expect(e.qty).toBe(100);
+      expect(e.kcal).toBe(200);
+      expect(e.unit).toBeUndefined();
+    });
+  });
 });

@@ -2875,6 +2875,30 @@
   color: var(--t1);
   border-color: var(--acc);
 }
+.rcp-mode-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.rcp-mode-btn {
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  color: var(--t2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.05s ease;
+}
+.rcp-mode-btn:active {
+  transform: scale(0.97);
+}
+.rcp-mode-btn.active {
+  background: var(--grad-primary);
+  color: #0a1410;
+  border-color: transparent;
+}
 
 /* Recipe list */
 .rcp-list-wrap {

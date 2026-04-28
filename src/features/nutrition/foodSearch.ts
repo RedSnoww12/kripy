@@ -77,26 +77,37 @@ function round1(value: number): number {
   return Math.round(value * 10) / 10;
 }
 
+export type Basis =
+  | { kind: 'per100g' }
+  | { kind: 'perUnit'; label: string };
+
+const PER_100G: Basis = { kind: 'per100g' };
+
 export function computeMealEntry(
   food: string,
   tuple: FoodTuple,
   qty: number,
   slot: MealSlot,
   unit?: MealEntryUnit,
+  basis: Basis = PER_100G,
 ): MealEntry {
-  const m = qty / 100;
   const [kcal, p, g, l, f] = tuple;
+  const isPerUnit = basis.kind === 'perUnit';
+  const m = isPerUnit ? qty : qty / 100;
+  const effectiveUnit: MealEntryUnit | undefined = isPerUnit
+    ? { label: basis.label, count: qty, grams: 0 }
+    : unit;
   return {
     id: Date.now(),
     food,
-    qty: Math.round(qty),
+    qty: isPerUnit ? 0 : Math.round(qty),
     kcal: round1(kcal * m),
     p: round1(p * m),
     g: round1(g * m),
     l: round1(l * m),
     f: round1(f * m),
     meal: slot,
-    ...(unit ? { unit } : {}),
+    ...(effectiveUnit ? { unit: effectiveUnit } : {}),
   };
 }
 
@@ -105,19 +116,23 @@ export function applyQtyChange(
   tuple: FoodTuple,
   newQty: number,
   unit?: MealEntryUnit | null,
+  basis: Basis = PER_100G,
 ): MealEntry {
-  const m = newQty / 100;
   const [kcal, p, g, l, f] = tuple;
+  const isPerUnit = basis.kind === 'perUnit';
+  const m = isPerUnit ? newQty : newQty / 100;
   const next: MealEntry = {
     ...entry,
-    qty: Math.round(newQty),
+    qty: isPerUnit ? 0 : Math.round(newQty),
     kcal: round1(kcal * m),
     p: round1(p * m),
     g: round1(g * m),
     l: round1(l * m),
     f: round1(f * m),
   };
-  if (unit === null) {
+  if (isPerUnit) {
+    next.unit = { label: basis.label, count: newQty, grams: 0 };
+  } else if (unit === null) {
     delete next.unit;
   } else if (unit) {
     next.unit = unit;

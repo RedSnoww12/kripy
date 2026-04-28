@@ -5,6 +5,7 @@ import type {
   LogByDate,
   MealEntry,
   RecipePortionsDict,
+  RecipeUnitsDict,
   RecipesDict,
 } from '@/types';
 
@@ -15,6 +16,7 @@ interface NutritionState {
   log: LogByDate;
   recipes: RecipesDict;
   recipePortions: RecipePortionsDict;
+  recipeUnits: RecipeUnitsDict;
   barcodes: BarcodesDict;
   favs: string[];
   recent: string[];
@@ -30,6 +32,7 @@ interface NutritionState {
   setDayLog: (date: string, entries: MealEntry[]) => void;
   setRecipes: (recipes: RecipesDict) => void;
   setRecipePortions: (portions: RecipePortionsDict) => void;
+  setRecipeUnits: (units: RecipeUnitsDict) => void;
   setBarcodes: (barcodes: BarcodesDict) => void;
   toggleFav: (food: string) => void;
   pushRecent: (food: string) => void;
@@ -45,6 +48,7 @@ function readAll() {
       STORAGE_KEYS.recipePortions,
       {},
     ),
+    recipeUnits: loadJSON<RecipeUnitsDict>(STORAGE_KEYS.recipeUnits, {}),
     barcodes: loadJSON<BarcodesDict>(STORAGE_KEYS.barcodes, {}),
     favs: loadJSON<string[]>(STORAGE_KEYS.favs, []),
     recent: loadJSON<string[]>(STORAGE_KEYS.recent, []),
@@ -100,6 +104,11 @@ export const useNutritionStore = create<NutritionState>((set, get) => ({
   setRecipePortions: (recipePortions) => {
     saveJSON(STORAGE_KEYS.recipePortions, recipePortions);
     set({ recipePortions });
+  },
+
+  setRecipeUnits: (recipeUnits) => {
+    saveJSON(STORAGE_KEYS.recipeUnits, recipeUnits);
+    set({ recipeUnits });
   },
 
   setBarcodes: (barcodes) => {

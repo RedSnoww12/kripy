@@ -13,6 +13,7 @@ interface Props {
   initialUnit?: MealEntryUnit;
   initialSlot?: MealSlot;
   extraUnits?: UnitPreset[];
+  baseUnit?: { label: string };
   onClose: () => void;
   onConfirm: (qty: number, unit?: MealEntryUnit, slot?: MealSlot) => void;
 }
@@ -38,9 +39,12 @@ export default function QuantityModal({
   initialUnit,
   initialSlot,
   extraUnits,
+  baseUnit,
   onClose,
   onConfirm,
 }: Props) {
+  const isPerUnit = !!baseUnit;
+
   const presets = useMemo<UnitPreset[]>(() => {
     if (!food) return [GRAM_UNIT];
     const matched = [...(extraUnits ?? []), ...getUnitPresets(food)];
@@ -61,7 +65,12 @@ export default function QuantityModal({
 
   useEffect(() => {
     if (!open) return;
-    if (initialUnit) {
+    if (isPerUnit) {
+      const initialCount =
+        initialUnit?.count && initialUnit.count > 0 ? initialUnit.count : 1;
+      setInput(formatCount(initialCount));
+      setUnitIdx(0);
+    } else if (initialUnit) {
       const idx = presets.findIndex(
         (p) => p.label === initialUnit.label && p.grams === initialUnit.grams,
       );
@@ -77,18 +86,18 @@ export default function QuantityModal({
       setInput(String(initialQty));
     }
     setSlot(initialSlot ?? null);
-  }, [open, initialQty, initialUnit, initialSlot, presets]);
+  }, [open, initialQty, initialUnit, initialSlot, presets, isPerUnit]);
 
   if (!food || !tuple) return null;
 
   const unit = presets[unitIdx] ?? GRAM_UNIT;
-  const isGram = unitIdx === 0;
+  const isGram = !isPerUnit && unitIdx === 0;
   const parsed = parseFloat(input.replace(',', '.'));
   const validInput = Number.isFinite(parsed) && parsed > 0;
-  const totalGrams = validInput ? parsed * unit.grams : 0;
+  const totalGrams = !isPerUnit && validInput ? parsed * unit.grams : 0;
 
   const [kcal, p, g, l, f] = tuple;
-  const ratio = totalGrams / 100;
+  const ratio = isPerUnit ? (validInput ? parsed : 0) : totalGrams / 100;
   const ckcal = Math.round(kcal * ratio);
   const cp = Math.round(p * ratio);
   const cg = Math.round(g * ratio);
@@ -97,6 +106,10 @@ export default function QuantityModal({
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!validInput) return;
+    if (isPerUnit) {
+      onConfirm(parsed, undefined, slot ?? undefined);
+      return;
+    }
     if (isGram) {
       onConfirm(parsed, undefined, slot ?? undefined);
     } else {
@@ -136,24 +149,28 @@ export default function QuantityModal({
   const gramPresetActive =
     isGram && validInput && GRAM_PRESETS.includes(parsed) ? parsed : null;
 
-  const inputSuffix = isGram
-    ? 'g'
-    : pluralize(unit.label, validInput ? parsed : 1);
+  const inputSuffix = isPerUnit
+    ? pluralize(baseUnit!.label, validInput ? parsed : 1)
+    : isGram
+      ? 'g'
+      : pluralize(unit.label, validInput ? parsed : 1);
 
   const equivalent =
-    !isGram && validInput
+    !isPerUnit && !isGram && validInput
       ? `≈ ${Math.round(totalGrams)} g`
-      : isGram && validInput
+      : !isPerUnit && isGram && validInput
         ? `${Math.round(totalGrams)} g`
         : '';
+
+  const subtitle = isPerUnit
+    ? `${kcal} kcal · P${p}g · G${g}g · L${l}g · F${f ?? 0}g / ${baseUnit!.label}`
+    : `${kcal} kcal · P${p}g · G${g}g · L${l}g · F${f ?? 0}g / 100g`;
 
   return (
     <Modal open={open} onClose={onClose}>
       <p className="meal-qm-cap">Ajouter</p>
       <h3 className="meal-qm-t">{food}</h3>
-      <p className="meal-qm-sub mono">
-        {kcal} kcal · P{p}g · G{g}g · L{l}g · F{f ?? 0}g / 100g
-      </p>
+      <p className="meal-qm-sub mono">{subtitle}</p>
 
       <form onSubmit={handleSubmit}>
         {slot !== null && (
@@ -178,40 +195,44 @@ export default function QuantityModal({
           </>
         )}
 
-        <div className="meal-qm-lbl">Unité</div>
-        <div className="meal-qm-presets">
-          {presets.map((preset, idx) => {
-            const active = idx === unitIdx;
-            const label =
-              idx === 0
-                ? 'g'
-                : `${preset.label} (${Math.round(preset.grams)}g)`;
-            return (
-              <button
-                key={`${preset.label}-${preset.grams}`}
-                type="button"
-                className={`meal-qm-preset${active ? ' active' : ''}`}
-                onClick={() => pickUnit(idx)}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+        {!isPerUnit && (
+          <>
+            <div className="meal-qm-lbl">Unité</div>
+            <div className="meal-qm-presets">
+              {presets.map((preset, idx) => {
+                const active = idx === unitIdx;
+                const label =
+                  idx === 0
+                    ? 'g'
+                    : `${preset.label} (${Math.round(preset.grams)}g)`;
+                return (
+                  <button
+                    key={`${preset.label}-${preset.grams}`}
+                    type="button"
+                    className={`meal-qm-preset${active ? ' active' : ''}`}
+                    onClick={() => pickUnit(idx)}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
 
-        {isGram && (
-          <div className="meal-qm-presets">
-            {GRAM_PRESETS.map((v) => (
-              <button
-                key={v}
-                type="button"
-                className={`meal-qm-preset${gramPresetActive === v ? ' active' : ''}`}
-                onClick={() => pickPreset(v)}
-              >
-                {v}g
-              </button>
-            ))}
-          </div>
+            {isGram && (
+              <div className="meal-qm-presets">
+                {GRAM_PRESETS.map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    className={`meal-qm-preset${gramPresetActive === v ? ' active' : ''}`}
+                    onClick={() => pickPreset(v)}
+                  >
+                    {v}g
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         <div className="meal-qm-lbl">

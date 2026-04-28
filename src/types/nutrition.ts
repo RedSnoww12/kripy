@@ -57,6 +57,12 @@ export type RecipePortion = UnitPreset;
 
 export type RecipePortionsDict = Record<string, RecipePortion[]>;
 
+export interface RecipeBaseUnit {
+  label: string;
+}
+
+export type RecipeUnitsDict = Record<string, RecipeBaseUnit>;
+
 export interface BarcodeEntry {
   name: string;
   kcal: number;

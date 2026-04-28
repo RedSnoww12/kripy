@@ -9,6 +9,10 @@ interface Props {
 export default function RecipeList({ onEdit }: Props) {
   const recipes = useNutritionStore((s) => s.recipes);
   const setRecipes = useNutritionStore((s) => s.setRecipes);
+  const recipePortions = useNutritionStore((s) => s.recipePortions);
+  const setRecipePortions = useNutritionStore((s) => s.setRecipePortions);
+  const recipeUnits = useNutritionStore((s) => s.recipeUnits);
+  const setRecipeUnits = useNutritionStore((s) => s.setRecipeUnits);
 
   const names = Object.keys(recipes);
 
@@ -16,6 +20,16 @@ export default function RecipeList({ onEdit }: Props) {
     const next = { ...recipes };
     delete next[name];
     setRecipes(next);
+    if (recipePortions[name]) {
+      const nextPortions = { ...recipePortions };
+      delete nextPortions[name];
+      setRecipePortions(nextPortions);
+    }
+    if (recipeUnits[name]) {
+      const nextUnits = { ...recipeUnits };
+      delete nextUnits[name];
+      setRecipeUnits(nextUnits);
+    }
     toast(`${name} supprimée`, 'info');
   };
 
@@ -49,6 +63,8 @@ export default function RecipeList({ onEdit }: Props) {
         {names.map((name) => {
           const tuple = recipes[name];
           const [kcal, p, g, l, f] = tuple;
+          const unit = recipeUnits[name];
+          const basisLabel = unit ? `/ ${unit.label}` : '/ 100g';
           return (
             <div key={name} className="rc-item">
               <div
@@ -58,7 +74,12 @@ export default function RecipeList({ onEdit }: Props) {
               >
                 <div className="rc-h">
                   <h4 className="rc-name">{name}</h4>
-                  <span className="rc-kcal">{kcal} kcal</span>
+                  <span className="rc-kcal">
+                    {kcal} kcal{' '}
+                    <span className="mono" style={{ opacity: 0.6 }}>
+                      {basisLabel}
+                    </span>
+                  </span>
                 </div>
                 <div className="rc-macs">
                   <div className="rc-m">
