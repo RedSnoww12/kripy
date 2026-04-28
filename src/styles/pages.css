@@ -2377,6 +2377,44 @@
   width: 100%;
   margin-bottom: 16px;
 }
+.meal-qm-qty-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.meal-qm-step {
+  flex: 0 0 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t1);
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.05s ease;
+}
+.meal-qm-step:active {
+  transform: scale(0.95);
+}
+.meal-qm-qty-input {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.meal-qm-qty-input .meal-qm-inp {
+  margin-bottom: 0;
+  padding-right: 56px;
+}
+.meal-qm-qty-suffix {
+  position: absolute;
+  right: 14px;
+  color: var(--t3);
+  font-size: 0.8rem;
+  pointer-events: none;
+}
 .meal-qm-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -2804,6 +2842,62 @@
 .rcp-cta:active {
   transform: scale(0.98);
   filter: brightness(0.94);
+}
+.rcp-portion-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 36px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.rcp-portion-del {
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  color: var(--t2);
+  border-radius: 10px;
+  height: 36px;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.rcp-portion-del:hover {
+  color: var(--t1);
+}
+.rcp-portion-add {
+  background: transparent;
+  border: 1px dashed var(--bd);
+  color: var(--t2);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.rcp-portion-add:hover {
+  color: var(--t1);
+  border-color: var(--acc);
+}
+.rcp-mode-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.rcp-mode-btn {
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  color: var(--t2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.05s ease;
+}
+.rcp-mode-btn:active {
+  transform: scale(0.97);
+}
+.rcp-mode-btn.active {
+  background: var(--grad-primary);
+  color: #0a1410;
+  border-color: transparent;
 }
 
 /* Recipe list */

@@ -48,12 +48,20 @@ export interface Targets {
 
 export type RecipesDict = Record<string, FoodTuple>;
 
-export interface RecipePortion {
+export interface UnitPreset {
   label: string;
   grams: number;
 }
 
+export type RecipePortion = UnitPreset;
+
 export type RecipePortionsDict = Record<string, RecipePortion[]>;
+
+export interface RecipeBaseUnit {
+  label: string;
+}
+
+export type RecipeUnitsDict = Record<string, RecipeBaseUnit>;
 
 export interface BarcodeEntry {
   name: string;

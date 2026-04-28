@@ -15,6 +15,7 @@ import {
   applyQtyChange,
   computeMealEntry,
   getAllFoods,
+  type Basis,
 } from '@/features/nutrition/foodSearch';
 import { toast } from '@/components/ui/toastStore';
 import { currentMealSlot, todayISO } from '@/lib/date';
@@ -39,6 +40,7 @@ export default function MealsPage() {
   const log = useNutritionStore((s) => s.log);
   const recipes = useNutritionStore((s) => s.recipes);
   const recipePortions = useNutritionStore((s) => s.recipePortions);
+  const recipeUnits = useNutritionStore((s) => s.recipeUnits);
   const barcodes = useNutritionStore((s) => s.barcodes);
   const addMealEntry = useNutritionStore((s) => s.addMealEntry);
   const removeMealEntry = useNutritionStore((s) => s.removeMealEntry);
@@ -97,6 +99,12 @@ export default function MealsPage() {
     nextSlot?: MealSlot,
   ) => {
     if (!editing) return;
+    const foodName =
+      editing.mode === 'create' ? editing.food : editing.entry.food;
+    const baseUnit = recipeUnits[foodName];
+    const basis: Basis = baseUnit
+      ? { kind: 'perUnit', label: baseUnit.label }
+      : { kind: 'per100g' };
     if (editing.mode === 'create') {
       const entry = computeMealEntry(
         editing.food,
@@ -104,6 +112,7 @@ export default function MealsPage() {
         qty,
         nextSlot ?? slot,
         unit,
+        basis,
       );
       addMealEntry(date, entry);
       pushRecent(editing.food);
@@ -114,6 +123,7 @@ export default function MealsPage() {
         editing.tuple,
         qty,
         unit ?? null,
+        basis,
       );
       if (nextSlot !== undefined) updated.meal = nextSlot;
       updateMealEntry(date, editing.entry.id, updated);
@@ -240,6 +250,15 @@ export default function MealsPage() {
                 ? editing.entry.food
                 : null;
           return name ? recipePortions[name] : undefined;
+        })()}
+        baseUnit={(() => {
+          const name =
+            editing?.mode === 'create'
+              ? editing.food
+              : editing?.mode === 'update'
+                ? editing.entry.food
+                : null;
+          return name ? recipeUnits[name] : undefined;
         })()}
         onClose={() => setEditing(null)}
         onConfirm={handleConfirmQty}
