@@ -10,6 +10,7 @@ import type {
 import { palierDays } from './palier';
 import { dayTotals } from '@/features/nutrition/totals';
 import { recommendAction, trend72 } from './trend';
+import { buildPhaseAdvice, type PhaseAdvice } from './phaseAdvisor';
 
 export type HomeAnalysisVariant = 'maintain' | 'increase' | 'decrease';
 
@@ -25,6 +26,7 @@ export interface HomeAnalysis {
   winDays: number;
   trend: TrendResult | null;
   recommendation: Recommendation | null;
+  phaseAdvice: PhaseAdvice | null;
 }
 
 interface BuildDeps {
@@ -34,12 +36,14 @@ interface BuildDeps {
   phase: Phase;
   palier: Palier;
   today: string;
+  bmr: number;
+  goalWeight: number;
 }
 
 const MAX_WINDOW = 14;
 
 export function buildHomeAnalysis(deps: BuildDeps): HomeAnalysis | null {
-  const { weights, log, targets, phase, palier, today } = deps;
+  const { weights, log, targets, phase, palier, today, bmr, goalWeight } = deps;
 
   const winDays = Math.min(MAX_WINDOW, palierDays(palier, today) + 1);
 
@@ -92,10 +96,21 @@ export function buildHomeAnalysis(deps: BuildDeps): HomeAnalysis | null {
       winDays: dates.length,
       trend: null,
       recommendation: null,
+      phaseAdvice: null,
     };
   }
 
   const rec = recommendAction(phase, trend, targets.kcal);
+  const currentWeight = weights[weights.length - 1].w;
+  const phaseAdvice = buildPhaseAdvice({
+    phase,
+    currentKcal: targets.kcal,
+    bmr,
+    weights,
+    trend,
+    goalWeight,
+    currentWeight,
+  });
   const newUp = targets.kcal + 200;
   const newDn = Math.max(1200, targets.kcal - 200);
 
@@ -132,5 +147,6 @@ export function buildHomeAnalysis(deps: BuildDeps): HomeAnalysis | null {
     winDays: dates.length,
     trend,
     recommendation: rec,
+    phaseAdvice,
   };
 }

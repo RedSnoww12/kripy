@@ -7,10 +7,12 @@ import StepsCard from '@/components/home/StepsCard';
 import WeightCard from '@/components/home/WeightCard';
 import TodayMealsSummary from '@/components/home/TodayMealsSummary';
 import AnalysisCard from '@/components/home/AnalysisCard';
+import PhaseAdvisorCard from '@/components/home/PhaseAdvisorCard';
 import GettingStartedCard from '@/components/home/GettingStartedCard';
 import { computeStreak, dayTotals } from '@/features/nutrition/totals';
 import { buildHomeAnalysis } from '@/features/analysis/home-analysis';
 import { weightStats } from '@/features/analysis/trend';
+import { computeBmr } from '@/features/settings/tdeeCalc';
 import { todayISO } from '@/lib/date';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useNutritionStore } from '@/store/useNutritionStore';
@@ -25,6 +27,9 @@ export default function HomePage() {
   const height = useSettingsStore((s) => s.height);
   const startWeight = useSettingsStore((s) => s.startWeight);
   const stepsGoal = useSettingsStore((s) => s.stepsGoal);
+  const sex = useSettingsStore((s) => s.sex);
+  const age = useSettingsStore((s) => s.age);
+  const goalWeight = useSettingsStore((s) => s.goalWeight);
 
   const log = useNutritionStore((s) => s.log);
   const weights = useTrackingStore((s) => s.weights);
@@ -59,6 +64,10 @@ export default function HomePage() {
 
   const analysis = useMemo(() => {
     if (!palier) return null;
+    const currentWeight = weights.length
+      ? weights[weights.length - 1].w
+      : startWeight;
+    const bmr = computeBmr(currentWeight, height, sex, age);
     return buildHomeAnalysis({
       weights,
       log,
@@ -66,8 +75,22 @@ export default function HomePage() {
       phase,
       palier,
       today,
+      bmr,
+      goalWeight,
     });
-  }, [weights, log, targets, phase, palier, today]);
+  }, [
+    weights,
+    log,
+    targets,
+    phase,
+    palier,
+    today,
+    height,
+    startWeight,
+    sex,
+    age,
+    goalWeight,
+  ]);
 
   const stats = useMemo(
     () => weightStats({ weights, heightCm: height, startWeight, today }),
@@ -96,6 +119,9 @@ export default function HomePage() {
         <WeightCard />
       </div>
 
+      {analysis?.phaseAdvice && (
+        <PhaseAdvisorCard advice={analysis.phaseAdvice} />
+      )}
       {analysis && <AnalysisCard analysis={analysis} stats={stats} />}
 
       <TodayMealsSummary entries={todayEntries} />
