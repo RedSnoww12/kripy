@@ -1,29 +1,51 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { toast } from '@/components/ui/toastStore';
-import type { FoodTuple } from '@/types';
+import type { FoodTuple, RecipePortion } from '@/types';
 import type { EditingRecipe } from '@/pages/RecipesPage';
 
-const INITIAL = {
+interface PortionInput {
+  label: string;
+  grams: string;
+}
+
+interface FormState {
+  name: string;
+  kcal: string;
+  p: string;
+  g: string;
+  l: string;
+  f: string;
+  portions: PortionInput[];
+}
+
+const EMPTY_PORTION: PortionInput = { label: '', grams: '' };
+
+const INITIAL: FormState = {
   name: '',
   kcal: '',
   p: '',
   g: '',
   l: '',
   f: '',
-  portionLabel: '',
-  portionGrams: '',
+  portions: [{ ...EMPTY_PORTION }],
 };
-
-type FormState = typeof INITIAL;
 
 function parseNum(value: string): number {
   const n = parseFloat(value.replace(',', '.'));
   return Number.isFinite(n) ? n : 0;
 }
 
-function tupleToForm(name: string, tuple: FoodTuple): FormState {
+function tupleToForm(
+  name: string,
+  tuple: FoodTuple,
+  portions: RecipePortion[] | undefined,
+): FormState {
   const [kcal, p, g, l, f] = tuple;
+  const portionInputs: PortionInput[] =
+    portions && portions.length > 0
+      ? portions.map((p) => ({ label: p.label, grams: String(p.grams) }))
+      : [{ ...EMPTY_PORTION }];
   return {
     name,
     kcal: String(kcal),
@@ -31,8 +53,7 @@ function tupleToForm(name: string, tuple: FoodTuple): FormState {
     g: String(g),
     l: String(l),
     f: String(f),
-    portionLabel: '',
-    portionGrams: '',
+    portions: portionInputs,
   };
 }
 
@@ -50,13 +71,7 @@ export default function RecipeForm({ editing, onDone }: Props) {
 
   useEffect(() => {
     if (editing) {
-      const next = tupleToForm(editing.name, editing.tuple);
-      const existing = recipePortions[editing.name]?.[0];
-      if (existing) {
-        next.portionLabel = existing.label;
-        next.portionGrams = String(existing.grams);
-      }
-      setForm(next);
+      setForm(tupleToForm(editing.name, editing.tuple, recipePortions[editing.name]));
       if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -68,9 +83,40 @@ export default function RecipeForm({ editing, onDone }: Props) {
   const patch = (v: Partial<FormState>) =>
     setForm((state) => ({ ...state, ...v }));
 
+  const updatePortion = (idx: number, patch: Partial<PortionInput>) => {
+    setForm((state) => {
+      const next = [...state.portions];
+      next[idx] = { ...next[idx], ...patch };
+      return { ...state, portions: next };
+    });
+  };
+
+  const addPortion = () => {
+    setForm((state) => ({
+      ...state,
+      portions: [...state.portions, { ...EMPTY_PORTION }],
+    }));
+  };
+
+  const removePortion = (idx: number) => {
+    setForm((state) => {
+      const next = state.portions.filter((_, i) => i !== idx);
+      return {
+        ...state,
+        portions: next.length > 0 ? next : [{ ...EMPTY_PORTION }],
+      };
+    });
+  };
+
   const reset = () => {
     setForm(INITIAL);
     onDone();
+  };
+
+  const collectPortions = (): RecipePortion[] => {
+    return form.portions
+      .map((p) => ({ label: p.label.trim(), grams: parseNum(p.grams) }))
+      .filter((p) => p.label && p.grams > 0);
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -92,9 +138,7 @@ export default function RecipeForm({ editing, onDone }: Props) {
     }
 
     const tuple: FoodTuple = [kcal, p, g, l, f];
-
-    const portionLabel = form.portionLabel.trim();
-    const portionGrams = parseNum(form.portionGrams);
+    const portions = collectPortions();
 
     if (editing && editing.name !== name) {
       const next = { ...recipes };
@@ -103,18 +147,13 @@ export default function RecipeForm({ editing, onDone }: Props) {
       setRecipes(next);
       const nextPortions = { ...recipePortions };
       delete nextPortions[editing.name];
-      if (portionLabel && portionGrams > 0) {
-        nextPortions[name] = [{ label: portionLabel, grams: portionGrams }];
-      }
+      if (portions.length > 0) nextPortions[name] = portions;
       setRecipePortions(nextPortions);
     } else {
       setRecipes({ ...recipes, [name]: tuple });
       const nextPortions = { ...recipePortions };
-      if (portionLabel && portionGrams > 0) {
-        nextPortions[name] = [{ label: portionLabel, grams: portionGrams }];
-      } else {
-        delete nextPortions[name];
-      }
+      if (portions.length > 0) nextPortions[name] = portions;
+      else delete nextPortions[name];
       setRecipePortions(nextPortions);
     }
 
@@ -218,35 +257,49 @@ export default function RecipeForm({ editing, onDone }: Props) {
             />
           </div>
         </div>
-        <div className="rcp-grid">
-          <div className="rcp-f">
-            <label className="rcp-label" htmlFor="rcPortionLabel">
-              Portion (optionnel)
-            </label>
-            <input
-              id="rcPortionLabel"
-              type="text"
-              className="rcp-in"
-              placeholder="ex : part, bol, œuf"
-              value={form.portionLabel}
-              onChange={(e) => patch({ portionLabel: e.target.value })}
-            />
-          </div>
-          <div className="rcp-f">
-            <label className="rcp-label" htmlFor="rcPortionGrams">
-              Poids / portion (g)
-            </label>
-            <input
-              id="rcPortionGrams"
-              type="number"
-              inputMode="decimal"
-              className="rcp-in rcp-in-mono"
-              placeholder="0"
-              value={form.portionGrams}
-              onChange={(e) => patch({ portionGrams: e.target.value })}
-            />
-          </div>
+
+        <div className="rcp-f">
+          <label className="rcp-label">Portions (optionnel)</label>
+          {form.portions.map((portion, idx) => (
+            <div key={idx} className="rcp-portion-row">
+              <input
+                type="text"
+                className="rcp-in"
+                placeholder="ex : part, bol, œuf"
+                value={portion.label}
+                onChange={(e) =>
+                  updatePortion(idx, { label: e.target.value })
+                }
+              />
+              <input
+                type="number"
+                inputMode="decimal"
+                className="rcp-in rcp-in-mono"
+                placeholder="g"
+                value={portion.grams}
+                onChange={(e) =>
+                  updatePortion(idx, { grams: e.target.value })
+                }
+              />
+              <button
+                type="button"
+                className="rcp-portion-del"
+                aria-label="Supprimer la portion"
+                onClick={() => removePortion(idx)}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            className="rcp-portion-add"
+            onClick={addPortion}
+          >
+            + Ajouter une portion
+          </button>
         </div>
+
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             type="submit"
