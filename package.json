@@ -4,7 +4,7 @@
   "version": "2.0.0",
   "type": "module",
   "description": "Kripy - Precision Lab (React + Vite PWA)",
-  "packageManager": "yarn@4.5.0",
+  "packageManager": "yarn@4.14.1",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
