@@ -121,7 +121,7 @@ describe('buildPhaseAdvice — Phase B (Déficit)', () => {
 });
 
 describe('buildPhaseAdvice — Phase F (Remontée)', () => {
-  it('suggests deficit when maintenance optimized (climbed + stable)', () => {
+  it('suggests deficit when maintenance optimized at J7+ (no wait button)', () => {
     const weights = [
       w('2026-01-01', 78, 1700, 'F'),
       w('2026-01-08', 78, 1900, 'F'),
@@ -132,13 +132,107 @@ describe('buildPhaseAdvice — Phase F (Remontée)', () => {
       currentKcal: 2100,
       bmr: 1600,
       weights,
-      trend: trend('stable'),
+      trend: trend('stable', { daysOnPalier: 14 }),
       goalWeight: 75,
       currentWeight: 78,
     });
     expect(advice).not.toBeNull();
     expect(advice!.action).toBe('switch_to_deficit');
     expect(advice!.targetPhase).toBe('B');
+    expect(advice!.suppressAnalysis).toBe(true);
+    const actions = advice!.options.map((o) => o.action);
+    expect(actions).toContain('switch_to_deficit');
+    expect(actions).toContain('push_palier');
+    expect(actions).not.toContain('wait');
+  });
+
+  it('offers deficit + wait at J3 (early decision tier)', () => {
+    const weights = [
+      w('2026-01-01', 78, 1700, 'F'),
+      w('2026-01-08', 78, 1900, 'F'),
+      w('2026-01-15', 78, 2100, 'F'),
+    ];
+    const advice = buildPhaseAdvice({
+      phase: 'F',
+      currentKcal: 2100,
+      bmr: 1600,
+      weights,
+      trend: trend('stable', { daysOnPalier: 3 }),
+      goalWeight: 75,
+      currentWeight: 78,
+    });
+    expect(advice).not.toBeNull();
+    expect(advice!.action).toBe('continue');
+    expect(advice!.suppressAnalysis).toBe(true);
+    const actions = advice!.options.map((o) => o.action);
+    expect(actions).toEqual(['switch_to_deficit', 'wait']);
+    expect(advice!.headline).toContain('J3');
+  });
+
+  it('forces wait at J5 when noisy (low confidence)', () => {
+    const weights = [
+      w('2026-01-01', 78, 1700, 'F'),
+      w('2026-01-08', 78, 1900, 'F'),
+      w('2026-01-15', 78, 2100, 'F'),
+    ];
+    const advice = buildPhaseAdvice({
+      phase: 'F',
+      currentKcal: 2100,
+      bmr: 1600,
+      weights,
+      trend: trend('stable', { daysOnPalier: 5, confidence: 'low' }),
+      goalWeight: 75,
+      currentWeight: 78,
+    });
+    expect(advice).not.toBeNull();
+    expect(advice!.action).toBe('wait');
+    expect(advice!.tone).toBe('warn');
+    expect(advice!.options.map((o) => o.action)).toEqual(['wait']);
+    expect(advice!.headline).toContain('J7');
+  });
+
+  it('forces wait at J5 when high variance (>=0.6)', () => {
+    const weights = [
+      w('2025-12-20', 78, 1700, 'F'),
+      w('2025-12-22', 79, 1700, 'F'),
+      w('2025-12-25', 77.2, 1900, 'F'),
+      w('2025-12-28', 79.1, 1900, 'F'),
+      w('2025-12-30', 77.5, 2100, 'F'),
+      w('2026-01-02', 79.2, 2100, 'F'),
+      w('2026-01-05', 77.8, 2100, 'F'),
+    ];
+    const advice = buildPhaseAdvice({
+      phase: 'F',
+      currentKcal: 2100,
+      bmr: 1600,
+      weights,
+      trend: trend('stable', { daysOnPalier: 5, confidence: 'medium' }),
+      goalWeight: 75,
+      currentWeight: 77.8,
+    });
+    expect(advice).not.toBeNull();
+    expect(advice!.action).toBe('wait');
+  });
+
+  it('offers deficit + push + wait at J5 with clean signal', () => {
+    const weights = [
+      w('2026-01-01', 78, 1700, 'F'),
+      w('2026-01-08', 78, 1900, 'F'),
+      w('2026-01-15', 78, 2100, 'F'),
+    ];
+    const advice = buildPhaseAdvice({
+      phase: 'F',
+      currentKcal: 2100,
+      bmr: 1600,
+      weights,
+      trend: trend('stable', { daysOnPalier: 5, confidence: 'high' }),
+      goalWeight: 75,
+      currentWeight: 78,
+    });
+    expect(advice).not.toBeNull();
+    expect(advice!.action).toBe('switch_to_deficit');
+    const actions = advice!.options.map((o) => o.action);
+    expect(actions).toEqual(['switch_to_deficit', 'push_palier', 'wait']);
   });
 
   it('encourages to continue when still losing while ramping up', () => {
@@ -176,7 +270,7 @@ describe('buildPhaseAdvice — Phase F (Remontée)', () => {
 });
 
 describe('buildPhaseAdvice — Phase C (Reverse)', () => {
-  it('suggests deficit when reverse stable and goal not reached', () => {
+  it('suggests deficit when reverse stable at J7+ (goal not reached)', () => {
     const weights = [
       w('2026-01-01', 78, 1900, 'C'),
       w('2026-01-08', 78, 2100, 'C'),
@@ -186,12 +280,56 @@ describe('buildPhaseAdvice — Phase C (Reverse)', () => {
       currentKcal: 2100,
       bmr: 1600,
       weights,
-      trend: trend('stable'),
+      trend: trend('stable', { daysOnPalier: 14 }),
       goalWeight: 75,
       currentWeight: 78,
     });
     expect(advice).not.toBeNull();
     expect(advice!.action).toBe('switch_to_deficit');
+    const actions = advice!.options.map((o) => o.action);
+    expect(actions).toEqual(['switch_to_deficit', 'push_palier']);
+    expect(advice!.suppressAnalysis).toBe(true);
+  });
+
+  it('offers deficit + wait at J3 in reverse', () => {
+    const weights = [
+      w('2026-01-01', 78, 1900, 'C'),
+      w('2026-01-08', 78, 2100, 'C'),
+    ];
+    const advice = buildPhaseAdvice({
+      phase: 'C',
+      currentKcal: 2100,
+      bmr: 1600,
+      weights,
+      trend: trend('stable', { daysOnPalier: 3 }),
+      goalWeight: 75,
+      currentWeight: 78,
+    });
+    expect(advice).not.toBeNull();
+    expect(advice!.action).toBe('continue');
+    expect(advice!.options.map((o) => o.action)).toEqual([
+      'switch_to_deficit',
+      'wait',
+    ]);
+  });
+
+  it('forces wait at J5 when noisy in reverse', () => {
+    const weights = [
+      w('2026-01-01', 78, 1900, 'C'),
+      w('2026-01-08', 78, 2100, 'C'),
+    ];
+    const advice = buildPhaseAdvice({
+      phase: 'C',
+      currentKcal: 2100,
+      bmr: 1600,
+      weights,
+      trend: trend('stable', { daysOnPalier: 6, confidence: 'low' }),
+      goalWeight: 75,
+      currentWeight: 78,
+    });
+    expect(advice).not.toBeNull();
+    expect(advice!.action).toBe('wait');
+    expect(advice!.options.map((o) => o.action)).toEqual(['wait']);
   });
 
   it('suggests maintain when reverse stable and goal reached', () => {

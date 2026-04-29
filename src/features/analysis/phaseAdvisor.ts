@@ -1,12 +1,15 @@
 import type { Phase, TrendResult, WeightEntry } from '@/types';
 import { phaseSegmentsFor } from './phaseSegments';
+import { computeVariance } from './weightAnalysis';
 
 export type AdvisorAction =
   | 'continue'
   | 'switch_to_reverse'
   | 'switch_to_remontee'
   | 'switch_to_deficit'
-  | 'switch_to_maintain';
+  | 'switch_to_maintain'
+  | 'push_palier'
+  | 'wait';
 
 export type AdvisorTone = 'info' | 'success' | 'warn' | 'danger';
 
@@ -15,8 +18,9 @@ export type FatigueLevel = 'low' | 'medium' | 'high';
 export interface AdvisorOption {
   label: string;
   action: AdvisorAction;
-  targetPhase: Phase;
+  targetPhase: Phase | null;
   tone: AdvisorTone;
+  kcalDelta?: number;
 }
 
 export interface PhaseAdvice {
@@ -31,6 +35,7 @@ export interface PhaseAdvice {
   initialKcal: number;
   fatigue: FatigueLevel;
   options: AdvisorOption[];
+  suppressAnalysis: boolean;
 }
 
 interface AdvisorDeps {
@@ -44,6 +49,9 @@ interface AdvisorDeps {
 }
 
 const GOAL_TOLERANCE_KG = 0.5;
+const DECISION_IDEAL_DAYS = 5;
+const DECISION_EXTENDED_DAYS = 7;
+const HIGH_VARIANCE_KG = 0.6;
 
 interface PhaseHistory {
   paliers: number;
@@ -104,6 +112,7 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
     paliersInPhase: history.paliers,
     initialKcal: history.initialKcal,
     fatigue,
+    suppressAnalysis: false,
   };
 
   if (phase === 'B') {
@@ -196,10 +205,61 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
     const climbed = history.paliers >= 2 && currentKcal > history.initialKcal;
     const stable = trend?.dir === 'stable';
     const stillLosing = trend?.dir === 'down' || trend?.dir === 'down_fast';
+    const days = trend?.daysOnPalier ?? 0;
+    const variance = computeVariance(weights);
+    const lowConfidence = trend?.confidence === 'low';
+    const noisy = lowConfidence || variance >= HIGH_VARIANCE_KG;
 
     if (climbed && stable) {
       const goalReached =
         goalWeight > 0 && currentWeight <= goalWeight + GOAL_TOLERANCE_KG;
+
+      if (days < DECISION_IDEAL_DAYS) {
+        return {
+          ...baseAdvice,
+          action: 'continue',
+          targetPhase: null,
+          tone: 'info',
+          headline: `Plateau à J${days} — décision possible`,
+          reason: `Maintenance reconstruite à ${currentKcal} kcal (vs ${history.initialKcal} au départ). Tu peux sortir en déficit dès maintenant ou attendre J${DECISION_IDEAL_DAYS} pour confirmer la stabilité.`,
+          suppressAnalysis: true,
+          options: [
+            {
+              label: 'Passer en Déficit',
+              action: 'switch_to_deficit',
+              targetPhase: 'B',
+              tone: 'info',
+            },
+            {
+              label: `Attendre J${DECISION_IDEAL_DAYS}`,
+              action: 'wait',
+              targetPhase: null,
+              tone: 'success',
+            },
+          ],
+        };
+      }
+
+      if (days < DECISION_EXTENDED_DAYS && noisy) {
+        const remain = DECISION_EXTENDED_DAYS - days;
+        return {
+          ...baseAdvice,
+          action: 'wait',
+          targetPhase: null,
+          tone: 'warn',
+          headline: `Plateau bruité à J${days} — patiente jusqu'à J${DECISION_EXTENDED_DAYS}`,
+          reason: `Confiance ${trend?.confidence ?? 'low'}, fluctuation ${variance.toFixed(1)} kg sur 14j. Encore ${remain}j d'observation pour fiabiliser la décision.`,
+          suppressAnalysis: true,
+          options: [
+            {
+              label: `Attendre J${DECISION_EXTENDED_DAYS}`,
+              action: 'wait',
+              targetPhase: null,
+              tone: 'info',
+            },
+          ],
+        };
+      }
 
       if (goalReached) {
         return {
@@ -209,6 +269,7 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
           tone: 'success',
           headline: 'Maintenance optimisée atteinte — passe en Maintien',
           reason: `Tu maintiens ton poids à ${currentKcal} kcal (vs ${history.initialKcal} au départ) et tu es sur ton objectif. Stabilise la nouvelle maintenance avec la phase A.`,
+          suppressAnalysis: true,
           options: [
             {
               label: 'Passer en Maintien',
@@ -226,21 +287,44 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
         };
       }
 
+      const isExtended = days >= DECISION_EXTENDED_DAYS;
+      const options: AdvisorOption[] = [
+        {
+          label: 'Passer en Déficit',
+          action: 'switch_to_deficit',
+          targetPhase: 'B',
+          tone: 'success',
+        },
+        {
+          label: 'Pousser le palier (+200)',
+          action: 'push_palier',
+          targetPhase: null,
+          tone: 'info',
+          kcalDelta: 200,
+        },
+      ];
+      if (!isExtended) {
+        options.push({
+          label: `Attendre J${DECISION_EXTENDED_DAYS}`,
+          action: 'wait',
+          targetPhase: null,
+          tone: 'success',
+        });
+      }
+
       return {
         ...baseAdvice,
         action: 'switch_to_deficit',
         targetPhase: 'B',
         tone: 'success',
-        headline: `Maintenance optimisée à ${currentKcal} kcal — repars en déficit`,
-        reason: `Tu es revenu de ${history.initialKcal} → ${currentKcal} kcal sans reprendre. Ta maintenance est reconstruite : repars en déficit pour atteindre ton objectif (${goalWeight} kg).`,
-        options: [
-          {
-            label: 'Passer en Déficit',
-            action: 'switch_to_deficit',
-            targetPhase: 'B',
-            tone: 'success',
-          },
-        ],
+        headline: isExtended
+          ? `Maintenance confirmée à ${currentKcal} kcal`
+          : `Maintenance optimisée à ${currentKcal} kcal`,
+        reason: `Tu es revenu de ${history.initialKcal} → ${currentKcal} kcal sans reprendre. Repars en déficit pour viser ${goalWeight} kg, ou pousse au palier suivant${
+          isExtended ? '' : ` — ou patiente jusqu'à J${DECISION_EXTENDED_DAYS}`
+        }.`,
+        suppressAnalysis: true,
+        options,
       };
     }
 
@@ -264,8 +348,59 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
       goalWeight > 0 && currentWeight <= goalWeight + GOAL_TOLERANCE_KG;
     const stable = trend?.dir === 'stable';
     const climbed = history.paliers >= 2 && currentKcal > history.initialKcal;
+    const days = trend?.daysOnPalier ?? 0;
+    const variance = computeVariance(weights);
+    const lowConfidence = trend?.confidence === 'low';
+    const noisy = lowConfidence || variance >= HIGH_VARIANCE_KG;
 
     if (stable && climbed) {
+      if (days < DECISION_IDEAL_DAYS) {
+        return {
+          ...baseAdvice,
+          action: 'continue',
+          targetPhase: null,
+          tone: 'info',
+          headline: `Reverse stable à J${days} — décision possible`,
+          reason: `Maintenance rééduquée à ${currentKcal} kcal. Tu peux sortir en déficit dès maintenant ou attendre J${DECISION_IDEAL_DAYS} pour confirmer la stabilité.`,
+          suppressAnalysis: true,
+          options: [
+            {
+              label: 'Passer en Déficit',
+              action: 'switch_to_deficit',
+              targetPhase: 'B',
+              tone: 'info',
+            },
+            {
+              label: `Attendre J${DECISION_IDEAL_DAYS}`,
+              action: 'wait',
+              targetPhase: null,
+              tone: 'success',
+            },
+          ],
+        };
+      }
+
+      if (days < DECISION_EXTENDED_DAYS && noisy) {
+        const remain = DECISION_EXTENDED_DAYS - days;
+        return {
+          ...baseAdvice,
+          action: 'wait',
+          targetPhase: null,
+          tone: 'warn',
+          headline: `Reverse bruité à J${days} — patiente jusqu'à J${DECISION_EXTENDED_DAYS}`,
+          reason: `Confiance ${trend?.confidence ?? 'low'}, fluctuation ${variance.toFixed(1)} kg sur 14j. Encore ${remain}j d'observation pour fiabiliser la décision.`,
+          suppressAnalysis: true,
+          options: [
+            {
+              label: `Attendre J${DECISION_EXTENDED_DAYS}`,
+              action: 'wait',
+              targetPhase: null,
+              tone: 'info',
+            },
+          ],
+        };
+      }
+
       if (goalReached) {
         return {
           ...baseAdvice,
@@ -274,6 +409,7 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
           tone: 'success',
           headline: 'Reverse stabilisé — passe en Maintien',
           reason: `Tu maintiens à ${currentKcal} kcal et tu es sur ton goal. Bascule en phase A pour la maintenance long terme.`,
+          suppressAnalysis: true,
           options: [
             {
               label: 'Passer en Maintien',
@@ -285,31 +421,48 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
         };
       }
 
+      const isExtended = days >= DECISION_EXTENDED_DAYS;
+      const options: AdvisorOption[] = [
+        {
+          label: 'Passer en Déficit',
+          action: 'switch_to_deficit',
+          targetPhase: 'B',
+          tone: 'info',
+        },
+        {
+          label: 'Pousser le palier (+200)',
+          action: 'push_palier',
+          targetPhase: null,
+          tone: 'success',
+          kcalDelta: 200,
+        },
+      ];
+      if (!isExtended) {
+        options.push({
+          label: `Attendre J${DECISION_EXTENDED_DAYS}`,
+          action: 'wait',
+          targetPhase: null,
+          tone: 'info',
+        });
+      }
+
       return {
         ...baseAdvice,
         action: 'switch_to_deficit',
         targetPhase: 'B',
         tone: 'info',
-        headline: 'Reverse OK — repars en déficit pour viser ton goal',
+        headline: isExtended
+          ? `Reverse confirmé à ${currentKcal} kcal`
+          : 'Reverse OK — repars en déficit pour viser ton goal',
         reason: `Maintenance rééduquée à ${currentKcal} kcal. Tu es à ${currentWeight.toFixed(
           1,
         )} kg pour un goal de ${goalWeight.toFixed(
           1,
-        )} kg : repars sur un déficit propre.`,
-        options: [
-          {
-            label: 'Passer en Déficit',
-            action: 'switch_to_deficit',
-            targetPhase: 'B',
-            tone: 'info',
-          },
-          {
-            label: 'Rester en Maintien',
-            action: 'switch_to_maintain',
-            targetPhase: 'A',
-            tone: 'success',
-          },
-        ],
+        )} kg : repars sur un déficit propre, pousse au palier suivant${
+          isExtended ? '' : `, ou patiente jusqu'à J${DECISION_EXTENDED_DAYS}`
+        }.`,
+        suppressAnalysis: true,
+        options,
       };
     }
 

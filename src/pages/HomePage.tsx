@@ -122,7 +122,9 @@ export default function HomePage() {
       {analysis?.phaseAdvice && (
         <PhaseAdvisorCard advice={analysis.phaseAdvice} />
       )}
-      {analysis && <AnalysisCard analysis={analysis} stats={stats} />}
+      {analysis && !analysis.phaseAdvice?.suppressAnalysis && (
+        <AnalysisCard analysis={analysis} stats={stats} />
+      )}
 
       <TodayMealsSummary entries={todayEntries} />
     </div>

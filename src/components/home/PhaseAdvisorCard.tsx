@@ -7,7 +7,7 @@ import type {
   AdvisorOption,
   PhaseAdvice,
 } from '@/features/analysis/phaseAdvisor';
-import type { Phase } from '@/types';
+import type { Phase, Targets } from '@/types';
 
 const TONE_COLOR: Record<PhaseAdvice['tone'], string> = {
   info: 'var(--cyan)',
@@ -38,6 +38,7 @@ export default function PhaseAdvisorCard({ advice }: Props) {
   const phase = useSettingsStore((s) => s.phase);
   const setPhase = useSettingsStore((s) => s.setPhase);
   const setTargets = useSettingsStore((s) => s.setTargets);
+  const targets = useSettingsStore((s) => s.targets);
   const height = useSettingsStore((s) => s.height);
   const startWeight = useSettingsStore((s) => s.startWeight);
   const stepsGoal = useSettingsStore((s) => s.stepsGoal);
@@ -47,7 +48,30 @@ export default function PhaseAdvisorCard({ advice }: Props) {
   const weights = useTrackingStore((s) => s.weights);
 
   const apply = (option: AdvisorOption) => {
-    if (option.targetPhase === phase) return;
+    if (option.action === 'wait') {
+      toast("Continue d'observer le palier", 'info');
+      return;
+    }
+
+    if (option.action === 'push_palier') {
+      const delta = option.kcalDelta ?? 200;
+      const glucDelta = Math.round(delta / 4);
+      const nextGluc = Math.max(0, targets.gluc + glucDelta);
+      const nextKcal = targets.prot * 4 + nextGluc * 4 + targets.lip * 9;
+      const nextTargets: Targets = {
+        ...targets,
+        gluc: nextGluc,
+        kcal: nextKcal,
+      };
+      setTargets(nextTargets);
+      toast(
+        `Palier suivant · ${delta > 0 ? '+' : ''}${delta} kcal → ${nextKcal} kcal`,
+        'success',
+      );
+      return;
+    }
+
+    if (!option.targetPhase || option.targetPhase === phase) return;
     const currentWeight = weights.length
       ? weights[weights.length - 1].w
       : startWeight;
