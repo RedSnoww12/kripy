@@ -68,6 +68,7 @@ export const STORAGE_KEYS = {
   sportSessions: 'nt_sport_freq',
   sex: 'nt_sex',
   weightSkipped: 'nt_weight_skipped',
+  advisorDismiss: 'nt_advisor_dismiss',
 } as const;
 
 export const SYNC_KEYS: readonly string[] = [

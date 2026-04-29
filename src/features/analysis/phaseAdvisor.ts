@@ -21,6 +21,7 @@ export interface AdvisorOption {
   targetPhase: Phase | null;
   tone: AdvisorTone;
   kcalDelta?: number;
+  untilDay?: number;
 }
 
 export interface PhaseAdvice {
@@ -235,6 +236,7 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
               action: 'wait',
               targetPhase: null,
               tone: 'success',
+              untilDay: DECISION_IDEAL_DAYS,
             },
           ],
         };
@@ -256,6 +258,7 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
               action: 'wait',
               targetPhase: null,
               tone: 'info',
+              untilDay: DECISION_EXTENDED_DAYS,
             },
           ],
         };
@@ -309,6 +312,7 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
           action: 'wait',
           targetPhase: null,
           tone: 'success',
+          untilDay: DECISION_EXTENDED_DAYS,
         });
       }
 
@@ -375,6 +379,7 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
               action: 'wait',
               targetPhase: null,
               tone: 'success',
+              untilDay: DECISION_IDEAL_DAYS,
             },
           ],
         };
@@ -396,6 +401,7 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
               action: 'wait',
               targetPhase: null,
               tone: 'info',
+              untilDay: DECISION_EXTENDED_DAYS,
             },
           ],
         };
@@ -443,6 +449,7 @@ export function buildPhaseAdvice(deps: AdvisorDeps): PhaseAdvice | null {
           action: 'wait',
           targetPhase: null,
           tone: 'info',
+          untilDay: DECISION_EXTENDED_DAYS,
         });
       }
 

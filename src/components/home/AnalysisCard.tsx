@@ -5,6 +5,7 @@ import type { Phase, WeightStats } from '@/types';
 interface Props {
   analysis: HomeAnalysis;
   stats: WeightStats | null;
+  hideRecommendation?: boolean;
 }
 
 const PHASE_TARGET_RATE: Record<Phase, number> = {
@@ -56,7 +57,11 @@ function buildVerdict(phase: Phase, rate: number, target: number): string {
     : `Baisse de ${abs.toFixed(2)} kg/sem hors cible`;
 }
 
-export default function AnalysisCard({ analysis, stats }: Props) {
+export default function AnalysisCard({
+  analysis,
+  stats,
+  hideRecommendation = false,
+}: Props) {
   const phase = useSettingsStore((s) => s.phase);
   const targets = useSettingsStore((s) => s.targets);
   const setTargets = useSettingsStore((s) => s.setTargets);
@@ -121,7 +126,7 @@ export default function AnalysisCard({ analysis, stats }: Props) {
         />
       </div>
 
-      {recKcalDelta !== 0 && (
+      {recKcalDelta !== 0 && !hideRecommendation && (
         <div className="kl-reco-strip">
           <div className="kl-reco-ico" aria-hidden>
             <span className="material-symbols-outlined">bolt</span>

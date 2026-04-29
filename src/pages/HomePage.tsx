@@ -18,6 +18,7 @@ import { useSettingsStore } from '@/store/useSettingsStore';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { useTrackingStore } from '@/store/useTrackingStore';
 import { usePalierStore } from '@/store/usePalierStore';
+import { useAdvisorDismissStore } from '@/store/useAdvisorDismissStore';
 
 export default function HomePage() {
   const today = todayISO();
@@ -37,6 +38,8 @@ export default function HomePage() {
 
   const palier = usePalierStore((s) => s.palier);
   const recomputePalier = usePalierStore((s) => s.recompute);
+  const advisorDismiss = useAdvisorDismissStore((s) => s.dismiss);
+  const clearAdvisorDismiss = useAdvisorDismissStore((s) => s.clear);
 
   useEffect(() => {
     recomputePalier(targets.kcal, phase, weights);
@@ -97,6 +100,28 @@ export default function HomePage() {
     [weights, height, startWeight, today],
   );
 
+  const visibleAdvice = useMemo(() => {
+    const advice = analysis?.phaseAdvice ?? null;
+    if (!advice || !palier || !advisorDismiss) return advice;
+    const palierKey = `${palier.startDate}:${palier.kcal}`;
+    if (palierKey !== advisorDismiss.palierKey) return advice;
+    const days = analysis?.trend?.daysOnPalier ?? 0;
+    if (days >= advisorDismiss.untilDay) return advice;
+    return null;
+  }, [analysis, palier, advisorDismiss]);
+
+  useEffect(() => {
+    if (!advisorDismiss) return;
+    if (!palier) {
+      clearAdvisorDismiss();
+      return;
+    }
+    const palierKey = `${palier.startDate}:${palier.kcal}`;
+    if (palierKey !== advisorDismiss.palierKey) {
+      clearAdvisorDismiss();
+    }
+  }, [palier, advisorDismiss, clearAdvisorDismiss]);
+
   return (
     <div className="tp active">
       <WelcomeHeader streak={streak} />
@@ -119,11 +144,13 @@ export default function HomePage() {
         <WeightCard />
       </div>
 
-      {analysis?.phaseAdvice && (
-        <PhaseAdvisorCard advice={analysis.phaseAdvice} />
-      )}
-      {analysis && !analysis.phaseAdvice?.suppressAnalysis && (
-        <AnalysisCard analysis={analysis} stats={stats} />
+      {visibleAdvice && <PhaseAdvisorCard advice={visibleAdvice} />}
+      {analysis && (
+        <AnalysisCard
+          analysis={analysis}
+          stats={stats}
+          hideRecommendation={analysis.phaseAdvice?.suppressAnalysis ?? false}
+        />
       )}
 
       <TodayMealsSummary entries={todayEntries} />

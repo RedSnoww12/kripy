@@ -1,5 +1,7 @@
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useTrackingStore } from '@/store/useTrackingStore';
+import { usePalierStore } from '@/store/usePalierStore';
+import { useAdvisorDismissStore } from '@/store/useAdvisorDismissStore';
 import { computeTdee } from '@/features/settings/tdeeCalc';
 import { toast } from '@/components/ui/toastStore';
 import { PHASE_NAMES } from '@/data/constants';
@@ -46,10 +48,23 @@ export default function PhaseAdvisorCard({ advice }: Props) {
   const sex = useSettingsStore((s) => s.sex);
   const age = useSettingsStore((s) => s.age);
   const weights = useTrackingStore((s) => s.weights);
+  const palier = usePalierStore((s) => s.palier);
+  const setDismiss = useAdvisorDismissStore((s) => s.setDismiss);
 
   const apply = (option: AdvisorOption) => {
     if (option.action === 'wait') {
-      toast("Continue d'observer le palier", 'info');
+      if (palier && option.untilDay) {
+        setDismiss({
+          palierKey: `${palier.startDate}:${palier.kcal}`,
+          untilDay: option.untilDay,
+        });
+      }
+      toast(
+        option.untilDay
+          ? `Carte masquée jusqu'à J${option.untilDay}`
+          : "Continue d'observer le palier",
+        'info',
+      );
       return;
     }
 
