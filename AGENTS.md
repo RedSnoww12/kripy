@@ -180,10 +180,51 @@ Template dans `.env.example`. Valeurs réelles dans `.env.local` (gitignored).
 
 ## 8. Styling
 
-- Les 5 CSS du legacy (`base`, `layout`, `pages`, `components`, `legal`) sont importés dans `main.tsx` — **design system Kinetic Lab préservé**.
-- Utiliser les classes CSS existantes (`btn btn-p`, `tp active`, `hdr`, `nav`…) plutôt que d'écrire du nouveau CSS.
-- Si besoin d'un style ponctuel : variables CSS (`var(--accG)`, `var(--s2)`…) inline, **pas** de nouvelle règle CSS sans raison.
-- Pas de CSS-in-JS, pas de Tailwind — cohérence avec le legacy.
+Le **design system Kinetic Lab** vit dans `src/styles/*.css` (importés une fois dans `main.tsx`) sous forme de **CSS variables** (`--accG`, `--s1`, `--phA`…) et de **classes globales** réutilisables (`btn btn-p`, `hdr`, `nav`, `onb-mono`…). Ces tokens sont la source de vérité — un nouveau composant doit les consommer, pas les redéfinir.
+
+### Règle de séparation
+
+**Pas de bloc `style={{...}}` multi-propriétés ni d'objets de style en TS.** Le CSS d'un composant vit dans un fichier dédié, pas dans le JSX.
+
+Trois mécanismes, par ordre de préférence :
+
+1. **Réutiliser une classe globale existante** (`btn btn-p`, `tp active`, `onb-mono`, `card`…). C'est toujours le premier réflexe.
+2. **CSS Module colocalisé** (`Foo.module.css` à côté de `Foo.tsx`) pour les styles spécifiques au composant. Les classes y sont scopées automatiquement par Vite — pas de risque de collision. Pattern :
+
+   ```tsx
+   import styles from './TargetScreen.module.css';
+   <div className={styles.card}>…</div>
+   ```
+
+3. **`style={{}}` inline uniquement pour passer des valeurs dynamiques** sous forme de **CSS custom properties**, jamais des propriétés CSS classiques. Le CSS Module les consomme via `var(--xxx)` :
+
+   ```tsx
+   // composant
+   <div
+     className={styles.card}
+     style={{ '--phase': PHASE_CSS[phase] } as CSSProperties}
+   />
+   ```
+   ```css
+   /* Foo.module.css */
+   .card {
+     border: 1px solid var(--phase);
+   }
+   ```
+
+   Les états booléens passent par une classe conditionnelle (`styles.inconsistent`), pas par un ternaire dans `style={{}}`.
+
+### Ce qu'il **ne faut pas** faire
+
+- Écrire `style={{ display: 'flex', gap: 8, padding: 12 }}` dans le JSX. → CSS Module.
+- Créer un objet `const xStyle = { … }` exporté pour partager du style. → classe globale ou Module.
+- Ajouter Tailwind, styled-components, emotion, vanilla-extract. → interdit.
+- Dupliquer un token DS dans un Module (`color: #6AEFAF`). → utiliser `var(--accG)`.
+- Toucher aux animations globales (`onbFadeUp`, `onbPulse`…) depuis un Module : elles vivent dans `src/styles/onboarding.css` et restent référençables par nom.
+
+### Migration progressive
+
+L'ancienne approche (`tokens.ts` exposant `T`, `mono`, `monoMicro`, `onbFadeUp` comme objets JS) est **dépréciée**. Quand tu touches à un fichier qui en dépend, migre-le vers un CSS Module + classes globales (`onb-mono`, `onb-mono-micro`). Voir `src/components/onboarding/steps/TargetScreen.tsx` + `TargetScreen.module.css` comme référence canonique.
 
 ---
 
@@ -240,7 +281,8 @@ Détails complets dans `README.md`. Règles à respecter en codant :
 - Ajouter une dépendance sans justification (regarde déjà dans ce qui est installé).
 - Changer le format des valeurs Firestore (strings JSON, clés `nt_*`).
 - Remettre le Firebase compat SDK (`firebase/compat/*`).
-- Ajouter Tailwind / styled-components / emotion.
+- Ajouter Tailwind / styled-components / emotion / vanilla-extract.
+- Écrire des objets de style en TS (`const xStyle = { … }`) ou des `style={{ display: 'flex', … }}` multi-propriétés dans le JSX — voir §8.
 - Committer `.env.local` ou toute clé privée.
 - Toucher à `features/analysis` sans ajouter un test qui couvre le changement.
 - Écrire du JSX dans `src/lib/` (ce dossier est agnostique React).
