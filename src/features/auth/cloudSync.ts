@@ -2,7 +2,9 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  serverTimestamp,
   setDoc,
+  type FieldValue,
   type Firestore,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -10,8 +12,8 @@ import { SYNC_KEYS } from '@/lib/storage';
 import type { AuthUser } from '@/types';
 
 interface CloudDoc {
-  [key: string]: string | number | null | undefined;
-  updatedAt?: number;
+  [key: string]: string | number | FieldValue | null | undefined;
+  updatedAt?: FieldValue;
   displayName?: string | null;
   email?: string | null;
   photoURL?: string | null;
@@ -29,7 +31,7 @@ export async function cloudSave(
   if (!database) return false;
 
   const payload: CloudDoc = {
-    updatedAt: Date.now(),
+    updatedAt: serverTimestamp(),
     displayName: user.displayName ?? null,
     email: user.email ?? null,
     photoURL: user.photoURL ?? null,
