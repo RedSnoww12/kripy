@@ -7,6 +7,7 @@ import type { AuthUser } from '@/types';
 const setDocMock = vi.fn();
 const getDocMock = vi.fn();
 const deleteDocMock = vi.fn();
+const serverTimestampMock = vi.fn(() => ({ _sentinel: 'serverTimestamp' }));
 
 vi.mock('firebase/firestore', () => ({
   getFirestore: () => ({}),
@@ -15,6 +16,7 @@ vi.mock('firebase/firestore', () => ({
     setDocMock(ref, data, opts),
   getDoc: (ref: unknown) => getDocMock(ref),
   deleteDoc: (ref: unknown) => deleteDocMock(ref),
+  serverTimestamp: () => serverTimestampMock(),
 }));
 
 const fakeDb = {} as Firestore;
@@ -50,7 +52,7 @@ describe('cloudSync', () => {
     expect(payload[STORAGE_KEYS.phase]).toBe('"B"');
     expect(payload[STORAGE_KEYS.targets]).toBe('{"kcal":2200}');
     expect(payload.email).toBe('a@b.c');
-    expect(typeof payload.updatedAt).toBe('number');
+    expect(serverTimestampMock).toHaveBeenCalled();
     expect(opts).toEqual({ merge: true });
   });
 

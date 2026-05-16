@@ -4,7 +4,7 @@
   "version": "2.0.0",
   "type": "module",
   "description": "Kripy - Precision Lab (React + Vite PWA)",
-  "packageManager": "yarn@4.14.1",
+  "packageManager": "pnpm@11.1.2",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -41,7 +41,7 @@
     "@types/react-dom": "^19.0.2",
     "@types/react-is": "^19",
     "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/ui": "^2.1.8",
+    "@vitest/ui": "^4.1.6",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.37.3",
@@ -56,13 +56,15 @@
     "typescript-eslint": "^8.19.0",
     "vite": "^6.0.7",
     "vite-plugin-pwa": "^0.21.1",
-    "vitest": "^2.1.8"
+    "vitest": "^4.1.6"
   },
   "engines": {
     "node": ">=20"
   },
-  "resolutions": {
-    "vite": "^6.0.7"
+  "pnpm": {
+    "overrides": {
+      "vite": "^6.0.7"
+    }
   },
   "lint-staged": {
     "*.{ts,tsx}": [
