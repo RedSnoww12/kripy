@@ -1,9 +1,14 @@
+import { useMemo, useState } from 'react';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { toast } from '@/components/ui/toastStore';
 import type { FoodTuple } from '@/types';
 
 interface Props {
   onEdit: (name: string, tuple: FoodTuple) => void;
+}
+
+function normalize(str: string): string {
+  return str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
 export default function RecipeList({ onEdit }: Props) {
@@ -13,8 +18,15 @@ export default function RecipeList({ onEdit }: Props) {
   const setRecipePortions = useNutritionStore((s) => s.setRecipePortions);
   const recipeUnits = useNutritionStore((s) => s.recipeUnits);
   const setRecipeUnits = useNutritionStore((s) => s.setRecipeUnits);
+  const [query, setQuery] = useState('');
 
-  const names = Object.keys(recipes);
+  const allNames = useMemo(() => Object.keys(recipes), [recipes]);
+
+  const filteredNames = useMemo(() => {
+    const q = normalize(query.trim());
+    if (!q) return allNames;
+    return allNames.filter((name) => normalize(name).includes(q));
+  }, [allNames, query]);
 
   const handleDelete = (name: string) => {
     const next = { ...recipes };
@@ -33,7 +45,7 @@ export default function RecipeList({ onEdit }: Props) {
     toast(`${name} supprimée`, 'info');
   };
 
-  if (names.length === 0) {
+  if (allNames.length === 0) {
     return (
       <section className="rcp-list-wrap">
         <div className="rcp-list-head">
@@ -56,73 +68,130 @@ export default function RecipeList({ onEdit }: Props) {
       <div className="rcp-list-head">
         <h3 className="rcp-list-l">Vos créations</h3>
         <span className="rcp-list-count">
-          {names.length} {names.length === 1 ? 'RECETTE' : 'RECETTES'}
+          {filteredNames.length}
+          {query ? ` / ${allNames.length}` : ''}{' '}
+          {filteredNames.length === 1 ? 'RECETTE' : 'RECETTES'}
         </span>
       </div>
-      <div id="rcList">
-        {names.map((name) => {
-          const tuple = recipes[name];
-          const [kcal, p, g, l, f] = tuple;
-          const unit = recipeUnits[name];
-          const basisLabel = unit ? `/ ${unit.label}` : '/ 100g';
-          return (
-            <div key={name} className="rc-item">
-              <div
-                className="rc-body"
-                onClick={() => onEdit(name, tuple)}
-                style={{ cursor: 'pointer' }}
-              >
-                <div className="rc-h">
-                  <h4 className="rc-name">{name}</h4>
-                  <span className="rc-kcal">
-                    {kcal} kcal{' '}
-                    <span className="mono" style={{ opacity: 0.6 }}>
-                      {basisLabel}
-                    </span>
-                  </span>
-                </div>
-                <div className="rc-macs">
-                  <div className="rc-m">
-                    <span className="rc-l">Prot</span>
-                    <span className="rc-v rc-v-p">{p}g</span>
-                  </div>
-                  <div className="rc-m">
-                    <span className="rc-l">Gluc</span>
-                    <span className="rc-v rc-v-g">{g}g</span>
-                  </div>
-                  <div className="rc-m">
-                    <span className="rc-l">Lip</span>
-                    <span className="rc-v rc-v-l">{l}g</span>
-                  </div>
-                  <div className="rc-m">
-                    <span className="rc-l">Fib</span>
-                    <span className="rc-v rc-v-f">{f}g</span>
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <button
-                  type="button"
-                  className="rc-del"
-                  aria-label={`Modifier ${name}`}
-                  onClick={() => onEdit(name, tuple)}
-                  style={{ color: 'var(--acc)' }}
-                >
-                  <span className="material-symbols-outlined">edit</span>
-                </button>
-                <button
-                  type="button"
-                  className="rc-del"
-                  aria-label={`Supprimer ${name}`}
-                  onClick={() => handleDelete(name)}
-                >
-                  <span className="material-symbols-outlined">delete</span>
-                </button>
-              </div>
-            </div>
-          );
-        })}
+
+      <div className="meal-sw" style={{ marginBottom: 4 }}>
+        <span className="material-symbols-outlined si">search</span>
+        <input
+          type="text"
+          inputMode="search"
+          placeholder="Rechercher une recette…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label="Rechercher une recette"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery('')}
+            aria-label="Effacer la recherche"
+            style={{
+              position: 'absolute',
+              right: 8,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: 28,
+              height: 28,
+              border: 'none',
+              borderRadius: 8,
+              background: 'transparent',
+              color: 'var(--t3)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 18 }}
+            >
+              close
+            </span>
+          </button>
+        )}
       </div>
+
+      {filteredNames.length === 0 ? (
+        <div className="rcp-empty">
+          <div className="rcp-empty-ico">
+            <span className="material-symbols-outlined">search_off</span>
+          </div>
+          <h4>Aucun résultat</h4>
+          <p>Aucune recette ne correspond à « {query} ».</p>
+        </div>
+      ) : (
+        <div id="rcList">
+          {filteredNames.map((name) => {
+            const tuple = recipes[name];
+            const [kcal, p, g, l, f] = tuple;
+            const unit = recipeUnits[name];
+            const basisLabel = unit ? `/ ${unit.label}` : '/ 100g';
+            return (
+              <div key={name} className="rc-item">
+                <div
+                  className="rc-body"
+                  onClick={() => onEdit(name, tuple)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className="rc-h">
+                    <h4 className="rc-name">{name}</h4>
+                    <span className="rc-kcal">
+                      {kcal} kcal{' '}
+                      <span className="mono" style={{ opacity: 0.6 }}>
+                        {basisLabel}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="rc-macs">
+                    <div className="rc-m">
+                      <span className="rc-l">Prot</span>
+                      <span className="rc-v rc-v-p">{p}g</span>
+                    </div>
+                    <div className="rc-m">
+                      <span className="rc-l">Gluc</span>
+                      <span className="rc-v rc-v-g">{g}g</span>
+                    </div>
+                    <div className="rc-m">
+                      <span className="rc-l">Lip</span>
+                      <span className="rc-v rc-v-l">{l}g</span>
+                    </div>
+                    <div className="rc-m">
+                      <span className="rc-l">Fib</span>
+                      <span className="rc-v rc-v-f">{f}g</span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style={{ display: 'flex', flexDirection: 'column', gap: 4 }}
+                >
+                  <button
+                    type="button"
+                    className="rc-del"
+                    aria-label={`Modifier ${name}`}
+                    onClick={() => onEdit(name, tuple)}
+                    style={{ color: 'var(--acc)' }}
+                  >
+                    <span className="material-symbols-outlined">edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="rc-del"
+                    aria-label={`Supprimer ${name}`}
+                    onClick={() => handleDelete(name)}
+                  >
+                    <span className="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
