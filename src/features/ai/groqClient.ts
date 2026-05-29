@@ -54,10 +54,27 @@ interface AnalyzeRecipeArgs {
 }
 
 const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
-// Llama 4 Maverick : modèle multimodal le plus puissant de Groq (128 experts vs
-// 16 pour Scout). Meilleur raisonnement numérique et meilleure analyse d'image,
-// pour des estimations nutritionnelles nettement plus précises. Compatible vision.
-const MODEL = 'meta-llama/llama-4-maverick-17b-128e-instruct';
+
+// On choisit le modèle selon la situation (voir pickModel) :
+//
+// VISION_MODEL — Llama 4 Scout : modèle multimodal de Groq, stable et
+// disponible, capable de lire une image. C'est le seul des deux qui sait
+// analyser une photo, on l'utilise donc dès qu'une image est fournie.
+const VISION_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
+// TEXT_MODEL — Llama 3.3 70B : le meilleur modèle de raisonnement texte de
+// Groq (70 milliards de paramètres). Plus précis que Scout sur le calcul
+// numérique pur, on le préfère donc quand l'analyse ne repose que sur du texte
+// (description écrite, recette d'ingrédients).
+const TEXT_MODEL = 'llama-3.3-70b-versatile';
+
+/**
+ * Sélectionne le modèle le plus adapté : un modèle vision si une image est
+ * présente (seul capable de la lire), sinon le meilleur modèle texte pour un
+ * calcul nutritionnel précis.
+ */
+function pickModel(hasImage: boolean): string {
+  return hasImage ? VISION_MODEL : TEXT_MODEL;
+}
 
 function err(reason: AiErrorReason, detail?: string): AiError {
   return { reason, detail };
@@ -80,6 +97,7 @@ type GroqMessage =
 async function requestGroq(
   apiKey: string,
   messages: GroqMessage[],
+  model: string,
 ): Promise<string | AiError> {
   let response: Response;
   try {
@@ -90,7 +108,7 @@ async function requestGroq(
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: MODEL,
+        model,
         messages,
         // Température basse = sorties déterministes et reproductibles, idéal pour
         // un calcul nutritionnel rigoureux.
@@ -167,10 +185,14 @@ export async function analyzeMeal(
   }
   content.push({ type: 'text', text: buildUserMessage(description) });
 
-  const text = await requestGroq(apiKey, [
-    { role: 'system', content: AI_SYSTEM_PROMPT },
-    { role: 'user', content },
-  ]);
+  const text = await requestGroq(
+    apiKey,
+    [
+      { role: 'system', content: AI_SYSTEM_PROMPT },
+      { role: 'user', content },
+    ],
+    pickModel(Boolean(imageB64)),
+  );
   if (typeof text !== 'string') return text;
 
   const obj = extractJson(text);
@@ -203,10 +225,16 @@ export async function analyzeRecipe(
   if (!apiKey) return err('nokey');
   if (!description.trim()) return err('empty');
 
-  const text = await requestGroq(apiKey, [
-    { role: 'system', content: AI_RECIPE_SYSTEM_PROMPT },
-    { role: 'user', content: buildRecipeUserMessage(description) },
-  ]);
+  // Une recette est décrite uniquement en texte : on prend le meilleur modèle
+  // texte pour la précision du calcul.
+  const text = await requestGroq(
+    apiKey,
+    [
+      { role: 'system', content: AI_RECIPE_SYSTEM_PROMPT },
+      { role: 'user', content: buildRecipeUserMessage(description) },
+    ],
+    pickModel(false),
+  );
   if (typeof text !== 'string') return text;
 
   const obj = extractJson(text);
