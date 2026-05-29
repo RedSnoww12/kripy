@@ -54,11 +54,18 @@ interface AnalyzeRecipeArgs {
 }
 
 const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
-// Llama 4 Scout : modèle multimodal de Groq compatible vision (analyse de photos
-// de repas), tool use et JSON mode. NB : Llama 4 Maverick a été déprécié par Groq
-// (mars 2026) et son remplacement gpt-oss-120b ne gère pas les images — Scout
-// reste donc le meilleur modèle vision disponible pour ce cas d'usage.
-const MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
+
+// Stratégie : on utilise toujours le modèle le plus capable compatible avec
+// l'entrée.
+// - MODEL_TEXT : modèle de raisonnement le plus performant de Groq, idéal pour
+//   les calculs nutritionnels (texte seul : recettes, repas sans photo).
+// - MODEL_VISION : seul modèle multimodal disponible, indispensable dès qu'une
+//   photo est envoyée. (Llama 4 Maverick a été déprécié par Groq en mars 2026 ;
+//   gpt-oss-120b ne gère pas les images, d'où ce découplage.)
+// Un repli automatique vers MODEL_VISION couvre le cas où MODEL_TEXT ne serait
+// pas accessible sur le compte (erreur 404 « model does not exist »).
+const MODEL_TEXT = 'openai/gpt-oss-120b';
+const MODEL_VISION = 'meta-llama/llama-4-scout-17b-16e-instruct';
 
 function err(reason: AiErrorReason, detail?: string): AiError {
   return { reason, detail };
@@ -74,14 +81,21 @@ type GroqMessage =
   | { role: 'system' | 'user'; content: string }
   | { role: 'user'; content: GroqContentPart[] };
 
+/** Résultat interne d'un appel à un modèle précis. */
+type SingleResult =
+  | { ok: true; text: string }
+  | { ok: false; error: AiError; modelMissing: boolean };
+
 /**
- * Envoie une requête de complétion à Groq et renvoie le texte brut de la
- * réponse, ou une AiError typée. Centralise la gestion des erreurs HTTP.
+ * Envoie une requête de complétion à Groq avec un modèle donné. Renvoie le
+ * texte brut, ou une erreur typée. `modelMissing` signale un modèle absent /
+ * inaccessible (404), ce qui permet à l'appelant de tenter un autre modèle.
  */
-async function requestGroq(
+async function requestModel(
   apiKey: string,
   messages: GroqMessage[],
-): Promise<string | AiError> {
+  model: string,
+): Promise<SingleResult> {
   let response: Response;
   try {
     response = await fetch(ENDPOINT, {
@@ -91,7 +105,7 @@ async function requestGroq(
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: MODEL,
+        model,
         messages,
         // Température basse = sorties déterministes et reproductibles, idéal pour
         // un calcul nutritionnel rigoureux.
@@ -103,7 +117,7 @@ async function requestGroq(
       }),
     });
   } catch {
-    return err('network');
+    return { ok: false, error: err('network'), modelMissing: false };
   }
 
   if (!response.ok) {
@@ -116,30 +130,76 @@ async function requestGroq(
     } catch {
       /* ignore */
     }
-    if (response.status === 401) return err('badkey');
-    if (response.status === 429) return err('quota');
-    if (response.status >= 500) {
-      return err(
-        'api',
-        'Serveurs Groq temporairement indisponibles. Réessaie.',
-      );
+    if (response.status === 401)
+      return { ok: false, error: err('badkey'), modelMissing: false };
+    if (response.status === 429)
+      return { ok: false, error: err('quota'), modelMissing: false };
+    if (response.status === 404) {
+      return {
+        ok: false,
+        error: err(
+          'api',
+          `Modèle indisponible${detail ? ` — ${detail.slice(0, 150)}` : ''}`,
+        ),
+        modelMissing: true,
+      };
     }
-    return err(
-      'api',
-      `Erreur ${response.status}${detail ? ` — ${detail.slice(0, 150)}` : ''}`,
-    );
+    if (response.status >= 500) {
+      return {
+        ok: false,
+        error: err(
+          'api',
+          'Serveurs Groq temporairement indisponibles. Réessaie.',
+        ),
+        modelMissing: false,
+      };
+    }
+    return {
+      ok: false,
+      error: err(
+        'api',
+        `Erreur ${response.status}${detail ? ` — ${detail.slice(0, 150)}` : ''}`,
+      ),
+      modelMissing: false,
+    };
   }
 
   let data: { choices?: { message?: { content?: string } }[] };
   try {
     data = (await response.json()) as typeof data;
   } catch {
-    return err('api', 'Réponse invalide.');
+    return {
+      ok: false,
+      error: err('api', 'Réponse invalide.'),
+      modelMissing: false,
+    };
   }
 
   const text = data.choices?.[0]?.message?.content;
-  if (!text) return err('parse');
-  return text;
+  if (!text) return { ok: false, error: err('parse'), modelMissing: false };
+  return { ok: true, text };
+}
+
+/**
+ * Tente les modèles dans l'ordre fourni et renvoie la première réponse réussie.
+ * Si un modèle est absent/inaccessible (404), bascule automatiquement sur le
+ * suivant (typiquement le modèle vision) pour ne jamais exposer un 404 à
+ * l'utilisateur. Centralise la gestion des erreurs HTTP.
+ */
+async function requestGroq(
+  apiKey: string,
+  messages: GroqMessage[],
+  models: string[],
+): Promise<string | AiError> {
+  let lastError: AiError = err('api');
+  for (const model of models) {
+    const res = await requestModel(apiKey, messages, model);
+    if (res.ok) return res.text;
+    lastError = res.error;
+    // On ne réessaie avec le modèle suivant que si CE modèle est indisponible.
+    if (!res.modelMissing) break;
+  }
+  return lastError;
 }
 
 function extractJson(text: string): Record<string, unknown> | null {
@@ -168,10 +228,18 @@ export async function analyzeMeal(
   }
   content.push({ type: 'text', text: buildUserMessage(description) });
 
-  const text = await requestGroq(apiKey, [
-    { role: 'system', content: AI_SYSTEM_PROMPT },
-    { role: 'user', content },
-  ]);
+  // Avec photo : modèle vision obligatoire. Sans photo (texte seul) : on
+  // privilégie le modèle de raisonnement, avec repli sur la vision.
+  const models = imageB64 ? [MODEL_VISION] : [MODEL_TEXT, MODEL_VISION];
+
+  const text = await requestGroq(
+    apiKey,
+    [
+      { role: 'system', content: AI_SYSTEM_PROMPT },
+      { role: 'user', content },
+    ],
+    models,
+  );
   if (typeof text !== 'string') return text;
 
   const obj = extractJson(text);
@@ -204,10 +272,16 @@ export async function analyzeRecipe(
   if (!apiKey) return err('nokey');
   if (!description.trim()) return err('empty');
 
-  const text = await requestGroq(apiKey, [
-    { role: 'system', content: AI_RECIPE_SYSTEM_PROMPT },
-    { role: 'user', content: buildRecipeUserMessage(description) },
-  ]);
+  // Recette = texte seul : on privilégie le modèle de raisonnement, avec repli
+  // automatique sur le modèle vision s'il n'est pas accessible.
+  const text = await requestGroq(
+    apiKey,
+    [
+      { role: 'system', content: AI_RECIPE_SYSTEM_PROMPT },
+      { role: 'user', content: buildRecipeUserMessage(description) },
+    ],
+    [MODEL_TEXT, MODEL_VISION],
+  );
   if (typeof text !== 'string') return text;
 
   const obj = extractJson(text);
