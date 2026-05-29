@@ -54,10 +54,11 @@ interface AnalyzeRecipeArgs {
 }
 
 const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
-// Llama 4 Maverick : modèle multimodal le plus puissant de Groq (128 experts vs
-// 16 pour Scout). Meilleur raisonnement numérique et meilleure analyse d'image,
-// pour des estimations nutritionnelles nettement plus précises. Compatible vision.
-const MODEL = 'meta-llama/llama-4-maverick-17b-128e-instruct';
+// Llama 4 Scout : modèle multimodal de Groq compatible vision (analyse de photos
+// de repas), tool use et JSON mode. NB : Llama 4 Maverick a été déprécié par Groq
+// (mars 2026) et son remplacement gpt-oss-120b ne gère pas les images — Scout
+// reste donc le meilleur modèle vision disponible pour ce cas d'usage.
+const MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
 
 function err(reason: AiErrorReason, detail?: string): AiError {
   return { reason, detail };
