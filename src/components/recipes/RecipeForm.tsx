@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { toast } from '@/components/ui/toastStore';
+import RecipeAIModal from '@/features/ai/RecipeAIModal';
+import type { AiRecipeResult } from '@/features/ai/groqClient';
 import type { FoodTuple, RecipeBaseUnit, RecipePortion } from '@/types';
 import type { EditingRecipe } from '@/pages/RecipesPage';
 
@@ -79,6 +81,7 @@ export default function RecipeForm({ editing, onDone }: Props) {
   const recipeUnits = useNutritionStore((s) => s.recipeUnits);
   const setRecipeUnits = useNutritionStore((s) => s.setRecipeUnits);
   const [form, setForm] = useState<FormState>(INITIAL);
+  const [aiOpen, setAiOpen] = useState(false);
 
   useEffect(() => {
     if (editing) {
@@ -129,6 +132,35 @@ export default function RecipeForm({ editing, onDone }: Props) {
   const reset = () => {
     setForm(INITIAL);
     onDone();
+  };
+
+  const handleAiResult = (r: AiRecipeResult) => {
+    const totalPortion =
+      r.poidsTotal > 0
+        ? [
+            {
+              label: 'recette entière',
+              grams: String(Math.round(r.poidsTotal)),
+            },
+          ]
+        : [{ ...EMPTY_PORTION }];
+    setForm((state) => ({
+      ...state,
+      name: state.name.trim() || r.nom,
+      kcal: String(Math.round(r.kcal)),
+      p: String(Math.round(r.prot)),
+      g: String(Math.round(r.gluc)),
+      l: String(Math.round(r.lip)),
+      f: String(Math.round(r.fib)),
+      mode: 'per100g',
+      unitLabel: '',
+      portions: state.portions.some(
+        (p) => p.label.trim() && parseNum(p.grams) > 0,
+      )
+        ? state.portions
+        : totalPortion,
+    }));
+    toast("Valeurs IA pré-remplies — vérifie avant d'enregistrer", 'success');
   };
 
   const collectPortions = (): RecipePortion[] => {
@@ -196,6 +228,28 @@ export default function RecipeForm({ editing, onDone }: Props) {
       <h2 className="rcp-form-l">
         {isEditing ? 'Modifier la recette' : 'Nouvelle recette'}
       </h2>
+      {!isEditing && (
+        <button
+          type="button"
+          className="btn btn-o"
+          onClick={() => setAiOpen(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            marginBottom: 14,
+          }}
+        >
+          <span className="material-symbols-outlined">auto_awesome</span>
+          Analyser avec l'IA
+        </button>
+      )}
+      <RecipeAIModal
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        onConfirm={handleAiResult}
+      />
       <form
         onSubmit={handleSubmit}
         style={{ display: 'flex', flexDirection: 'column', gap: 16 }}

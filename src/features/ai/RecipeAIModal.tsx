@@ -1,6 +1,5 @@
 import {
   useCallback,
-  useEffect,
   useRef,
   useState,
   type ChangeEvent,
@@ -9,10 +8,10 @@ import {
 import Modal from '@/components/ui/Modal';
 import { loadJSON, STORAGE_KEYS } from '@/lib/storage';
 import {
-  analyzeMeal,
+  analyzeRecipe,
   describeAiError,
   type AiError,
-  type AiMealResult,
+  type AiRecipeResult,
 } from './groqClient';
 import { compressImage, readFileAsDataUrl } from './imageUtils';
 import { useSpeechRecognition } from './useSpeechRecognition';
@@ -20,16 +19,19 @@ import { useSpeechRecognition } from './useSpeechRecognition';
 interface Props {
   open: boolean;
   onClose: () => void;
-  onConfirm: (result: AiMealResult) => void;
+  onConfirm: (result: AiRecipeResult) => void;
 }
 
 type Status =
   | { kind: 'idle' }
   | { kind: 'loading' }
   | { kind: 'error'; error: AiError }
-  | { kind: 'result'; result: AiMealResult };
+  | { kind: 'result'; result: AiRecipeResult };
 
-export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
+const EXAMPLE =
+  "ex : 500g pâtes crues, 400g sauce tomate, 1 oignon, filet d'huile d'olive, 80g feta";
+
+export default function RecipeAIModal({ open, onClose, onConfirm }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [imageB64, setImageB64] = useState<string | null>(null);
   const [description, setDescription] = useState('');
@@ -73,7 +75,7 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
     speech.stop();
     const apiKey = loadJSON<string>(STORAGE_KEYS.aiKey, '');
     setStatus({ kind: 'loading' });
-    const result = await analyzeMeal({
+    const result = await analyzeRecipe({
       apiKey,
       description: description.trim(),
       imageB64,
@@ -92,12 +94,23 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
 
   return (
     <Modal open={open} onClose={close}>
-      <h3>✨ Analyse IA</h3>
+      <h3>✨ Analyse IA — Recette</h3>
+      <p
+        style={{
+          fontSize: '.72rem',
+          color: 'var(--t2)',
+          margin: '4px 0 12px',
+          lineHeight: 1.5,
+        }}
+      >
+        Décris tes ingrédients (poids bruts). L'IA calcule les valeurs pour 100g
+        de préparation finale.
+      </p>
 
       {status.kind !== 'result' && (
         <form onSubmit={handleAnalyze}>
           <label
-            htmlFor="aiPhoto"
+            htmlFor="aiRecipePhoto"
             className="btn btn-o"
             style={{
               display: 'flex',
@@ -109,11 +122,11 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
             }}
           >
             <span className="material-symbols-outlined">photo_camera</span>
-            {imageB64 ? 'Changer la photo' : 'Ajouter une photo'}
+            {imageB64 ? 'Changer la photo' : 'Photo des ingrédients (option.)'}
           </label>
           <input
             ref={fileInputRef}
-            id="aiPhoto"
+            id="aiRecipePhoto"
             type="file"
             accept="image/*"
             hidden
@@ -137,8 +150,8 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
           <div style={{ position: 'relative' }}>
             <textarea
               className="inp"
-              rows={3}
-              placeholder="Décris le repas (ex: 250g poulet + riz + salade)"
+              rows={4}
+              placeholder={EXAMPLE}
               value={
                 description +
                 (speech.listening && speech.interim ? ` ${speech.interim}` : '')
@@ -227,17 +240,17 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
               className="btn btn-p"
               disabled={status.kind === 'loading'}
             >
-              {status.kind === 'loading' ? 'Analyse…' : 'Analyser'}
+              {status.kind === 'loading' ? 'Analyse…' : 'Calculer'}
             </button>
           </div>
         </form>
       )}
 
       {status.kind === 'result' && (
-        <AiResultEditor
+        <RecipeAIResult
           result={status.result}
-          onConfirm={(edited) => {
-            onConfirm(edited);
+          onConfirm={() => {
+            onConfirm(status.result);
             close();
           }}
           onReset={() => setStatus({ kind: 'idle' })}
@@ -247,71 +260,16 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
   );
 }
 
-interface EditableForm {
-  nom: string;
-  kcal: string;
-  prot: string;
-  gluc: string;
-  lip: string;
-  fib: string;
-}
-
-function tupleToEditable(r: AiMealResult): EditableForm {
-  return {
-    nom: r.nom,
-    kcal: String(Math.round(r.kcal)),
-    prot: String(Math.round(r.prot)),
-    gluc: String(Math.round(r.gluc)),
-    lip: String(Math.round(r.lip)),
-    fib: String(Math.round(r.fib)),
-  };
-}
-
-function parseNum(value: string): number {
-  const n = parseFloat(value.replace(',', '.'));
-  return Number.isFinite(n) && n >= 0 ? n : 0;
-}
-
-function AiResultEditor({
+function RecipeAIResult({
   result,
   onConfirm,
   onReset,
 }: {
-  result: AiMealResult;
-  onConfirm: (r: AiMealResult) => void;
+  result: AiRecipeResult;
+  onConfirm: () => void;
   onReset: () => void;
 }) {
-  const [form, setForm] = useState<EditableForm>(() => tupleToEditable(result));
-
-  useEffect(() => {
-    setForm(tupleToEditable(result));
-  }, [result]);
-
-  const patch = (v: Partial<EditableForm>) => setForm((s) => ({ ...s, ...v }));
-
-  const handleConfirm = () => {
-    onConfirm({
-      nom: form.nom.trim() || result.nom,
-      kcal: parseNum(form.kcal),
-      prot: parseNum(form.prot),
-      gluc: parseNum(form.gluc),
-      lip: parseNum(form.lip),
-      fib: parseNum(form.fib),
-      details: result.details,
-    });
-  };
-
-  const macros: {
-    key: keyof EditableForm;
-    label: string;
-    color: string;
-  }[] = [
-    { key: 'prot', label: 'Prot', color: 'var(--grn)' },
-    { key: 'gluc', label: 'Gluc', color: 'var(--cyan)' },
-    { key: 'lip', label: 'Lip', color: 'var(--pnk)' },
-    { key: 'fib', label: 'Fib', color: 'var(--org)' },
-  ];
-
+  const { nom, kcal, prot, gluc, lip, fib, poidsTotal, details } = result;
   return (
     <div>
       <div
@@ -319,6 +277,7 @@ function AiResultEditor({
           background: 'var(--s1)',
           borderRadius: 20,
           padding: '20px 18px',
+          textAlign: 'center',
         }}
       >
         <div
@@ -328,63 +287,43 @@ function AiResultEditor({
             textTransform: 'uppercase',
             letterSpacing: 1,
             fontWeight: 800,
-            marginBottom: 10,
-            textAlign: 'center',
+            marginBottom: 6,
           }}
         >
-          Estimation IA — modifie si besoin
+          Pour 100g de préparation
         </div>
-
-        <input
-          type="text"
-          className="inp"
-          value={form.nom}
-          onChange={(e) => patch({ nom: e.target.value })}
-          placeholder="Nom du plat"
-          style={{
-            marginBottom: 14,
-            textAlign: 'center',
-            fontWeight: 700,
-          }}
-          aria-label="Nom du plat"
-        />
-
         <div
           style={{
-            display: 'flex',
-            alignItems: 'baseline',
-            justifyContent: 'center',
-            gap: 6,
-            marginBottom: 14,
+            fontSize: '.95rem',
+            color: 'var(--t1)',
+            fontWeight: 700,
+            marginBottom: 10,
           }}
         >
-          <input
-            type="number"
-            inputMode="numeric"
-            className="inp mono"
-            value={form.kcal}
-            onChange={(e) => patch({ kcal: e.target.value })}
-            aria-label="Calories"
-            style={{
-              width: 130,
-              textAlign: 'center',
-              fontSize: '2rem',
-              fontWeight: 800,
-              color: 'var(--acc)',
-              letterSpacing: '-1px',
-              padding: '8px 4px',
-            }}
-          />
-          <span
-            style={{
-              fontSize: '.7rem',
-              color: 'var(--t2)',
-              textTransform: 'uppercase',
-              fontWeight: 700,
-            }}
-          >
-            kcal
-          </span>
+          {nom}
+        </div>
+        <div
+          className="mono"
+          style={{
+            fontSize: '2.6rem',
+            fontWeight: 800,
+            color: 'var(--acc)',
+            letterSpacing: '-2px',
+            lineHeight: 1,
+          }}
+        >
+          {Math.round(kcal)}
+        </div>
+        <div
+          style={{
+            fontSize: '.65rem',
+            color: 'var(--t2)',
+            marginTop: 4,
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+          }}
+        >
+          kcal / 100g
         </div>
 
         <div
@@ -392,15 +331,21 @@ function AiResultEditor({
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
             gap: 6,
+            marginTop: 14,
           }}
         >
-          {macros.map((m) => (
+          {[
+            { l: 'Prot', v: prot, c: 'var(--grn)' },
+            { l: 'Gluc', v: gluc, c: 'var(--cyan)' },
+            { l: 'Lip', v: lip, c: 'var(--pnk)' },
+            { l: 'Fib', v: fib, c: 'var(--org)' },
+          ].map((m) => (
             <div
-              key={m.key}
+              key={m.l}
               style={{
                 background: 'var(--s2)',
                 borderRadius: 12,
-                padding: '8px 4px',
+                padding: '10px 4px',
               }}
             >
               <div
@@ -410,52 +355,49 @@ function AiResultEditor({
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '.18em',
-                  textAlign: 'center',
-                  marginBottom: 4,
                 }}
               >
-                {m.label}
+                {m.l}
               </div>
-              <input
-                type="number"
-                inputMode="decimal"
-                className="mono"
-                value={form[m.key]}
-                onChange={(e) => patch({ [m.key]: e.target.value })}
-                aria-label={m.label}
-                style={{
-                  width: '100%',
-                  textAlign: 'center',
-                  fontSize: '.95rem',
-                  fontWeight: 800,
-                  color: m.color,
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  padding: 0,
-                }}
-              />
               <div
+                className="mono"
                 style={{
-                  fontSize: '.55rem',
-                  color: 'var(--t3)',
-                  textAlign: 'center',
+                  fontSize: '.9rem',
+                  fontWeight: 800,
+                  color: m.c,
                   marginTop: 2,
                 }}
               >
-                g
+                {Math.round(m.v)}g
               </div>
             </div>
           ))}
         </div>
 
-        {result.details && (
+        {poidsTotal > 0 && (
+          <div
+            style={{
+              marginTop: 12,
+              fontSize: '.7rem',
+              color: 'var(--t2)',
+            }}
+          >
+            Poids total estimé :{' '}
+            <span className="mono" style={{ fontWeight: 700 }}>
+              {Math.round(poidsTotal)}g
+            </span>{' '}
+            de préparation finale
+          </div>
+        )}
+
+        {details && (
           <div
             style={{
               marginTop: 14,
               padding: '12px 14px',
               background: 'var(--s2)',
               borderRadius: 14,
+              textAlign: 'left',
               lineHeight: 1.55,
             }}
           >
@@ -469,7 +411,7 @@ function AiResultEditor({
                 marginBottom: 5,
               }}
             >
-              💡 Explication
+              💡 Détail du calcul
             </div>
             <div
               style={{
@@ -477,7 +419,7 @@ function AiResultEditor({
                 color: 'var(--t2)',
               }}
             >
-              {result.details}
+              {details}
             </div>
           </div>
         )}
@@ -487,8 +429,8 @@ function AiResultEditor({
         <button type="button" className="btn btn-o" onClick={onReset}>
           Refaire
         </button>
-        <button type="button" className="btn btn-p" onClick={handleConfirm}>
-          Ajouter au journal
+        <button type="button" className="btn btn-p" onClick={onConfirm}>
+          Pré-remplir la recette
         </button>
       </div>
     </div>

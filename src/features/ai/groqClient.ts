@@ -1,4 +1,9 @@
-import { AI_SYSTEM_PROMPT, buildUserMessage } from './prompts';
+import {
+  AI_RECIPE_SYSTEM_PROMPT,
+  AI_SYSTEM_PROMPT,
+  buildRecipeUserMessage,
+  buildUserMessage,
+} from './prompts';
 
 export type AiErrorReason =
   | 'nokey'
@@ -130,6 +135,111 @@ export async function analyzeMeal(
       gluc,
       lip,
       fib: Number(obj.fib) || 0,
+      details: obj.details,
+    };
+  } catch {
+    return err('parse');
+  }
+}
+
+export interface AiRecipeResult {
+  nom: string;
+  kcal: number;
+  prot: number;
+  gluc: number;
+  lip: number;
+  fib: number;
+  poidsTotal: number;
+  details?: string;
+}
+
+export async function analyzeRecipe(
+  args: AnalyzeArgs,
+): Promise<AiRecipeResult | AiError> {
+  const { apiKey, description, imageB64 } = args;
+
+  if (!apiKey) return err('nokey');
+  if (!description && !imageB64) return err('empty');
+
+  const content: GroqContentPart[] = [];
+  if (imageB64) {
+    content.push({ type: 'image_url', image_url: { url: imageB64 } });
+  }
+  content.push({ type: 'text', text: buildRecipeUserMessage(description) });
+
+  let response: Response;
+  try {
+    response = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [
+          { role: 'system', content: AI_RECIPE_SYSTEM_PROMPT },
+          { role: 'user', content },
+        ],
+        temperature: 0.1,
+        max_tokens: 1024,
+      }),
+    });
+  } catch {
+    return err('network');
+  }
+
+  if (!response.ok) {
+    let detail = '';
+    try {
+      const j = (await response.json()) as { error?: { message?: string } };
+      detail = j.error?.message ?? '';
+    } catch {
+      /* ignore */
+    }
+    if (response.status === 401) return err('badkey');
+    if (response.status === 429) return err('quota');
+    if (response.status >= 500) {
+      return err(
+        'api',
+        'Serveurs Groq temporairement indisponibles. Réessaie.',
+      );
+    }
+    return err(
+      'api',
+      `Erreur ${response.status}${detail ? ` — ${detail.slice(0, 150)}` : ''}`,
+    );
+  }
+
+  let data: { choices?: { message?: { content?: string } }[] };
+  try {
+    data = (await response.json()) as typeof data;
+  } catch {
+    return err('api', 'Réponse invalide.');
+  }
+
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) return err('parse');
+
+  try {
+    const match = text.match(/\{[\s\S]*\}/);
+    const json = match ? match[0] : text;
+    const obj = JSON.parse(json) as Partial<AiRecipeResult>;
+    if (!obj || typeof obj !== 'object') return err('parse');
+    const kcal = Number(obj.kcal) || 0;
+    const prot = Number(obj.prot) || 0;
+    const gluc = Number(obj.gluc) || 0;
+    const lip = Number(obj.lip) || 0;
+    const poidsTotal = Number(obj.poidsTotal) || 0;
+    if (!kcal && !prot && !gluc && !lip) return err('parse');
+    return {
+      nom: obj.nom ?? 'Recette',
+      kcal,
+      prot,
+      gluc,
+      lip,
+      fib: Number(obj.fib) || 0,
+      poidsTotal,
       details: obj.details,
     };
   } catch {

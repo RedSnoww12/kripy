@@ -744,3 +744,13 @@
     animation: none !important;
   }
 }
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(255, 107, 107, 0);
+  }
+}
