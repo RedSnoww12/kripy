@@ -1,71 +1,54 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-} from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import Modal from '@/components/ui/Modal';
 import { loadJSON, STORAGE_KEYS } from '@/lib/storage';
 import {
-  analyzeMeal,
+  analyzeRecipe,
   describeAiError,
   type AiError,
-  type AiMealResult,
+  type AiRecipeResult,
 } from './groqClient';
-import { compressImage, readFileAsDataUrl } from './imageUtils';
 import MicButton from './MicButton';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onConfirm: (result: AiMealResult) => void;
+  onConfirm: (result: AiRecipeResult) => void;
 }
 
 type Status =
   | { kind: 'idle' }
   | { kind: 'loading' }
   | { kind: 'error'; error: AiError }
-  | { kind: 'result'; result: AiMealResult };
+  | { kind: 'result'; result: AiRecipeResult };
 
-export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [imageB64, setImageB64] = useState<string | null>(null);
+const MACRO_FIELDS = [
+  { key: 'prot', label: 'Prot', color: 'var(--grn)' },
+  { key: 'gluc', label: 'Gluc', color: 'var(--cyan)' },
+  { key: 'lip', label: 'Lip', color: 'var(--pnk)' },
+  { key: 'fib', label: 'Fib', color: 'var(--org)' },
+] as const;
+
+export default function RecipeAIModal({ open, onClose, onConfirm }: Props) {
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
 
-  const reset = useCallback(() => {
-    setImageB64(null);
+  const reset = () => {
     setDescription('');
     setStatus({ kind: 'idle' });
-  }, []);
+  };
 
-  const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    try {
-      const raw = await readFileAsDataUrl(file);
-      const compressed = await compressImage(raw, 1024, 0.8);
-      setImageB64(compressed);
-    } catch {
-      setStatus({
-        kind: 'error',
-        error: { reason: 'api', detail: 'Image illisible.' },
-      });
-    } finally {
-      event.target.value = '';
-    }
+  const close = () => {
+    reset();
+    onClose();
   };
 
   const handleAnalyze = async (event: FormEvent) => {
     event.preventDefault();
     const apiKey = loadJSON<string>(STORAGE_KEYS.aiKey, '');
     setStatus({ kind: 'loading' });
-    const result = await analyzeMeal({
+    const result = await analyzeRecipe({
       apiKey,
       description: description.trim(),
-      imageB64,
     });
     if ('reason' in result) {
       setStatus({ kind: 'error', error: result });
@@ -74,66 +57,36 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
     }
   };
 
-  const close = () => {
-    reset();
-    onClose();
-  };
-
   return (
     <Modal open={open} onClose={close}>
-      <h3>✨ Analyse IA</h3>
+      <h3>✨ Analyser une recette</h3>
 
       {status.kind !== 'result' && (
         <form onSubmit={handleAnalyze}>
-          <label
-            htmlFor="aiPhoto"
-            className="btn btn-o"
+          <p
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
+              fontSize: '.78rem',
+              color: 'var(--t2)',
+              lineHeight: 1.5,
               marginBottom: 10,
-              cursor: 'pointer',
             }}
           >
-            <span className="material-symbols-outlined">photo_camera</span>
-            {imageB64 ? 'Changer la photo' : 'Ajouter une photo'}
-          </label>
-          <input
-            ref={fileInputRef}
-            id="aiPhoto"
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handleFile}
-          />
-
-          {imageB64 && (
-            <img
-              src={imageB64}
-              alt="Aperçu"
-              style={{
-                width: '100%',
-                borderRadius: 'var(--r)',
-                marginBottom: 10,
-                maxHeight: 220,
-                objectFit: 'cover',
-              }}
-            />
-          )}
+            Décris tes ingrédients bruts (crus, avec leurs poids). L'IA calcule
+            les valeurs <strong>pour 100g de préparation finale</strong> et
+            estime le poids total cuit.
+          </p>
 
           <textarea
             className="inp"
-            rows={3}
-            placeholder="Décris le repas (ex: 250g poulet + riz + salade)"
+            rows={4}
+            placeholder="ex : 500g pâtes crues, 400g sauce tomate, 1 oignon, filet d'huile, 80g feta"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             style={{ resize: 'vertical' }}
           />
 
           <MicButton
-            label="Dicter la description du repas"
+            label="Dicter les ingrédients de la recette"
             onTranscript={(chunk) =>
               setDescription((prev) => (prev ? `${prev} ${chunk}` : chunk))
             }
@@ -176,7 +129,7 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
       )}
 
       {status.kind === 'result' && (
-        <AiResult
+        <RecipeAiResult
           result={status.result}
           onConfirm={(edited) => {
             onConfirm(edited);
@@ -189,25 +142,17 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
   );
 }
 
-const MACRO_FIELDS = [
-  { key: 'prot', label: 'Prot', color: 'var(--grn)' },
-  { key: 'gluc', label: 'Gluc', color: 'var(--cyan)' },
-  { key: 'lip', label: 'Lip', color: 'var(--pnk)' },
-  { key: 'fib', label: 'Fib', color: 'var(--org)' },
-] as const;
-
-function AiResult({
+function RecipeAiResult({
   result,
   onConfirm,
   onReset,
 }: {
-  result: AiMealResult;
-  onConfirm: (edited: AiMealResult) => void;
+  result: AiRecipeResult;
+  onConfirm: (edited: AiRecipeResult) => void;
   onReset: () => void;
 }) {
-  // Le résultat IA est désormais éditable : pas besoin de tout relancer
-  // si l'estimation est proche mais légèrement décalée.
   const [nom, setNom] = useState(result.nom);
+  const [poids, setPoids] = useState(String(result.poidsTotal));
   const [kcal, setKcal] = useState(String(Math.round(result.kcal)));
   const [macros, setMacros] = useState({
     prot: String(Math.round(result.prot)),
@@ -218,6 +163,7 @@ function AiResult({
 
   useEffect(() => {
     setNom(result.nom);
+    setPoids(String(result.poidsTotal));
     setKcal(String(Math.round(result.kcal)));
     setMacros({
       prot: String(Math.round(result.prot)),
@@ -234,7 +180,8 @@ function AiResult({
 
   const handleConfirm = () => {
     onConfirm({
-      nom: nom.trim() || 'Repas',
+      nom: nom.trim() || 'Recette',
+      poidsTotal: Math.max(0, Math.round(num(poids))),
       kcal: num(kcal),
       prot: num(macros.prot),
       gluc: num(macros.gluc),
@@ -250,7 +197,7 @@ function AiResult({
         style={{
           background: 'var(--s1)',
           borderRadius: 20,
-          padding: '22px 18px',
+          padding: '20px 18px',
         }}
       >
         <div
@@ -264,19 +211,15 @@ function AiResult({
             textAlign: 'center',
           }}
         >
-          Estimation du repas — modifiable
+          Valeurs pour 100g — modifiable
         </div>
 
         <input
           className="inp"
           value={nom}
           onChange={(e) => setNom(e.target.value)}
-          aria-label="Nom du repas"
-          style={{
-            textAlign: 'center',
-            fontWeight: 700,
-            marginBottom: 10,
-          }}
+          aria-label="Nom de la recette"
+          style={{ textAlign: 'center', fontWeight: 700, marginBottom: 10 }}
         />
 
         <div
@@ -293,7 +236,7 @@ function AiResult({
             inputMode="numeric"
             value={kcal}
             onChange={(e) => setKcal(e.target.value)}
-            aria-label="Calories"
+            aria-label="Calories pour 100g"
             style={{
               fontSize: '2.2rem',
               fontWeight: 800,
@@ -310,7 +253,7 @@ function AiResult({
               textTransform: 'uppercase',
             }}
           >
-            kcal
+            kcal / 100g
           </span>
         </div>
 
@@ -351,7 +294,7 @@ function AiResult({
                 onChange={(e) =>
                   setMacros((prev) => ({ ...prev, [m.key]: e.target.value }))
                 }
-                aria-label={m.label}
+                aria-label={`${m.label} pour 100g`}
                 style={{
                   fontSize: '.9rem',
                   fontWeight: 800,
@@ -363,6 +306,36 @@ function AiResult({
               />
             </div>
           ))}
+        </div>
+
+        <div
+          style={{
+            marginTop: 14,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <label
+            style={{
+              fontSize: '.7rem',
+              color: 'var(--t2)',
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Poids total estimé
+          </label>
+          <input
+            className="inp mono"
+            type="number"
+            inputMode="numeric"
+            value={poids}
+            onChange={(e) => setPoids(e.target.value)}
+            aria-label="Poids total estimé en grammes"
+            style={{ textAlign: 'right', flex: 1 }}
+          />
+          <span style={{ fontSize: '.7rem', color: 'var(--t2)' }}>g</span>
         </div>
 
         {result.details && (
@@ -386,14 +359,9 @@ function AiResult({
                 marginBottom: 5,
               }}
             >
-              💡 Explication
+              💡 Détail du calcul
             </div>
-            <div
-              style={{
-                fontSize: '.72rem',
-                color: 'var(--t2)',
-              }}
-            >
+            <div style={{ fontSize: '.72rem', color: 'var(--t2)' }}>
               {result.details}
             </div>
           </div>
@@ -405,7 +373,7 @@ function AiResult({
           Refaire
         </button>
         <button type="button" className="btn btn-p" onClick={handleConfirm}>
-          Ajouter au journal
+          Pré-remplir le formulaire
         </button>
       </div>
     </div>

@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { toast } from '@/components/ui/toastStore';
+import RecipeAIModal from '@/features/ai/RecipeAIModal';
+import type { AiRecipeResult } from '@/features/ai/groqClient';
 import type { FoodTuple, RecipeBaseUnit, RecipePortion } from '@/types';
 import type { EditingRecipe } from '@/pages/RecipesPage';
 
@@ -79,6 +81,7 @@ export default function RecipeForm({ editing, onDone }: Props) {
   const recipeUnits = useNutritionStore((s) => s.recipeUnits);
   const setRecipeUnits = useNutritionStore((s) => s.setRecipeUnits);
   const [form, setForm] = useState<FormState>(INITIAL);
+  const [aiOpen, setAiOpen] = useState(false);
 
   useEffect(() => {
     if (editing) {
@@ -129,6 +132,27 @@ export default function RecipeForm({ editing, onDone }: Props) {
   const reset = () => {
     setForm(INITIAL);
     onDone();
+  };
+
+  const handleAiResult = (result: AiRecipeResult) => {
+    // Pré-remplissage : mode "Pour 100g" + une portion "recette entière"
+    // valant le poids total estimé par l'IA.
+    const portions: PortionInput[] =
+      result.poidsTotal > 0
+        ? [{ label: 'recette entière', grams: String(result.poidsTotal) }]
+        : [{ ...EMPTY_PORTION }];
+    setForm({
+      name: result.nom,
+      kcal: String(Math.round(result.kcal)),
+      p: String(Math.round(result.prot)),
+      g: String(Math.round(result.gluc)),
+      l: String(Math.round(result.lip)),
+      f: String(Math.round(result.fib)),
+      mode: 'per100g',
+      unitLabel: '',
+      portions,
+    });
+    toast('Formulaire pré-rempli — vérifie puis enregistre', 'success');
   };
 
   const collectPortions = (): RecipePortion[] => {
@@ -196,6 +220,32 @@ export default function RecipeForm({ editing, onDone }: Props) {
       <h2 className="rcp-form-l">
         {isEditing ? 'Modifier la recette' : 'Nouvelle recette'}
       </h2>
+
+      {!isEditing && (
+        <button
+          type="button"
+          className="btn btn-o"
+          onClick={() => setAiOpen(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            width: '100%',
+            marginBottom: 16,
+          }}
+        >
+          <span className="material-symbols-outlined">auto_awesome</span>
+          Analyser avec l'IA
+        </button>
+      )}
+
+      <RecipeAIModal
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        onConfirm={handleAiResult}
+      />
+
       <form
         onSubmit={handleSubmit}
         style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
