@@ -54,7 +54,10 @@ interface AnalyzeRecipeArgs {
 }
 
 const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
+// Llama 4 Maverick : modèle multimodal le plus puissant de Groq (128 experts vs
+// 16 pour Scout). Meilleur raisonnement numérique et meilleure analyse d'image,
+// pour des estimations nutritionnelles nettement plus précises. Compatible vision.
+const MODEL = 'meta-llama/llama-4-maverick-17b-128e-instruct';
 
 function err(reason: AiErrorReason, detail?: string): AiError {
   return { reason, detail };
@@ -89,8 +92,13 @@ async function requestGroq(
       body: JSON.stringify({
         model: MODEL,
         messages,
+        // Température basse = sorties déterministes et reproductibles, idéal pour
+        // un calcul nutritionnel rigoureux.
         temperature: 0.1,
-        max_tokens: 1024,
+        top_p: 0.9,
+        // Marge augmentée : laisse le modèle décomposer chaque composant et
+        // détailler son calcul sans tronquer la réponse JSON.
+        max_tokens: 2048,
       }),
     });
   } catch {
