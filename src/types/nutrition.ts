@@ -46,6 +46,14 @@ export interface Targets {
   fib: number;
 }
 
+export interface BudgetAdjustment {
+  id: number;
+  sourceDate: string;
+  amount: number;
+  days: number;
+  startDate: string;
+}
+
 export type RecipesDict = Record<string, FoodTuple>;
 
 export interface UnitPreset {

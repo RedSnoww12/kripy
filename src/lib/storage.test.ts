@@ -24,5 +24,6 @@ describe('storage', () => {
   it('uses the stable nt_* key namespace for cloud sync', () => {
     expect(STORAGE_KEYS.log).toBe('nt_log');
     expect(STORAGE_KEYS.targets).toBe('nt_targets');
+    expect(STORAGE_KEYS.budget).toBe('nt_budget');
   });
 });

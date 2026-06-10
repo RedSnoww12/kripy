@@ -3,7 +3,9 @@ export { useSettingsStore } from './useSettingsStore';
 export { useNutritionStore } from './useNutritionStore';
 export { useTrackingStore } from './useTrackingStore';
 export { usePalierStore } from './usePalierStore';
+export { useBudgetStore } from './useBudgetStore';
 
+import { useBudgetStore } from './useBudgetStore';
 import { useNutritionStore } from './useNutritionStore';
 import { usePalierStore } from './usePalierStore';
 import { useSettingsStore } from './useSettingsStore';
@@ -14,4 +16,5 @@ export function rehydrateAll(): void {
   useNutritionStore.getState().rehydrate();
   useTrackingStore.getState().rehydrate();
   usePalierStore.getState().rehydrate();
+  useBudgetStore.getState().rehydrate();
 }

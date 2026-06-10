@@ -7,6 +7,8 @@ interface Props {
   onSelectSlot: (slot: MealSlot) => void;
   onEdit: (entry: MealEntry) => void;
   onDelete: (entry: MealEntry) => void;
+  prevDayEntries?: MealEntry[];
+  onCopyPrevDay?: () => void;
 }
 
 function pluralize(label: string, count: number): string {
@@ -36,6 +38,8 @@ export default function MealEntriesList({
   onSelectSlot,
   onEdit,
   onDelete,
+  prevDayEntries = [],
+  onCopyPrevDay,
 }: Props) {
   const currentEntries = entries.filter((e) => e.meal === currentSlot);
   const sum = currentEntries.reduce(
@@ -71,7 +75,27 @@ export default function MealEntriesList({
         </header>
 
         {currentEntries.length === 0 ? (
-          <p className="meal-card-empty mono">// aucun item sur ce repas</p>
+          <>
+            <p className="meal-card-empty mono">// aucun item sur ce repas</p>
+            {onCopyPrevDay && prevDayEntries.length > 0 && (
+              <button
+                type="button"
+                className="meal-copy-prev"
+                onClick={onCopyPrevDay}
+              >
+                <span className="material-symbols-outlined">history</span>
+                <span className="meal-copy-prev-txt">
+                  Copier d'hier
+                  <span className="meal-copy-prev-meta mono">
+                    {prevDayEntries.length} item
+                    {prevDayEntries.length > 1 ? 's' : ''} ·{' '}
+                    {Math.round(prevDayEntries.reduce((s, e) => s + e.kcal, 0))}{' '}
+                    kcal
+                  </span>
+                </span>
+              </button>
+            )}
+          </>
         ) : (
           <ul className="meal-card-list">
             {currentEntries.map((entry) => (

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import WelcomeHeader from '@/components/home/WelcomeHeader';
 import CalorieRing from '@/components/home/CalorieRing';
+import BudgetSmoothPanel from '@/components/home/BudgetSmoothPanel';
 import MacroRow from '@/components/home/MacroRow';
 import WaterTracker from '@/components/home/WaterTracker';
 import StepsCard from '@/components/home/StepsCard';
@@ -10,6 +11,7 @@ import AnalysisCard from '@/components/home/AnalysisCard';
 import PhaseAdvisorCard from '@/components/home/PhaseAdvisorCard';
 import GettingStartedCard from '@/components/home/GettingStartedCard';
 import { computeStreak, dayTotals } from '@/features/nutrition/totals';
+import { effectiveKcalTarget } from '@/features/nutrition/budget';
 import { buildHomeAnalysis } from '@/features/analysis/home-analysis';
 import { weightStats } from '@/features/analysis/trend';
 import { computeBmr } from '@/features/settings/tdeeCalc';
@@ -19,6 +21,7 @@ import { useNutritionStore } from '@/store/useNutritionStore';
 import { useTrackingStore } from '@/store/useTrackingStore';
 import { usePalierStore } from '@/store/usePalierStore';
 import { useAdvisorDismissStore } from '@/store/useAdvisorDismissStore';
+import { useBudgetStore } from '@/store/useBudgetStore';
 
 export default function HomePage() {
   const today = todayISO();
@@ -40,12 +43,22 @@ export default function HomePage() {
   const recomputePalier = usePalierStore((s) => s.recompute);
   const advisorDismiss = useAdvisorDismissStore((s) => s.dismiss);
   const clearAdvisorDismiss = useAdvisorDismissStore((s) => s.clear);
+  const adjustments = useBudgetStore((s) => s.adjustments);
+  const pruneBudget = useBudgetStore((s) => s.prune);
+
+  useEffect(() => {
+    pruneBudget(today);
+  }, [pruneBudget, today]);
 
   useEffect(() => {
     recomputePalier(targets.kcal, phase, weights);
   }, [targets.kcal, phase, weights, recomputePalier]);
 
   const totals = useMemo(() => dayTotals(log, today), [log, today]);
+  const effectiveKcal = useMemo(
+    () => effectiveKcalTarget(targets.kcal, adjustments, today),
+    [targets.kcal, adjustments, today],
+  );
   const todayEntries = log[today] ?? [];
   const streak = useMemo(() => computeStreak(log, today), [log, today]);
 
@@ -132,7 +145,12 @@ export default function HomePage() {
           hasMeal={hasMeal}
         />
       )}
-      <CalorieRing consumed={totals.kcal} target={targets.kcal} />
+      <CalorieRing
+        consumed={totals.kcal}
+        target={effectiveKcal}
+        baseTarget={targets.kcal}
+      />
+      <BudgetSmoothPanel today={today} consumedToday={totals.kcal} />
       <MacroRow totals={totals} targets={targets} />
 
       <section className="kl-bento-row">
@@ -145,6 +163,9 @@ export default function HomePage() {
       </div>
 
       {visibleAdvice && <PhaseAdvisorCard advice={visibleAdvice} />}
+
+      <TodayMealsSummary entries={todayEntries} />
+
       {analysis && (
         <AnalysisCard
           analysis={analysis}
@@ -152,8 +173,6 @@ export default function HomePage() {
           hideRecommendation={analysis.phaseAdvice?.suppressAnalysis ?? false}
         />
       )}
-
-      <TodayMealsSummary entries={todayEntries} />
     </div>
   );
 }
