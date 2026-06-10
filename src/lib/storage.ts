@@ -60,6 +60,8 @@ export const STORAGE_KEYS = {
   barcodes: 'nt_barcodes',
   activity: 'nt_activity',
   aiKey: 'nt_aikey',
+  geminiKey: 'nt_gemini_key',
+  aiProvider: 'nt_ai_provider',
   googleToken: 'nt_gtoken',
   tdeeConfirmed: 'nt_tdee_ok',
   name: 'nt_name',

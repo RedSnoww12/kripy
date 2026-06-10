@@ -1,12 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import Modal from '@/components/ui/Modal';
-import { loadJSON, STORAGE_KEYS } from '@/lib/storage';
-import {
-  analyzeRecipe,
-  describeAiError,
-  type AiError,
-  type AiRecipeResult,
-} from './groqClient';
+import { analyzeRecipe } from './client';
+import { describeAiError, type AiError, type AiRecipeResult } from './types';
 import MicButton from './MicButton';
 
 interface Props {
@@ -44,10 +39,8 @@ export default function RecipeAIModal({ open, onClose, onConfirm }: Props) {
 
   const handleAnalyze = async (event: FormEvent) => {
     event.preventDefault();
-    const apiKey = loadJSON<string>(STORAGE_KEYS.aiKey, '');
     setStatus({ kind: 'loading' });
     const result = await analyzeRecipe({
-      apiKey,
       description: description.trim(),
     });
     if ('reason' in result) {

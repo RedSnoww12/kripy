@@ -65,8 +65,8 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Paramètres techniques</strong> : préférences de thème
-            (sombre/clair), clé API Groq (si vous l'avez renseignée pour
-            l'analyse par photo).
+            (sombre/clair), clé API du fournisseur d'IA choisi (Groq ou Gemini,
+            si vous l'avez renseignée pour l'analyse par photo).
           </li>
         </ul>
         <p>
@@ -121,7 +121,8 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Analyse de repas par intelligence artificielle</strong> via
-            l'API Groq (optionnelle) — base légale : consentement explicite.
+            l'API du fournisseur choisi (Groq ou Google Gemini, optionnelle) —
+            base légale : consentement explicite.
           </li>
           <li>
             <strong>Recherche de produits</strong> via l'API OpenFoodFacts lors
@@ -146,10 +147,17 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Groq, Inc.</strong> (États-Unis) — analyse d'image par IA,
-            uniquement si vous utilisez la fonctionnalité «&nbsp;analyse
-            photo&nbsp;» avec votre propre clé API. Un transfert hors UE est
-            encadré par les Clauses Contractuelles Types de la Commission
-            européenne.
+            uniquement si vous choisissez Groq comme fournisseur et utilisez la
+            fonctionnalité «&nbsp;analyse photo&nbsp;» avec votre propre clé
+            API. Un transfert hors UE est encadré par les Clauses Contractuelles
+            Types de la Commission européenne.
+          </li>
+          <li>
+            <strong>Google (Gemini API)</strong> — analyse d'image par IA,
+            uniquement si vous choisissez Gemini comme fournisseur et utilisez
+            la fonctionnalité «&nbsp;analyse photo&nbsp;» avec votre propre clé
+            API. Un transfert hors UE est encadré par les Clauses Contractuelles
+            Types de la Commission européenne.
           </li>
           <li>
             <strong>OpenFoodFacts</strong> (association française à but non

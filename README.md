@@ -76,7 +76,7 @@ Plutôt que de te montrer ton poids brut (qui fluctue de ±1 kg par jour selon l
 ### 3. **Saisie ultra-rapide sur mobile**
 
 - **Recherche d'aliment** : base FOODS embarquée + recherche incrémentale
-- **Photo IA** : envoie une photo d'assiette à Groq (Llama 4 Scout) qui extrait les aliments et estime les portions (opt-in, clé API configurable)
+- **Photo IA** : envoie une photo d'assiette au fournisseur d'IA choisi — **Google Gemini** (2.5 Flash, multimodal) ou **Groq** (Llama 4 Scout) — qui extrait les aliments et estime les portions (opt-in, fournisseur + clé API configurables dans Réglages)
 - **Dictée vocale** : reconnaissance vocale native du navigateur pour décrire le repas
 - **Code-barres** : scanner ZXing branché sur OpenFoodFacts
 - **URL scheme steps** : ouvrir l'app avec `?steps=12345` pour synchroniser les pas depuis Raccourcis iOS / Tasker
@@ -99,7 +99,7 @@ Plutôt que de te montrer ton poids brut (qui fluctue de ±1 kg par jour selon l
 - Favoris et recettes (repas composés réutilisables)
 - Presets macros (Équilibre, High Prot, Keto, Low Fat, Zone)
 - Scan de code-barres (OpenFoodFacts)
-- Analyse d'un repas par photo (Groq / Llama 4 Scout)
+- Analyse d'un repas par photo (Google Gemini 2.5 Flash ou Groq / Llama 4 Scout, au choix)
 - Dictée vocale
 
 ### Poids, hydratation, pas
@@ -234,7 +234,7 @@ kripy/
 │   │   ├── analysis/       # trend, palier, weightAnalysis, charts/* (+ tests)
 │   │   ├── settings/       # tdeeCalc, macroDistribution (+ tests)
 │   │   ├── scanner/        # useBarcodeScanner, openFoodFacts, ScannerModal
-│   │   └── ai/             # groqClient, prompts, imageUtils, AIAnalysisModal
+│   │   └── ai/             # client (dispatch), geminiClient, groqClient, config, prompts
 │   ├── pages/              # HomePage (eager), Meals/Sport/Stats/... (lazy)
 │   ├── store/              # Zustand stores (session, settings, nutrition,
 │   │                       #   tracking, palier)
@@ -364,7 +364,7 @@ Le contenu de `dist/` est prêt à être servi. Pense à configurer le **fallbac
 - **Synchro cloud : opt-in**. Si tu te connectes avec Google, les données sont sauvegardées dans Firestore sous ton UID.
 - **IA photo : opt-in**. Aucune image n'est envoyée tant que tu n'as pas explicitement utilisé le bouton « analyser par photo ».
 - **Scan code-barres : opt-in**. Le flux caméra est demandé uniquement à l'ouverture du scanner.
-- **Clés API côté client** : les clés Firebase Web SDK sont publiques par design (elles identifient le projet, ne donnent aucun pouvoir). La sécurité vient des **règles Firestore** et de la liste des domaines autorisés dans Firebase Auth. La clé IA (Groq) est stockée dans le localStorage du user (`nt_aikey`), jamais envoyée au cloud. Les variables `VITE_FIREBASE_*` sont à renseigner dans `.env.local` (gitignored).
+- **Clés API côté client** : les clés Firebase Web SDK sont publiques par design (elles identifient le projet, ne donnent aucun pouvoir). La sécurité vient des **règles Firestore** et de la liste des domaines autorisés dans Firebase Auth. La clé IA est stockée dans le localStorage du user (`nt_aikey` pour Groq, `nt_gemini_key` pour Gemini), jamais envoyée au cloud (exclue de la synchro Firestore). Les variables `VITE_FIREBASE_*` sont à renseigner dans `.env.local` (gitignored).
 
 ---
 

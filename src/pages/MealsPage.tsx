@@ -9,7 +9,7 @@ import ManualEntryModal from '@/components/meals/ManualEntryModal';
 import MealEntriesList from '@/components/meals/MealEntriesList';
 import ScannerModal from '@/features/scanner/ScannerModal';
 import AIAnalysisModal from '@/features/ai/AIAnalysisModal';
-import type { AiMealResult } from '@/features/ai/groqClient';
+import type { AiMealResult } from '@/features/ai';
 import { dayTotals } from '@/features/nutrition/totals';
 import { totalDailyDelta } from '@/features/nutrition/budget';
 import {
