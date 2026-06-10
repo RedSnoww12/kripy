@@ -257,6 +257,18 @@
   color: var(--t3);
   margin-top: 6px;
 }
+.kl-hero-ring-adj {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  background: var(--cyanG);
+  border-radius: 999px;
+  padding: 3px 8px;
+  margin-top: 6px;
+}
 
 .kl-hero-stats {
   display: grid;
@@ -753,6 +765,32 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
   flex-shrink: 0;
+}
+.kl-analysis-head-r {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.kl-analysis-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 6px 3px 8px;
+  border-radius: 6px;
+  background: var(--s3);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--t2);
+}
+.kl-analysis-toggle:active {
+  background: var(--s4);
+}
+.kl-analysis-toggle .material-symbols-outlined {
+  font-size: 13px;
 }
 .kl-analysis-head-text {
   display: flex;

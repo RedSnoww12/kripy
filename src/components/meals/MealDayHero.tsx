@@ -3,17 +3,23 @@ import type { Macros, Targets } from '@/types';
 interface Props {
   totals: Macros;
   targets: Targets;
+  budgetDelta?: number;
 }
 
 function fmt(n: number): string {
   return n.toLocaleString('fr-FR').replace(/\u202F/g, ' ');
 }
 
-export default function MealDayHero({ totals, targets }: Props) {
+export default function MealDayHero({
+  totals,
+  targets,
+  budgetDelta = 0,
+}: Props) {
   const kcal = Math.round(totals.kcal);
-  const target = targets.kcal;
+  const target = Math.max(0, targets.kcal - budgetDelta);
   const pct = target ? Math.min(999, Math.round((kcal / target) * 100)) : 0;
-  const over = kcal > target;
+  const remaining = target - kcal;
+  const over = remaining < 0;
 
   const macroKcal = {
     p: totals.p * 4,
@@ -35,8 +41,19 @@ export default function MealDayHero({ totals, targets }: Props) {
             <span className="meal-hero-t">/ {fmt(target)}</span>
           </h2>
         </div>
-        <span className={`meal-hero-pct${over ? ' over' : ''}`}>{pct}%</span>
+        <div className="meal-hero-r">
+          <span className={`meal-hero-pct${over ? ' over' : ''}`}>{pct}%</span>
+          <span className={`meal-hero-rest mono${over ? ' over' : ''}`}>
+            {over ? `${fmt(remaining)} kcal` : `reste ${fmt(remaining)}`}
+          </span>
+        </div>
       </div>
+
+      {budgetDelta > 0 && (
+        <p className="meal-hero-adj mono">
+          budget lissé · base {fmt(targets.kcal)} − {fmt(budgetDelta)}
+        </p>
+      )}
 
       <div className="meal-macro-bar" aria-hidden="true">
         <span className="meal-macro-seg prot" style={{ width: `${pctP}%` }} />

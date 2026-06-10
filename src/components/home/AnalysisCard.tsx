@@ -1,4 +1,5 @@
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { useUiPrefsStore } from '@/store/useUiPrefsStore';
 import type { HomeAnalysis } from '@/features/analysis/home-analysis';
 import type { Phase, WeightStats } from '@/types';
 
@@ -65,6 +66,8 @@ export default function AnalysisCard({
   const phase = useSettingsStore((s) => s.phase);
   const targets = useSettingsStore((s) => s.targets);
   const setTargets = useSettingsStore((s) => s.setTargets);
+  const detailsOpen = useUiPrefsStore((s) => s.analysisDetails);
+  const setDetailsOpen = useUiPrefsStore((s) => s.setAnalysisDetails);
 
   const pill = VARIANT_PILL[analysis.variant];
   const rate = analysis.trend?.rate ?? stats?.rate ?? 0;
@@ -97,12 +100,25 @@ export default function AnalysisCard({
         <div className="kl-analysis-sectlbl">
           ▸ ANALYSE · {analysis.winDays} JOURS
         </div>
-        <span
-          className="kl-analysis-pill"
-          style={{ color: pill.color, background: pill.bg }}
-        >
-          {pill.label}
-        </span>
+        <div className="kl-analysis-head-r">
+          <span
+            className="kl-analysis-pill"
+            style={{ color: pill.color, background: pill.bg }}
+          >
+            {pill.label}
+          </span>
+          <button
+            type="button"
+            className="kl-analysis-toggle"
+            aria-expanded={detailsOpen}
+            onClick={() => setDetailsOpen(!detailsOpen)}
+          >
+            DÉTAILS
+            <span className="material-symbols-outlined">
+              {detailsOpen ? 'expand_less' : 'expand_more'}
+            </span>
+          </button>
+        </div>
       </div>
 
       <div className="kl-analysis-head-text">
@@ -110,21 +126,23 @@ export default function AnalysisCard({
         <div className="kl-analysis-subline">{subline}</div>
       </div>
 
-      <div className="kl-slope-box">
-        <SlopeRow
-          label="Pente actuelle"
-          value={rate}
-          max={max}
-          color={rateColor(rate)}
-        />
-        <SlopeRow
-          label="Cible"
-          value={target}
-          max={max}
-          color="var(--acc)"
-          dashed
-        />
-      </div>
+      {detailsOpen && (
+        <div className="kl-slope-box">
+          <SlopeRow
+            label="Pente actuelle"
+            value={rate}
+            max={max}
+            color={rateColor(rate)}
+          />
+          <SlopeRow
+            label="Cible"
+            value={target}
+            max={max}
+            color="var(--acc)"
+            dashed
+          />
+        </div>
+      )}
 
       {recKcalDelta !== 0 && !hideRecommendation && (
         <div className="kl-reco-strip">
@@ -145,38 +163,40 @@ export default function AnalysisCard({
         </div>
       )}
 
-      <div className="kl-analysis-grid">
-        <div className="kl-stat-cell">
-          <div className="kl-stat-lbl">KCAL MOY</div>
-          <div className="kl-stat-val" style={{ color: 'var(--org)' }}>
-            {analysis.avgKcal}
+      {detailsOpen && (
+        <div className="kl-analysis-grid">
+          <div className="kl-stat-cell">
+            <div className="kl-stat-lbl">KCAL MOY</div>
+            <div className="kl-stat-val" style={{ color: 'var(--org)' }}>
+              {analysis.avgKcal}
+            </div>
+          </div>
+          <div className="kl-stat-cell">
+            <div className="kl-stat-lbl">PROT MOY</div>
+            <div className="kl-stat-val" style={{ color: 'var(--acc)' }}>
+              {analysis.avgProt}g
+            </div>
+          </div>
+          <div className="kl-stat-cell">
+            <div className="kl-stat-lbl">POIDS Δ</div>
+            <div
+              className="kl-stat-val"
+              style={{ color: rateColor(analysis.weightChange) }}
+            >
+              {analysis.weightChange > 0 ? '+' : ''}
+              {analysis.weightChange.toFixed(1)} kg
+            </div>
+          </div>
+          <div className="kl-stat-cell">
+            <div className="kl-stat-lbl">TRACKÉS</div>
+            <div className="kl-stat-val">
+              {analysis.trackedDays}/{analysis.winDays}
+            </div>
           </div>
         </div>
-        <div className="kl-stat-cell">
-          <div className="kl-stat-lbl">PROT MOY</div>
-          <div className="kl-stat-val" style={{ color: 'var(--acc)' }}>
-            {analysis.avgProt}g
-          </div>
-        </div>
-        <div className="kl-stat-cell">
-          <div className="kl-stat-lbl">POIDS Δ</div>
-          <div
-            className="kl-stat-val"
-            style={{ color: rateColor(analysis.weightChange) }}
-          >
-            {analysis.weightChange > 0 ? '+' : ''}
-            {analysis.weightChange.toFixed(1)} kg
-          </div>
-        </div>
-        <div className="kl-stat-cell">
-          <div className="kl-stat-lbl">TRACKÉS</div>
-          <div className="kl-stat-val">
-            {analysis.trackedDays}/{analysis.winDays}
-          </div>
-        </div>
-      </div>
+      )}
 
-      {stats && stats.count >= 2 && (
+      {detailsOpen && stats && stats.count >= 2 && (
         <div className="kl-analysis-grid">
           <div className="kl-stat-cell">
             <div className="kl-stat-lbl">MOY 7J</div>

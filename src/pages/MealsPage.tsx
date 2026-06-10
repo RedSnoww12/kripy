@@ -11,6 +11,7 @@ import ScannerModal from '@/features/scanner/ScannerModal';
 import AIAnalysisModal from '@/features/ai/AIAnalysisModal';
 import type { AiMealResult } from '@/features/ai/groqClient';
 import { dayTotals } from '@/features/nutrition/totals';
+import { totalDailyDelta } from '@/features/nutrition/budget';
 import {
   applyQtyChange,
   computeMealEntry,
@@ -18,7 +19,8 @@ import {
   type Basis,
 } from '@/features/nutrition/foodSearch';
 import { toast } from '@/components/ui/toastStore';
-import { currentMealSlot, todayISO } from '@/lib/date';
+import { addDaysISO, currentMealSlot, todayISO } from '@/lib/date';
+import { useBudgetStore } from '@/store/useBudgetStore';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import type { FoodTuple, MealEntry, MealEntryUnit, MealSlot } from '@/types';
@@ -46,9 +48,18 @@ export default function MealsPage() {
   const removeMealEntry = useNutritionStore((s) => s.removeMealEntry);
   const updateMealEntry = useNutritionStore((s) => s.updateMealEntry);
   const pushRecent = useNutritionStore((s) => s.pushRecent);
+  const adjustments = useBudgetStore((s) => s.adjustments);
 
   const totals = useMemo(() => dayTotals(log, date), [log, date]);
+  const budgetDelta = useMemo(
+    () => totalDailyDelta(adjustments, date),
+    [adjustments, date],
+  );
   const entries = log[date] ?? [];
+  const prevDaySlotEntries = useMemo(
+    () => (log[addDaysISO(date, -1)] ?? []).filter((e) => e.meal === slot),
+    [log, date, slot],
+  );
 
   useEffect(() => {
     if (date === todayISO()) {
@@ -137,6 +148,17 @@ export default function MealsPage() {
     toast('Aliment retiré', 'info');
   };
 
+  const handleCopyPrevDay = () => {
+    if (prevDaySlotEntries.length === 0) return;
+    prevDaySlotEntries.forEach((entry, i) => {
+      addMealEntry(date, { ...entry, id: Date.now() + i, meal: slot });
+    });
+    toast(
+      `${prevDaySlotEntries.length} aliment${prevDaySlotEntries.length > 1 ? 's' : ''} copié${prevDaySlotEntries.length > 1 ? 's' : ''} de la veille`,
+      'success',
+    );
+  };
+
   const handleAiConfirm = (result: AiMealResult) => {
     const entry: MealEntry = {
       id: Date.now(),
@@ -180,7 +202,11 @@ export default function MealsPage() {
   return (
     <div className="tp active meal-tp">
       <DateNavigator date={date} onChange={setDate} />
-      <MealDayHero totals={totals} targets={targets} />
+      <MealDayHero
+        totals={totals}
+        targets={targets}
+        budgetDelta={budgetDelta}
+      />
 
       <section className="meal-search-row">
         <FoodSearchBar onSelect={handleSelectFood} />
@@ -223,6 +249,8 @@ export default function MealsPage() {
         onSelectSlot={handleSelectSlot}
         onEdit={handleEditEntry}
         onDelete={handleDelete}
+        prevDayEntries={prevDaySlotEntries}
+        onCopyPrevDay={handleCopyPrevDay}
       />
 
       <QuantityModal

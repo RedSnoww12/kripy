@@ -1,0 +1,226 @@
+.panel {
+  background: var(--s1);
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.headLbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  color: var(--t3);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* ── Proposition de lissage ── */
+.proposal {
+  background: var(--s2);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.proposalHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.proposalTitle {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: -0.01em;
+}
+
+.dismissBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--s3);
+  color: var(--t3);
+  flex: 0 0 26px;
+}
+.dismissBtn .material-symbols-outlined {
+  font-size: 15px;
+}
+
+.proposalHint {
+  font-size: 0.72rem;
+  color: var(--t2);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.daysRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.dayChip {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--s3);
+  color: var(--t2);
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.dayChipOn {
+  background: var(--accG);
+  color: var(--acc);
+  box-shadow: inset 0 -1px 0 0 var(--acc);
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  background: var(--s3);
+  border-radius: 999px;
+  padding: 2px;
+}
+
+.stepBtn {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--s4);
+  color: var(--t1);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.stepBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.stepVal {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--t1);
+  min-width: 22px;
+  text-align: center;
+}
+
+.preview {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.74rem;
+  color: var(--acc);
+  margin: 10px 0;
+}
+
+.confirmBtn {
+  width: 100%;
+}
+
+/* ── Lissages actifs / programmés ── */
+.activeList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.activeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--s2);
+  border-radius: 12px;
+  padding: 9px 12px;
+}
+
+.activeDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  flex: 0 0 7px;
+}
+.activeDotScheduled {
+  background: var(--org);
+  box-shadow: 0 0 8px var(--org);
+}
+
+.activeBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.activeMain {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--t1);
+}
+
+.activeSub {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.62rem;
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cancelBtn {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--t2);
+  background: var(--s3);
+  border-radius: 10px;
+  padding: 7px 10px;
+  flex: 0 0 auto;
+}
+.cancelBtn:active {
+  background: var(--s4);
+}
+
+/* ── Lissage devenu inutile ── */
+.obsolete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--s2);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.obsoleteTxt {
+  font-size: 0.72rem;
+  color: var(--t2);
+  line-height: 1.45;
+  flex: 1;
+}
