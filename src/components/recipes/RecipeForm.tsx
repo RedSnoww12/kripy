@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { toast } from '@/components/ui/toastStore';
 import RecipeAIModal from '@/features/ai/RecipeAIModal';
-import type { AiRecipeResult } from '@/features/ai/groqClient';
+import type { AiRecipeResult } from '@/features/ai';
 import type { FoodTuple, RecipeBaseUnit, RecipePortion } from '@/types';
 import type { EditingRecipe } from '@/pages/RecipesPage';
 

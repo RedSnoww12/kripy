@@ -7,13 +7,8 @@ import {
   type FormEvent,
 } from 'react';
 import Modal from '@/components/ui/Modal';
-import { loadJSON, STORAGE_KEYS } from '@/lib/storage';
-import {
-  analyzeMeal,
-  describeAiError,
-  type AiError,
-  type AiMealResult,
-} from './groqClient';
+import { analyzeMeal } from './client';
+import { describeAiError, type AiError, type AiMealResult } from './types';
 import { compressImage, readFileAsDataUrl } from './imageUtils';
 import MicButton from './MicButton';
 
@@ -60,10 +55,8 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
 
   const handleAnalyze = async (event: FormEvent) => {
     event.preventDefault();
-    const apiKey = loadJSON<string>(STORAGE_KEYS.aiKey, '');
     setStatus({ kind: 'loading' });
     const result = await analyzeMeal({
-      apiKey,
       description: description.trim(),
       imageB64,
     });

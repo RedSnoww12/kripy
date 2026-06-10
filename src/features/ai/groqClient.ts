@@ -1,57 +1,4 @@
-import {
-  AI_RECIPE_SYSTEM_PROMPT,
-  AI_SYSTEM_PROMPT,
-  buildRecipeUserMessage,
-  buildUserMessage,
-} from './prompts';
-
-export type AiErrorReason =
-  | 'nokey'
-  | 'badkey'
-  | 'quota'
-  | 'network'
-  | 'api'
-  | 'parse'
-  | 'empty';
-
-export interface AiError {
-  reason: AiErrorReason;
-  detail?: string;
-}
-
-export interface AiMealResult {
-  nom: string;
-  kcal: number;
-  prot: number;
-  gluc: number;
-  lip: number;
-  fib: number;
-  details?: string;
-}
-
-interface AnalyzeArgs {
-  apiKey: string;
-  description: string;
-  imageB64: string | null;
-}
-
-export interface AiRecipeResult {
-  nom: string;
-  /** Poids total estimé de la préparation finale (cuite), en grammes. */
-  poidsTotal: number;
-  /** Valeurs POUR 100g de préparation finale. */
-  kcal: number;
-  prot: number;
-  gluc: number;
-  lip: number;
-  fib: number;
-  details?: string;
-}
-
-interface AnalyzeRecipeArgs {
-  apiKey: string;
-  description: string;
-}
+import { err, transientErr, type AiError, type AiRequest } from './types';
 
 const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
@@ -76,10 +23,6 @@ function pickModel(hasImage: boolean): string {
   return hasImage ? VISION_MODEL : TEXT_MODEL;
 }
 
-function err(reason: AiErrorReason, detail?: string): AiError {
-  return { reason, detail };
-}
-
 interface GroqContentPart {
   type: 'text' | 'image_url';
   text?: string;
@@ -91,14 +34,23 @@ type GroqMessage =
   | { role: 'user'; content: GroqContentPart[] };
 
 /**
- * Envoie une requête de complétion à Groq et renvoie le texte brut de la
- * réponse, ou une AiError typée. Centralise la gestion des erreurs HTTP.
+ * Transport Groq (API compatible OpenAI). Convertit la requête normalisée en
+ * messages Groq, envoie la complétion et renvoie le texte brut ou une AiError.
  */
-async function requestGroq(
-  apiKey: string,
-  messages: GroqMessage[],
-  model: string,
-): Promise<string | AiError> {
+export async function groqTransport(req: AiRequest): Promise<string | AiError> {
+  const { apiKey, system, parts, hasImage } = req;
+
+  const content: GroqContentPart[] = parts.map((part) =>
+    'text' in part
+      ? { type: 'text', text: part.text }
+      : { type: 'image_url', image_url: { url: part.image } },
+  );
+
+  const messages: GroqMessage[] = [
+    { role: 'system', content: system },
+    { role: 'user', content },
+  ];
+
   let response: Response;
   try {
     response = await fetch(ENDPOINT, {
@@ -108,7 +60,7 @@ async function requestGroq(
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model,
+        model: pickModel(hasImage),
         messages,
         // Température basse = sorties déterministes et reproductibles, idéal pour
         // un calcul nutritionnel rigoureux.
@@ -120,7 +72,7 @@ async function requestGroq(
       }),
     });
   } catch {
-    return err('network');
+    return transientErr('network');
   }
 
   if (!response.ok) {
@@ -136,7 +88,7 @@ async function requestGroq(
     if (response.status === 401) return err('badkey');
     if (response.status === 429) return err('quota');
     if (response.status >= 500) {
-      return err(
+      return transientErr(
         'api',
         'Serveurs Groq temporairement indisponibles. Réessaie.',
       );
@@ -157,142 +109,4 @@ async function requestGroq(
   const text = data.choices?.[0]?.message?.content;
   if (!text) return err('parse');
   return text;
-}
-
-function extractJson(text: string): Record<string, unknown> | null {
-  try {
-    const match = text.match(/\{[\s\S]*\}/);
-    const json = match ? match[0] : text;
-    const obj = JSON.parse(json) as unknown;
-    if (!obj || typeof obj !== 'object') return null;
-    return obj as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-}
-
-export async function analyzeMeal(
-  args: AnalyzeArgs,
-): Promise<AiMealResult | AiError> {
-  const { apiKey, description, imageB64 } = args;
-
-  if (!apiKey) return err('nokey');
-  if (!description && !imageB64) return err('empty');
-
-  const content: GroqContentPart[] = [];
-  if (imageB64) {
-    content.push({ type: 'image_url', image_url: { url: imageB64 } });
-  }
-  content.push({ type: 'text', text: buildUserMessage(description) });
-
-  const text = await requestGroq(
-    apiKey,
-    [
-      { role: 'system', content: AI_SYSTEM_PROMPT },
-      { role: 'user', content },
-    ],
-    pickModel(Boolean(imageB64)),
-  );
-  if (typeof text !== 'string') return text;
-
-  const obj = extractJson(text);
-  if (!obj) return err('parse');
-  const kcal = Number(obj.kcal) || 0;
-  const prot = Number(obj.prot) || 0;
-  const gluc = Number(obj.gluc) || 0;
-  const lip = Number(obj.lip) || 0;
-  if (!kcal && !prot && !gluc && !lip) return err('parse');
-  return {
-    nom: typeof obj.nom === 'string' ? obj.nom : 'Repas',
-    kcal,
-    prot,
-    gluc,
-    lip,
-    fib: Number(obj.fib) || 0,
-    details: typeof obj.details === 'string' ? obj.details : undefined,
-  };
-}
-
-/**
- * Analyse une liste d'ingrédients bruts et renvoie les valeurs nutritionnelles
- * POUR 100g de préparation finale + le poids total estimé.
- */
-export async function analyzeRecipe(
-  args: AnalyzeRecipeArgs,
-): Promise<AiRecipeResult | AiError> {
-  const { apiKey, description } = args;
-
-  if (!apiKey) return err('nokey');
-  if (!description.trim()) return err('empty');
-
-  // Une recette est décrite uniquement en texte : on prend le meilleur modèle
-  // texte pour la précision du calcul.
-  const text = await requestGroq(
-    apiKey,
-    [
-      { role: 'system', content: AI_RECIPE_SYSTEM_PROMPT },
-      { role: 'user', content: buildRecipeUserMessage(description) },
-    ],
-    pickModel(false),
-  );
-  if (typeof text !== 'string') return text;
-
-  const obj = extractJson(text);
-  if (!obj) return err('parse');
-  const kcal = Number(obj.kcal) || 0;
-  const prot = Number(obj.prot) || 0;
-  const gluc = Number(obj.gluc) || 0;
-  const lip = Number(obj.lip) || 0;
-  if (!kcal && !prot && !gluc && !lip) return err('parse');
-  return {
-    nom: typeof obj.nom === 'string' ? obj.nom : 'Recette',
-    poidsTotal: Math.max(0, Math.round(Number(obj.poidsTotal) || 0)),
-    kcal,
-    prot,
-    gluc,
-    lip,
-    fib: Number(obj.fib) || 0,
-    details: typeof obj.details === 'string' ? obj.details : undefined,
-  };
-}
-
-export function describeAiError(e: AiError): { title: string; msg: string } {
-  switch (e.reason) {
-    case 'nokey':
-      return {
-        title: '🔑 Clé API manquante',
-        msg: 'Ajoute ta clé API Groq dans Réglages > IA. Crée un compte gratuit sur console.groq.com.',
-      };
-    case 'badkey':
-      return {
-        title: '🚫 Clé API invalide',
-        msg: 'La clé Groq est incorrecte. Elle commence par gsk_.',
-      };
-    case 'quota':
-      return {
-        title: '⏳ Quota dépassé',
-        msg: 'Limite de requêtes atteinte. Réessaie dans 1-2 minutes.',
-      };
-    case 'network':
-      return {
-        title: '📡 Erreur réseau',
-        msg: 'Impossible de contacter Groq. Vérifie ta connexion internet.',
-      };
-    case 'parse':
-      return {
-        title: '🍲 Analyse impossible',
-        msg: "L'IA n'a pas pu identifier le repas. Ajoute une description plus détaillée ou une meilleure photo.",
-      };
-    case 'empty':
-      return {
-        title: '📝 Rien à analyser',
-        msg: 'Prends une photo du repas et/ou décris-le en texte.',
-      };
-    case 'api':
-    default:
-      return {
-        title: '⚙️ Erreur API',
-        msg: e.detail ?? "L'API a retourné une erreur inattendue.",
-      };
-  }
 }

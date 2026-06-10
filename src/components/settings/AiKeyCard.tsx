@@ -1,35 +1,103 @@
 import { useEffect, useState } from 'react';
-import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
+import {
+  getApiKey,
+  getProvider,
+  PROVIDER_INFO,
+  setApiKey,
+  setProvider,
+  type AiProvider,
+} from '@/features/ai';
 import { toast } from '@/components/ui/toastStore';
 import SettingsSection from './SettingsSection';
 
+const PROVIDERS: { id: AiProvider; label: string; placeholder: string }[] = [
+  { id: 'gemini', label: 'Gemini', placeholder: 'AIza...' },
+  { id: 'groq', label: 'Groq', placeholder: 'gsk_...' },
+];
+
 export default function AiKeyCard() {
-  const [value, setValue] = useState(() =>
-    loadJSON<string>(STORAGE_KEYS.aiKey, ''),
+  const [provider, setProviderState] = useState<AiProvider>(() =>
+    getProvider(),
   );
+  const [value, setValue] = useState<string>(() => getApiKey(provider));
   const [show, setShow] = useState(false);
 
+  // Persiste la clé du fournisseur courant à chaque frappe.
   useEffect(() => {
-    saveJSON(STORAGE_KEYS.aiKey, value);
-  }, [value]);
+    setApiKey(provider, value);
+  }, [provider, value]);
 
+  const switchProvider = (next: AiProvider) => {
+    if (next === provider) return;
+    setProvider(next);
+    setProviderState(next);
+    setValue(getApiKey(next));
+    setShow(false);
+  };
+
+  const info = PROVIDER_INFO[provider];
   const configured = value.trim().length > 0;
 
   const handleClear = () => {
     setValue('');
-    toast('Clé API supprimée', 'info');
+    toast(`Clé API ${info.label} supprimée`, 'info');
   };
 
   return (
     <SettingsSection icon="auto_awesome" title="IA — Analyse repas">
+      <div className="set-f" style={{ marginBottom: 12 }}>
+        <label>Fournisseur d'IA</label>
+        <div
+          role="tablist"
+          aria-label="Fournisseur d'IA"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${PROVIDERS.length}, 1fr)`,
+            gap: 4,
+            background: 'var(--s1)',
+            padding: 4,
+            borderRadius: 12,
+          }}
+        >
+          {PROVIDERS.map((p) => {
+            const active = p.id === provider;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => switchProvider(p.id)}
+                style={{
+                  height: 38,
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                  fontSize: '.78rem',
+                  background: active ? 'var(--s3)' : 'transparent',
+                  color: active ? 'var(--t1)' : 'var(--t2)',
+                  boxShadow: active ? 'inset 0 -2px 0 0 var(--acc)' : 'none',
+                  transition: 'background .15s ease, color .15s ease',
+                }}
+              >
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="set-f">
-        <label htmlFor="aiKey">Clé API Groq</label>
+        <label htmlFor="aiKey">Clé API {info.label}</label>
         <div style={{ display: 'flex', gap: 6 }}>
           <input
             id="aiKey"
             type={show ? 'text' : 'password'}
             className="set-in"
-            placeholder="gsk_..."
+            placeholder={
+              PROVIDERS.find((p) => p.id === provider)?.placeholder ?? ''
+            }
             autoComplete="off"
             value={value}
             onChange={(e) => setValue(e.target.value)}
@@ -74,17 +142,16 @@ export default function AiKeyCard() {
           lineHeight: 1.5,
         }}
       >
-        Crée un compte gratuit sur{' '}
+        Crée une clé gratuite sur{' '}
         <a
-          href="https://console.groq.com"
+          href={`https://${info.console}`}
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--acc)' }}
         >
-          console.groq.com
-        </a>{' '}
-        pour obtenir ta clé. Elle reste stockée localement, jamais envoyée au
-        cloud.
+          {info.console}
+        </a>
+        . Elle reste stockée localement, jamais envoyée au cloud.
       </p>
     </SettingsSection>
   );

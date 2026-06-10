@@ -150,8 +150,9 @@ export default function TermsPage() {
             synchronisation cloud ;
           </li>
           <li>
-            <strong>Groq</strong> pour l'analyse d'image par intelligence
-            artificielle (clé API personnelle) ;
+            <strong>Groq</strong> ou <strong>Google Gemini</strong> pour
+            l'analyse d'image par intelligence artificielle (clé API
+            personnelle, fournisseur au choix) ;
           </li>
           <li>
             <strong>OpenFoodFacts</strong> pour la recherche de produits via
@@ -205,7 +206,7 @@ export default function TermsPage() {
           </li>
           <li>
             de dysfonctionnements des services tiers intégrés (Firebase, Groq,
-            OpenFoodFacts).
+            Google Gemini, OpenFoodFacts).
           </li>
         </ul>
         <p>
