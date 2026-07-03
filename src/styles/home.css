@@ -75,24 +75,6 @@
   letter-spacing: 0.02em;
   margin-top: 4px;
 }
-.kl-head-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-.kl-head-pill-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  animation: klPulse 1.6s infinite;
-}
 .kl-head-streak {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9px;

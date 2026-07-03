@@ -75,20 +75,6 @@ export default function WelcomeHeader({ streak }: Props) {
         </div>
       </div>
       <div className="kl-head-r">
-        <span
-          className="kl-head-pill"
-          style={{ color: phaseColor, background: 'var(--grnG)' }}
-        >
-          <span
-            className="kl-head-pill-dot"
-            style={{
-              background: phaseColor,
-              boxShadow: `0 0 6px ${phaseColor}`,
-            }}
-            aria-hidden
-          />
-          LIVE
-        </span>
         {streak >= 2 && (
           <span className="kl-head-streak">STREAK {streak}J</span>
         )}
