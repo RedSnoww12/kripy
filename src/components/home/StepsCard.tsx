@@ -89,12 +89,7 @@ export default function StepsCard({ steps, goal }: Props) {
       >
         <div className="kl-bento-head">
           <span className="kl-bento-lbl">STEPS</span>
-          <span
-            className="kl-bento-pill"
-            style={{ color: 'var(--acc)', background: 'var(--grnG)' }}
-          >
-            {pct}%
-          </span>
+          <span className="kl-bento-pill kl-bento-pill--acc">{pct}%</span>
         </div>
         <div ref={valueRef} className="kl-bento-num">
           {formatFr(steps)}

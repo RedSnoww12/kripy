@@ -109,6 +109,38 @@ export function parseMealJson(text: string): AiMealResult | null {
   };
 }
 
+export interface AiCoachAdjustment {
+  exercice: string;
+  action: string;
+}
+
+export interface AiCoachResult {
+  analyse: string;
+  conseils: string[];
+  ajustements: AiCoachAdjustment[];
+}
+
+export function parseCoachJson(text: string): AiCoachResult | null {
+  const obj = extractJson(text);
+  if (!obj) return null;
+  const analyse = typeof obj.analyse === 'string' ? obj.analyse.trim() : '';
+  const conseils = Array.isArray(obj.conseils)
+    ? obj.conseils.filter((c): c is string => typeof c === 'string')
+    : [];
+  const ajustements = Array.isArray(obj.ajustements)
+    ? obj.ajustements.flatMap((a): AiCoachAdjustment[] => {
+        if (!a || typeof a !== 'object') return [];
+        const rec = a as Record<string, unknown>;
+        if (typeof rec.exercice !== 'string' || typeof rec.action !== 'string')
+          return [];
+        return [{ exercice: rec.exercice, action: rec.action }];
+      })
+    : [];
+  if (!analyse && conseils.length === 0 && ajustements.length === 0)
+    return null;
+  return { analyse, conseils, ajustements };
+}
+
 export function parseRecipeJson(text: string): AiRecipeResult | null {
   const obj = extractJson(text);
   if (!obj) return null;

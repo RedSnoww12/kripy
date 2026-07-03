@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   describeAiError,
   extractJson,
+  parseCoachJson,
   parseMealJson,
   parseRecipeJson,
 } from './types';
@@ -54,6 +55,31 @@ describe('parseRecipeJson', () => {
     expect(parseRecipeJson('{"poidsTotal":-50,"kcal":150}')?.poidsTotal).toBe(
       0,
     );
+  });
+});
+
+describe('parseCoachJson', () => {
+  it('parse une analyse coach complète', () => {
+    const r = parseCoachJson(
+      '{"analyse":"Bonne progression.","conseils":["Dors plus"],"ajustements":[{"exercice":"Squat","action":"+2,5 kg"}]}',
+    );
+    expect(r?.analyse).toBe('Bonne progression.');
+    expect(r?.conseils).toEqual(['Dors plus']);
+    expect(r?.ajustements).toEqual([{ exercice: 'Squat', action: '+2,5 kg' }]);
+  });
+
+  it('ignore les ajustements malformés', () => {
+    const r = parseCoachJson(
+      '{"analyse":"ok","conseils":[],"ajustements":[{"exercice":"Squat"},42,{"exercice":"Dips","action":"+5 kg lest"}]}',
+    );
+    expect(r?.ajustements).toEqual([
+      { exercice: 'Dips', action: '+5 kg lest' },
+    ]);
+  });
+
+  it('renvoie null quand la réponse est vide', () => {
+    expect(parseCoachJson('{"analyse":"","conseils":[]}')).toBeNull();
+    expect(parseCoachJson('pas de json')).toBeNull();
   });
 });
 

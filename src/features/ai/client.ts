@@ -8,9 +8,16 @@ import {
   buildUserMessage,
 } from './prompts';
 import {
+  AI_COACH_SYSTEM_PROMPT,
+  buildCoachUserMessage,
+  type CoachContext,
+} from './sportPrompts';
+import {
   err,
+  parseCoachJson,
   parseMealJson,
   parseRecipeJson,
+  type AiCoachResult,
   type AiError,
   type AiMealResult,
   type AiPart,
@@ -102,5 +109,28 @@ export async function analyzeRecipe(
   if (typeof text !== 'string') return { ...text, provider };
 
   const result = parseRecipeJson(text);
+  return result ?? { ...err('parse'), provider };
+}
+
+/**
+ * Analyse coach : envoie le résumé de progression (profil + séances) et
+ * renvoie un bilan structuré avec conseils et ajustements chiffrés.
+ */
+export async function analyzeTraining(
+  context: CoachContext,
+): Promise<AiCoachResult | AiError> {
+  const { provider, apiKey } = getActiveConfig();
+
+  if (!apiKey) return { ...err('nokey'), provider };
+
+  const text = await runWithRetry(TRANSPORTS[provider], {
+    apiKey,
+    system: AI_COACH_SYSTEM_PROMPT,
+    parts: [{ text: buildCoachUserMessage(context) }],
+    hasImage: false,
+  });
+  if (typeof text !== 'string') return { ...text, provider };
+
+  const result = parseCoachJson(text);
   return result ?? { ...err('parse'), provider };
 }
