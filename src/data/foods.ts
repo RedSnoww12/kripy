@@ -1185,7 +1185,7 @@ export const FOODS: FoodsDict = {
   'Black bean soup': [85, 5, 14, 1, 4],
   Mafe: [180, 9, 12, 11, 2],
   'Yassa poulet': [145, 16, 5, 7, 1],
-  'Thieboudienne': [165, 8, 22, 4, 1.5],
+  Thieboudienne: [165, 8, 22, 4, 1.5],
   'Injera misir': [115, 5, 18, 2, 4],
   'Doro wat': [185, 18, 5, 10, 1],
   'Bobotie sud africain': [195, 13, 12, 11, 1.5],
@@ -1379,7 +1379,7 @@ export const FOODS: FoodsDict = {
   'Manakish fromage': [310, 11, 32, 15, 1.5],
   'Tabouleh libanais': [125, 3, 14, 7, 3],
   'Riz vermicelles': [180, 4, 30, 5, 1],
-  'Mhalabieh': [145, 4, 22, 5, 0.3],
+  Mhalabieh: [145, 4, 22, 5, 0.3],
   Roz: [130, 3, 28, 1, 0.5],
 
   // Cuisine britannique / irlandaise
@@ -1629,4 +1629,45 @@ export const FOODS: FoodsDict = {
   'Smoothie proteine': [110, 12, 12, 1.5, 1],
   Kombucha: [30, 0, 7, 0, 0],
   Sangria: [110, 0.2, 11, 0, 0.2],
+
+  // Barres & confiseries de marque
+  Mars: [449, 4.2, 68, 17, 1.1],
+  Snickers: [481, 8.5, 60, 23, 1.4],
+  Twix: [495, 4.6, 64, 24, 1.5],
+  Bounty: [472, 3.8, 58, 25, 2.4],
+  KitKat: [518, 6.5, 60, 27, 1.7],
+  'Kinder Bueno': [571, 8.6, 49, 37, 1.3],
+  'Kinder Chocolat': [566, 8.7, 53, 35, 0.8],
+  "M&M's": [479, 4.7, 69, 19, 1.4],
+  Lion: [488, 5, 66, 22, 1.5],
+
+  // Laitiers & proteines (complements)
+  Halloumi: [321, 22, 2.2, 25, 0],
+  'Yaourt soja': [50, 4, 2.5, 2.3, 0.5],
+  'Yaourt brebis': [85, 4.5, 4.5, 5.5, 0],
+  'Yaourt proteine': [65, 10, 5, 0.2, 0],
+  'Danette chocolat': [117, 3, 17, 3.8, 0.6],
+  Actimel: [72, 2.7, 10.5, 1.5, 0],
+  'Yop vanille': [77, 2.8, 12, 1.7, 0],
+  'Proteine soja texturee': [345, 50, 30, 1.5, 4],
+  Gainer: [390, 25, 60, 5, 1],
+  'Protein shake': [80, 15, 3, 1, 0.2],
+
+  // Cereales & sec (complements)
+  Cruesli: [450, 8, 62, 17, 6],
+  'Miel Pops': [388, 6, 84, 2.5, 2],
+  'Son avoine': [320, 17, 50, 7, 15],
+  'Pain burger': [272, 8, 47, 5, 2.5],
+  'Puree amande': [614, 25, 8, 53, 8],
+  Tuc: [485, 8, 62, 22, 2.5],
+  'Nouilles instantanees': [450, 9, 60, 19, 2],
+
+  // Plats & boissons (complements)
+  Samoussa: [260, 7, 28, 13, 2],
+  'Tempura crevette': [190, 9, 18, 9, 0.8],
+  'Nouilles sautees': [175, 5, 24, 6.5, 1.5],
+  'Veloute legumes': [45, 1.2, 6, 1.8, 1.2],
+  'Boisson isotonique': [26, 0, 6.4, 0, 0],
+  'Eau de coco': [19, 0.7, 3.7, 0.2, 0],
+  'Jus citron': [25, 0.4, 7, 0.2, 0.1],
 };

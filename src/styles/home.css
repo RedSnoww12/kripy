@@ -449,6 +449,14 @@
   color: var(--acc);
   background: var(--grnG);
 }
+.kl-steps-sync {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 10px;
+}
 .kl-bento-num {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
