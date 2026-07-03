@@ -73,6 +73,8 @@ export const STORAGE_KEYS = {
   advisorDismiss: 'nt_advisor_dismiss',
   budget: 'nt_budget',
   uiPrefs: 'nt_ui_prefs',
+  sportProfile: 'nt_sport_profile',
+  strengthLog: 'nt_strength_log',
 } as const;
 
 export const SYNC_KEYS: readonly string[] = [
@@ -104,4 +106,6 @@ export const SYNC_KEYS: readonly string[] = [
   STORAGE_KEYS.sex,
   STORAGE_KEYS.weightSkipped,
   STORAGE_KEYS.budget,
+  STORAGE_KEYS.sportProfile,
+  STORAGE_KEYS.strengthLog,
 ];

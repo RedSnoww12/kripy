@@ -3,8 +3,8 @@ import WelcomeHeader from '@/components/home/WelcomeHeader';
 import CalorieRing from '@/components/home/CalorieRing';
 import BudgetSmoothPanel from '@/components/home/BudgetSmoothPanel';
 import MacroRow from '@/components/home/MacroRow';
-import WaterTracker from '@/components/home/WaterTracker';
 import StepsCard from '@/components/home/StepsCard';
+import TrainingBento from '@/components/home/TrainingBento';
 import WeightCard from '@/components/home/WeightCard';
 import TodayMealsSummary from '@/components/home/TodayMealsSummary';
 import AnalysisCard from '@/components/home/AnalysisCard';
@@ -154,8 +154,8 @@ export default function HomePage() {
       <MacroRow totals={totals} targets={targets} />
 
       <section className="kl-bento-row">
-        <WaterTracker date={today} />
         <StepsCard steps={steps} goal={stepsGoal} />
+        <TrainingBento />
       </section>
 
       <div ref={weightRef}>

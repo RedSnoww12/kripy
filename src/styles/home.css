@@ -75,24 +75,6 @@
   letter-spacing: 0.02em;
   margin-top: 4px;
 }
-.kl-head-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-.kl-head-pill-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  animation: klPulse 1.6s infinite;
-}
 .kl-head-streak {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9px;
@@ -397,7 +379,7 @@
   margin-left: 2px;
 }
 
-/* ── Bento (water + steps) ───────────────────────────── */
+/* ── Bento (steps + sport) ───────────────────────────── */
 .kl-bento-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -434,9 +416,6 @@
   letter-spacing: 0.22em;
   text-transform: uppercase;
 }
-.kl-bento-ico {
-  font-size: 14px;
-}
 .kl-bento-pill {
   display: inline-flex;
   align-items: center;
@@ -448,10 +427,17 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
-.kl-bento-val {
+.kl-bento-pill--acc {
+  color: var(--acc);
+  background: var(--grnG);
+}
+.kl-steps-sync {
   display: flex;
-  align-items: baseline;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 10px;
 }
 .kl-bento-num {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
@@ -462,63 +448,11 @@
   letter-spacing: -0.025em;
   line-height: 1;
 }
-.kl-bento-unit {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11px;
-  color: var(--t3);
-}
 .kl-bento-sub {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10px;
   color: var(--t3);
   margin-top: 2px;
-}
-.kl-bento-pips {
-  display: flex;
-  gap: 3px;
-  margin-top: 4px;
-}
-.kl-bento-pip {
-  flex: 1;
-  height: 18px;
-  border-radius: 3px;
-  background: var(--s3);
-  transition: background var(--dur-fast) var(--ease-out);
-}
-.kl-bento-pip.on {
-  background: var(--cyan);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--cyan) 40%, transparent);
-}
-.kl-bento-acts {
-  display: flex;
-  gap: 4px;
-  margin-top: 2px;
-}
-.kl-bento-btn {
-  flex: 1;
-  height: 28px;
-  background: var(--s3);
-  border: none;
-  border-radius: 8px;
-  color: var(--t2);
-  cursor: pointer;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 14px;
-  font-weight: 600;
-  transition:
-    background var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
-}
-.kl-bento-btn:active {
-  transform: scale(0.94);
-}
-.kl-bento-btn--p {
-  background: color-mix(in srgb, var(--cyan) 14%, var(--s3));
-  color: var(--cyan);
-  font-weight: 700;
-}
-.kl-bento-btn--p:hover {
-  background: color-mix(in srgb, var(--cyan) 22%, var(--s3));
 }
 .kl-bento-weekbars {
   display: flex;

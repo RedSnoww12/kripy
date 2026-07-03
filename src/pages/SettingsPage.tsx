@@ -8,6 +8,7 @@ import FeedbackCard from '@/components/settings/FeedbackCard';
 import ImportCard from '@/components/settings/ImportCard';
 import PhaseCard from '@/components/settings/PhaseCard';
 import ProfileCard from '@/components/settings/ProfileCard';
+import StepsSyncCard from '@/components/settings/StepsSyncCard';
 import TargetsCard from '@/components/settings/TargetsCard';
 import TdeeCalcCard from '@/components/settings/TdeeCalcCard';
 import ThemeCard from '@/components/settings/ThemeCard';
@@ -39,6 +40,7 @@ export default function SettingsPage() {
       <PhaseCard />
       <ThemeCard />
       <AiKeyCard />
+      <StepsSyncCard />
       <ImportCard />
       <DataCard />
       <FeedbackCard />

@@ -1,19 +1,20 @@
 import type { SportCategory } from '@/types';
 
+type OtherCategory = Exclude<SportCategory, 'muscu'>;
+
 interface Props {
-  value: SportCategory;
-  onChange: (next: SportCategory) => void;
+  value: OtherCategory;
+  onChange: (next: OtherCategory) => void;
 }
 
 interface CategoryMeta {
-  key: SportCategory;
+  key: OtherCategory;
   label: string;
   icon: string;
   color: string;
 }
 
 const CATEGORIES: readonly CategoryMeta[] = [
-  { key: 'muscu', label: 'Muscu', icon: 'fitness_center', color: 'var(--acc)' },
   {
     key: 'cardio',
     label: 'Cardio',
@@ -26,7 +27,7 @@ const CATEGORIES: readonly CategoryMeta[] = [
 
 export default function SportTypeSelector({ value, onChange }: Props) {
   return (
-    <div className="kl-sport-cats">
+    <div className="kl-sport-cats kl-sport-cats-3">
       {CATEGORIES.map((c) => {
         const on = c.key === value;
         return (

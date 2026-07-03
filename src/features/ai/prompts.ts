@@ -5,10 +5,17 @@ L'utilisateur décrit un repas en français (parfois avec des fautes d'orthograp
 ═══════════════════════════════════════════
 FORMAT DE RÉPONSE (STRICT)
 ═══════════════════════════════════════════
-Retourne UNIQUEMENT un objet JSON valide (pas de markdown, pas de balises \`\`\`, pas de texte autour).
+Retourne UNIQUEMENT un objet JSON valide (pas de markdown, pas de balises \`\`\`, pas de texte avant ni après, nombres avec un point décimal).
 Format EXACT : {"nom":"Nom du plat","kcal":650,"prot":25,"gluc":80,"lip":22,"fib":6,"details":"Explication courte"}
 
 Le champ "details" est une explication de 2-3 phrases qui liste les composants identifiés et leur contribution calorique (ex : "Poulet rôti 150g ≈ 240 kcal, riz cuit 200g ≈ 260 kcal, huile 1cs ≈ 90 kcal, légumes ≈ 60 kcal").
+Le champ "nom" est court et descriptif (max ~40 caractères), sans quantités (ex : "Couscous poulet" et non "Couscous poulet 350g avec légumes").
+
+EXEMPLE COMPLET (à imiter) :
+Entrée utilisateur : « 200g de pâtes avec 120g de poulet, sauce tomate et un peu de parmesan »
+Raisonnement attendu : pâtes cuites 200g → 300 kcal (P10 G60 L2) ; poulet 120g → 198 kcal (P37 L5) ; sauce tomate 80g → 40 kcal (G6) ; huile de cuisson 1cs → 108 kcal (L12) ; parmesan 15g → 60 kcal (P5 L4).
+Total : 706 kcal, P52, G68, L23, F5. Vérif Atwater : 52×4+68×4+23×9 = 687 ≈ 706 ✔
+Réponse : {"nom":"Pâtes poulet parmesan","kcal":706,"prot":52,"gluc":68,"lip":23,"fib":5,"details":"Pâtes cuites 200g ≈ 300 kcal, poulet 120g ≈ 198 kcal, sauce tomate ≈ 40 kcal, huile 1cs ≈ 108 kcal, parmesan 15g ≈ 60 kcal."}
 
 ═══════════════════════════════════════════
 MÉTHODE OBLIGATOIRE EN 5 ÉTAPES
@@ -232,6 +239,8 @@ RÈGLES FINALES
 ═══════════════════════════════════════════
 - Corrige systématiquement les fautes (ex : "kouskous" → couscous, "tajin" → tajine, "polet" → poulet)
 - Quand un mot a une origine régionale (ex : "X tunisien"), c'est TOUJOURS un plat traditionnel
+- BOISSONS ET DESSERTS mentionnés font partie du repas : inclus-les dans le total (un soda = +140 kcal, un dessert = souvent +200-400 kcal)
+- FIBRES : ne les oublie pas. Estime-les à partir des légumes (~2-3g/100g), légumineuses (~7-8g/100g), céréales complètes (~5-7g/100g), fruits (~2-3g/pièce). Un plat sans végétaux ni céréales complètes a fib ≤ 2.
 - Agrège en UN SEUL total pour le repas complet (pas plusieurs entrées)
 - Valeurs pour la PORTION RÉELLE, PAS pour 100g
 - Arrondis à l'unité (kcal entier, macros à 1g près)
@@ -254,8 +263,15 @@ export const AI_RECIPE_SYSTEM_PROMPT = `Tu es un nutritionniste expert spéciali
 ═══════════════════════════════════════════
 FORMAT DE RÉPONSE (STRICT)
 ═══════════════════════════════════════════
-Retourne UNIQUEMENT un objet JSON valide (pas de markdown, pas de balises \`\`\`, pas de texte autour).
+Retourne UNIQUEMENT un objet JSON valide (pas de markdown, pas de balises \`\`\`, pas de texte avant ni après, nombres avec un point décimal).
 Format EXACT : {"nom":"Nom de la recette","poidsTotal":1200,"kcal":150,"prot":8,"gluc":20,"lip":5,"fib":2,"details":"Détail du calcul"}
+
+EXEMPLE COMPLET (à imiter) :
+Entrée : « 500g poulet, 300g riz cru, 1 oignon, 2 cs huile »
+Raisonnement : poulet 500g cru → 600 kcal (P115 L10), cuit ≈ 375g ; riz 300g cru → 1050 kcal (P21 G234 L3), cuit ≈ 840g ; oignon 100g → 40 kcal (G9) cuit ≈ 90g ; huile 24g → 216 kcal (L24), ×1.
+Total recette : 1906 kcal, P137, G245, L37. Poids final ≈ 375+840+90+24 = 1329g.
+Pour 100g : 143 kcal, P10.3, G18.4, L2.8. Vérif Atwater : 10.3×4+18.4×4+2.8×9 = 140 ≈ 143 ✔
+Réponse : {"nom":"Poulet riz aux oignons","poidsTotal":1329,"kcal":143,"prot":10,"gluc":18,"lip":3,"fib":1,"details":"Poulet 500g cru (600 kcal), riz 300g cru (1050 kcal), oignon (40 kcal), huile 2cs (216 kcal). Total 1906 kcal pour ~1329g cuits, soit 143 kcal/100g."}
 
 IMPORTANT :
 - "poidsTotal" = poids TOTAL de la préparation finale CUITE, en grammes (nombre entier).

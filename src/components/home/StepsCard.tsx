@@ -7,6 +7,12 @@ import {
 } from 'react';
 import Modal from '@/components/ui/Modal';
 import { toast } from '@/components/ui/toastStore';
+import {
+  describeStepsSyncError,
+  fetchSteps,
+  isStepsSyncConfigured,
+  isStepsSyncConnected,
+} from '@/features/steps/googleFit';
 import { useTweenInt } from '@/hooks/useTween';
 import { todayISO } from '@/lib/date';
 import { sanitizeInteger } from '@/lib/numericInput';
@@ -38,6 +44,27 @@ export default function StepsCard({ steps, goal }: Props) {
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
+  const [syncing, setSyncing] = useState(false);
+
+  const canSync = isStepsSyncConfigured() && isStepsSyncConnected();
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const fetched = await fetchSteps(7);
+      const current = useTrackingStore.getState().steps;
+      for (const [date, v] of Object.entries(fetched)) {
+        const merged = Math.max(current[date] ?? 0, v);
+        if (merged !== (current[date] ?? 0)) setStepsForDate(date, merged);
+      }
+      toast('Pas synchronisés depuis Google Fit', 'success');
+      setOpen(false);
+    } catch (e) {
+      toast(describeStepsSyncError(e), 'error');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const pct = goal ? Math.min(100, Math.round((steps / goal) * 100)) : 0;
 
@@ -89,12 +116,7 @@ export default function StepsCard({ steps, goal }: Props) {
       >
         <div className="kl-bento-head">
           <span className="kl-bento-lbl">STEPS</span>
-          <span
-            className="kl-bento-pill"
-            style={{ color: 'var(--acc)', background: 'var(--grnG)' }}
-          >
-            {pct}%
-          </span>
+          <span className="kl-bento-pill kl-bento-pill--acc">{pct}%</span>
         </div>
         <div ref={valueRef} className="kl-bento-num">
           {formatFr(steps)}
@@ -115,6 +137,17 @@ export default function StepsCard({ steps, goal }: Props) {
 
       <Modal open={open} onClose={() => setOpen(false)}>
         <h3>Pas aujourd'hui</h3>
+        {canSync && (
+          <button
+            type="button"
+            className="btn btn-o kl-steps-sync"
+            disabled={syncing}
+            onClick={handleSync}
+          >
+            <span className="material-symbols-outlined">sync</span>
+            {syncing ? 'Synchronisation…' : 'Synchroniser Google Fit'}
+          </button>
+        )}
         <form onSubmit={handleSubmit}>
           <input
             type="text"

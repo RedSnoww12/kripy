@@ -1,0 +1,25 @@
+.actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.actions > :only-child {
+  grid-column: 1 / -1;
+}
+
+.hint {
+  font-size: 0.65rem;
+  color: var(--t3);
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+.hint code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.62rem;
+  color: var(--t2);
+  background: var(--s2);
+  border-radius: 4px;
+  padding: 1px 4px;
+}

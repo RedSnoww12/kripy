@@ -27,10 +27,10 @@ Application web **mobile-first** de suivi nutritionnel, pondéral et sportif, pe
 
 Kripy est une **PWA mobile-first** (React + Vite + TypeScript) installable sur iOS et Android via "Ajouter à l'écran d'accueil", avec mode standalone et offline-first. Elle se décompose en 6 onglets :
 
-1. **Accueil** — tableau de bord du jour (calories restantes, macros, eau, pas, alertes tendance)
+1. **Accueil** — tableau de bord du jour (calories restantes, macros, pas, séances de la semaine, alertes tendance)
 2. **Repas** — ajout d'aliments par recherche, photo IA, dictée vocale ou code-barres
 3. **Favoris / Recettes** — aliments épinglés et repas composés réutilisables
-4. **Sport** — entraînements muscu (par split + groupes musculaires) et cardio / sports / combat
+4. **Sport** — programme personnalisé (style, split, fréquence), tracking de la surcharge progressive avec RPE, coach IA, et cardio / sports / combat
 5. **Graphes** — évolution poids, palier calorique, historique des phases
 6. **Réglages** — profil, phase en cours, presets macros, synchro cloud, thèmes
 
@@ -102,11 +102,11 @@ Plutôt que de te montrer ton poids brut (qui fluctue de ±1 kg par jour selon l
 - Analyse d'un repas par photo (Google Gemini 2.5 Flash ou Groq / Llama 4 Scout, au choix)
 - Dictée vocale
 
-### Poids, hydratation, pas
+### Poids & pas
 
 - Saisie quotidienne du poids avec historique
-- Compteur d'eau rapide (+/- au verre)
-- Synchro des pas via paramètre URL (pour Shortcuts iOS / Tasker)
+- Synchro des pas via Google Fit (OAuth, optionnelle) ou paramètre URL
+  (pour Shortcuts iOS / Tasker)
 
 ### Analyse
 
@@ -119,10 +119,16 @@ Plutôt que de te montrer ton poids brut (qui fluctue de ±1 kg par jour selon l
 
 ### Sport
 
-- Muscu par **split** (Upper / Lower / Push / Pull / Legs / Full Body)
-- Sélection du groupe musculaire travaillé
+- **Profil d'entraînement** par compte : style (hypertrophie, force,
+  powerlifting, endurance, street workout, street lifting, cross training),
+  split (PPL / Upper-Lower / Full Body / libre) et fréquence hebdo
+- **Suivi de la surcharge progressive** sur les exercices choisis :
+  séries charge × reps avec **RPE par série**, 1RM estimé (Epley), volume,
+  records (PR), deltas et sparklines — gère aussi le poids du corps (reps / lest)
+- **Coach intégré** : conseils locaux (progression, deload, stagnation,
+  adhérence) + **analyse IA** avec ajustements chiffrés selon l'objectif
 - Cardio, sports collectifs, sports de combat
-- Historique des séances
+- Historique des séances et heatmap d'activité 28 jours
 
 ### Personnalisation
 
@@ -224,7 +230,7 @@ kripy/
 │   │   ├── stats/          # composants stats-specific (grids, analysis)
 │   │   ├── home/           # cards dashboard (Calorie, Macro, Water, Steps…)
 │   │   ├── meals/          # DateNavigator, FoodSearch, MealEntriesList…
-│   │   ├── sport/          # MuscuForm, OtherSportForm, WorkoutHistory
+│   │   ├── sport/          # SessionLogger, TrainingSetupWizard, WorkoutHistory…
 │   │   ├── recipes/        # RecipeForm, RecipeList
 │   │   ├── settings/       # 8 cards modulaires (Profile, TDEE, Targets…)
 │   │   └── legal/          # LegalLayout
