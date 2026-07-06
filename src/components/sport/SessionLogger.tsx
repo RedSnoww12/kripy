@@ -1,5 +1,11 @@
 import { useMemo, useState } from 'react';
+import SessionRecap from '@/components/sport/SessionRecap';
 import { makeExerciseResolver, splitMeta } from '@/data/exercises';
+import {
+  formatSuggestion,
+  suggestNext,
+  type NextSuggestion,
+} from '@/features/sport/nextSession';
 import { toast } from '@/components/ui/toastStore';
 import { todayISO } from '@/lib/date';
 import { sanitizeDecimal, sanitizeInteger } from '@/lib/numericInput';
@@ -51,6 +57,7 @@ export default function SessionLogger({ profile }: Props) {
   const [feel, setFeel] = useState<number | null>(null);
   const [duration, setDuration] = useState('');
   const [notes, setNotes] = useState('');
+  const [recap, setRecap] = useState<StrengthSession | null>(null);
 
   const resolve = useMemo(
     () => makeExerciseResolver(profile.customExercises),
@@ -67,6 +74,17 @@ export default function SessionLogger({ profile }: Props) {
     return map;
   }, [sessions]);
 
+  const suggestions = useMemo(() => {
+    const map = new Map<string, NextSuggestion>();
+    for (const exerciseId of profile.trackedExercises) {
+      const def = resolve(exerciseId);
+      if (!def) continue;
+      const s = suggestNext(profile, sessions, exerciseId, def.bodyweight);
+      if (s) map.set(exerciseId, s);
+    }
+    return map;
+  }, [profile, sessions, resolve]);
+
   const addSet = (exerciseId: string) => {
     setDrafts((prev) => {
       const cur = prev[exerciseId] ?? [];
@@ -74,6 +92,14 @@ export default function SessionLogger({ profile }: Props) {
         cur.length > 0
           ? cur[cur.length - 1]
           : (() => {
+              const target = suggestions.get(exerciseId);
+              if (target) {
+                return {
+                  w: target.w > 0 ? String(target.w) : '',
+                  r: String(target.repsMin),
+                  rpe: '',
+                };
+              }
               const last = lastSets.get(exerciseId)?.[0];
               return last
                 ? {
@@ -153,9 +179,21 @@ export default function SessionLogger({ profile }: Props) {
     const workout: Workout = { id, date, type: label, dur };
     addWorkout(workout);
 
-    toast(`Séance ${label} enregistrée`, 'success');
-    reset();
+    setRecap(session);
   };
+
+  if (recap) {
+    return (
+      <SessionRecap
+        session={recap}
+        profile={profile}
+        onClose={() => {
+          setRecap(null);
+          reset();
+        }}
+      />
+    );
+  }
 
   if (!open) {
     return (
@@ -199,6 +237,7 @@ export default function SessionLogger({ profile }: Props) {
         if (!def) return null;
         const sets = drafts[exerciseId] ?? [];
         const prev = lastSets.get(exerciseId);
+        const target = suggestions.get(exerciseId);
         return (
           <div key={exerciseId} className="kl-log-exo">
             <div className="kl-log-exo-head">
@@ -208,6 +247,17 @@ export default function SessionLogger({ profile }: Props) {
                   <span className="kl-log-exo-prev">
                     dern.{' '}
                     {prev.map((s) => formatSet(s, def.bodyweight)).join(' · ')}
+                  </span>
+                )}
+                {target && (
+                  <span className="kl-log-exo-target">
+                    <span
+                      className="material-symbols-outlined kl-log-exo-target-ico"
+                      aria-hidden
+                    >
+                      flag
+                    </span>
+                    {formatSuggestion(target, def.bodyweight)}
                   </span>
                 )}
               </div>

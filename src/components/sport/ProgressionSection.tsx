@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { makeExerciseResolver } from '@/data/exercises';
+import { formatSuggestion, suggestNext } from '@/features/sport/nextSession';
 import { summarizeExercise } from '@/features/sport/progression';
 import { useSportStore } from '@/store/useSportStore';
 import { formatShortDate } from '@/lib/date';
@@ -52,9 +53,10 @@ export default function ProgressionSection({ profile }: Props) {
         if (!def) return [];
         const summary = summarizeExercise(sessions, id, def.bodyweight);
         if (!summary.last) return [];
-        return [{ id, def, summary }];
+        const next = suggestNext(profile, sessions, id, def.bodyweight);
+        return [{ id, def, summary, next }];
       }),
-    [profile.trackedExercises, resolve, sessions],
+    [profile, resolve, sessions],
   );
 
   return (
@@ -70,7 +72,7 @@ export default function ProgressionSection({ profile }: Props) {
         </div>
       ) : (
         <div className="kl-prog-grid">
-          {rows.map(({ id, def, summary }) => {
+          {rows.map(({ id, def, summary, next }) => {
             const { last, deltaPct, isPR } = summary;
             if (!last) return null;
             const pureBw = def.bodyweight && last.topW <= 0;
@@ -106,6 +108,17 @@ export default function ProgressionSection({ profile }: Props) {
                   {topSet}
                   {last.avgRpe !== null && ` · RPE ${last.avgRpe}`}
                 </div>
+                {next && (
+                  <div className="kl-prog-next">
+                    <span
+                      className="material-symbols-outlined kl-prog-next-ico"
+                      aria-hidden
+                    >
+                      flag
+                    </span>
+                    {formatSuggestion(next, def.bodyweight)}
+                  </div>
+                )}
                 <div className="kl-prog-foot">
                   <Sparkline values={values} />
                   <span className="kl-prog-date">
