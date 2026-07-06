@@ -1213,3 +1213,226 @@
 .kl-ai-coach-acts {
   margin-top: 12px;
 }
+
+/* ── Objectif (logger + progression) ─────────────────── */
+.kl-log-exo-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--acc);
+  margin-top: 2px;
+}
+.kl-log-exo-target-ico {
+  font-size: 12px !important;
+}
+.kl-prog-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  align-self: flex-start;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--acc);
+  background: color-mix(in srgb, var(--acc) 10%, transparent);
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin-top: 2px;
+}
+.kl-prog-next-ico {
+  font-size: 11px !important;
+}
+
+/* ── Delta pills (progression) ───────────────────────── */
+.kl-prog-delta {
+  border-radius: 6px;
+  padding: 2px 6px;
+  background: var(--s3);
+}
+.kl-prog-delta.up {
+  background: color-mix(in srgb, var(--acc) 14%, transparent);
+}
+.kl-prog-delta.down {
+  background: color-mix(in srgb, var(--red) 14%, transparent);
+}
+
+/* ── Récap de fin de séance ──────────────────────────── */
+.kl-recap {
+  background: var(--s1);
+  border-radius: 18px;
+  padding: 22px 16px 16px;
+  margin-bottom: 14px;
+  animation: klRecapIn 0.35s var(--ease-out);
+}
+@keyframes klRecapIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.kl-recap-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.kl-recap-check {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--grad-primary);
+  color: #0a1410;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--acc) 45%, transparent);
+}
+.kl-recap-check .material-symbols-outlined {
+  font-size: 28px !important;
+  font-weight: 700;
+}
+.kl-recap-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--t1);
+}
+.kl-recap-sub {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--t3);
+}
+.kl-recap-pr {
+  color: var(--yel);
+  font-weight: 700;
+}
+.kl-recap-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.kl-recap-stat {
+  background: var(--s2);
+  border-radius: 12px;
+  padding: 10px 4px;
+  text-align: center;
+}
+.kl-recap-stat-val {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--t1);
+  line-height: 1.1;
+}
+.kl-recap-stat-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--t3);
+  margin-top: 3px;
+}
+.kl-recap-next {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.kl-recap-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--s2);
+  border-radius: 12px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--s3);
+}
+.kl-recap-row.kind-up {
+  border-left-color: var(--acc);
+}
+.kl-recap-row.kind-reps {
+  border-left-color: var(--cyan);
+}
+.kl-recap-row.kind-keep {
+  border-left-color: var(--t3);
+}
+.kl-recap-row.kind-deload {
+  border-left-color: var(--org);
+}
+.kl-recap-row-ico {
+  font-size: 16px !important;
+  margin-top: 2px;
+  color: var(--t3);
+  flex-shrink: 0;
+}
+.kl-recap-row.kind-up .kl-recap-row-ico {
+  color: var(--acc);
+}
+.kl-recap-row.kind-reps .kl-recap-row-ico {
+  color: var(--cyan);
+}
+.kl-recap-row.kind-deload .kl-recap-row-ico {
+  color: var(--org);
+}
+.kl-recap-row-body {
+  min-width: 0;
+  flex: 1;
+}
+.kl-recap-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kl-recap-row-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--t1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kl-recap-row-target {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--acc);
+  flex-shrink: 0;
+}
+.kl-recap-row-sets {
+  font-size: 9.5px;
+  font-weight: 500;
+  color: var(--t3);
+}
+.kl-recap-row-why {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--t3);
+  margin-top: 2px;
+}
+.kl-recap-cta {
+  margin: 16px 0 0;
+}
+
+/* ── CTA glow ────────────────────────────────────────── */
+.kl-log-start {
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--acc) 22%, transparent);
+}
