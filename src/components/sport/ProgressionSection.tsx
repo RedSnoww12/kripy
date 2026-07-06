@@ -1,9 +1,11 @@
-import { useMemo } from 'react';
-import { makeExerciseResolver } from '@/data/exercises';
-import { formatSuggestion, suggestNext } from '@/features/sport/nextSession';
+import { useMemo, useState } from 'react';
+import { makeExerciseResolver, styleMeta } from '@/data/exercises';
+import { overloadTrack, suggestNext } from '@/features/sport/nextSession';
 import { summarizeExercise } from '@/features/sport/progression';
 import { useSportStore } from '@/store/useSportStore';
 import { formatShortDate } from '@/lib/date';
+import ExerciseDetailModal from './ExerciseDetailModal';
+import OverloadTrackBar from './OverloadTrackBar';
 import type { TrainingProfile } from '@/types';
 
 interface Props {
@@ -38,8 +40,15 @@ function Sparkline({ values }: { values: number[] }) {
   );
 }
 
+interface Selected {
+  id: string;
+  name: string;
+  bodyweight: boolean;
+}
+
 export default function ProgressionSection({ profile }: Props) {
   const sessions = useSportStore((s) => s.sessions);
+  const [selected, setSelected] = useState<Selected | null>(null);
 
   const resolve = useMemo(
     () => makeExerciseResolver(profile.customExercises),
@@ -54,7 +63,16 @@ export default function ProgressionSection({ profile }: Props) {
         const summary = summarizeExercise(sessions, id, def.bodyweight);
         if (!summary.last) return [];
         const next = suggestNext(profile, sessions, id, def.bodyweight);
-        return [{ id, def, summary, next }];
+        const track =
+          next && summary.last
+            ? overloadTrack(
+                summary.last,
+                next,
+                styleMeta(profile.style).repRange,
+                def.bodyweight,
+              )
+            : null;
+        return [{ id, def, summary, track }];
       }),
     [profile, resolve, sessions],
   );
@@ -72,20 +90,32 @@ export default function ProgressionSection({ profile }: Props) {
         </div>
       ) : (
         <div className="kl-prog-grid">
-          {rows.map(({ id, def, summary, next }) => {
+          {rows.map(({ id, def, summary, track }) => {
             const { last, deltaPct, isPR } = summary;
             if (!last) return null;
             const pureBw = def.bodyweight && last.topW <= 0;
             const unit = pureBw ? 'reps' : 'kg e1RM';
             const value = pureBw ? last.topReps : last.best;
             const topSet = pureBw
-              ? `${last.topReps} reps · ${last.setCount} séries`
+              ? `${last.topReps} reps · ${last.setCount} série${last.setCount > 1 ? 's' : ''}`
               : `${def.bodyweight ? '+' : ''}${last.topW} kg × ${last.topReps}`;
             const values = summary.points
               .slice(-SPARK_POINTS)
               .map((p) => p.best);
             return (
-              <div key={id} className="kl-prog-card">
+              <button
+                key={id}
+                type="button"
+                className="kl-prog-card"
+                onClick={() =>
+                  setSelected({
+                    id,
+                    name: def.name,
+                    bodyweight: def.bodyweight,
+                  })
+                }
+                aria-label={`Détail de la progression ${def.name}`}
+              >
                 <div className="kl-prog-head">
                   <span className="kl-prog-name">{def.name}</span>
                   {isPR && <span className="kl-prog-pr">PR</span>}
@@ -108,27 +138,34 @@ export default function ProgressionSection({ profile }: Props) {
                   {topSet}
                   {last.avgRpe !== null && ` · RPE ${last.avgRpe}`}
                 </div>
-                {next && (
-                  <div className="kl-prog-next">
-                    <span
-                      className="material-symbols-outlined kl-prog-next-ico"
-                      aria-hidden
-                    >
-                      flag
-                    </span>
-                    {formatSuggestion(next, def.bodyweight)}
-                  </div>
-                )}
+                {track && <OverloadTrackBar track={track} />}
                 <div className="kl-prog-foot">
                   <Sparkline values={values} />
                   <span className="kl-prog-date">
                     {formatShortDate(last.date)}
+                    <span
+                      className="material-symbols-outlined kl-prog-more"
+                      aria-hidden
+                    >
+                      chevron_right
+                    </span>
                   </span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
+      )}
+
+      {selected && (
+        <ExerciseDetailModal
+          open
+          onClose={() => setSelected(null)}
+          exerciseId={selected.id}
+          name={selected.name}
+          bodyweight={selected.bodyweight}
+          profile={profile}
+        />
       )}
     </section>
   );
