@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { StrengthSession, TrainingProfile } from '@/types';
-import { formatSuggestion, suggestNext } from './nextSession';
+import type { ExercisePoint } from './progression';
+import {
+  formatSuggestion,
+  overloadTrack,
+  suggestNext,
+  targetScore,
+  type NextSuggestion,
+} from './nextSession';
 
 const profile: TrainingProfile = {
   style: 'hypertrophy', // fourchette 6-12
@@ -114,6 +121,92 @@ describe('suggestNext — poids du corps', () => {
     const s = suggestNext(profile, sessions, 'pullup', true);
     expect(s?.kind).toBe('up');
     expect(s?.w).toBe(12.5);
+  });
+});
+
+function point(topW: number, topReps: number): ExercisePoint {
+  return {
+    date: '2026-01-10',
+    sessionId: 1,
+    best: topW > 0 ? topW * (1 + topReps / 30) : topReps,
+    topW,
+    topReps,
+    volume: topW * topReps,
+    avgRpe: 8,
+    setCount: 3,
+  };
+}
+
+function sugg(partial: Partial<NextSuggestion>): NextSuggestion {
+  return {
+    kind: 'reps',
+    w: 80,
+    repsMin: 9,
+    repsMax: 10,
+    sets: 3,
+    why: '',
+    ...partial,
+  };
+}
+
+describe('overloadTrack', () => {
+  it('situe les reps actuelles dans la fourchette avec la prochaine charge', () => {
+    const t = overloadTrack(
+      point(80, 8),
+      sugg({ kind: 'up', w: 82.5, repsMin: 6, repsMax: 8 }),
+      [6, 12],
+      false,
+    );
+    expect(t).toMatchObject({
+      lo: 6,
+      hi: 12,
+      reps: 8,
+      current: '80 kg',
+      next: '82,5 kg',
+      kind: 'up',
+    });
+  });
+
+  it('décrit un gain de reps à charge constante', () => {
+    const t = overloadTrack(point(80, 8), sugg({}), [6, 12], false);
+    expect(t.next).toBe('+1-2 reps');
+  });
+
+  it('décrit le passage au lest depuis le poids du corps', () => {
+    const t = overloadTrack(
+      point(0, 12),
+      sugg({ kind: 'up', w: 2.5, repsMin: 6, repsMax: 8 }),
+      [6, 12],
+      true,
+    );
+    expect(t.current).toBe('PDC');
+    expect(t.next).toBe('lest +2,5 kg');
+  });
+
+  it('décrit un deload', () => {
+    const t = overloadTrack(
+      point(80, 8),
+      sugg({ kind: 'deload', w: 72.5 }),
+      [6, 12],
+      false,
+    );
+    expect(t.next).toBe('72,5 kg deload');
+  });
+});
+
+describe('targetScore', () => {
+  it('renvoie le e1RM cible pour un exercice chargé', () => {
+    expect(
+      targetScore(sugg({ w: 82.5, repsMin: 6 }), false, false),
+    ).toBeCloseTo(99, 0);
+  });
+
+  it('renvoie les reps cibles en poids du corps strict', () => {
+    expect(targetScore(sugg({ w: 0, repsMin: 13 }), true, true)).toBe(13);
+  });
+
+  it('renvoie null quand les échelles changent (PDC → lest)', () => {
+    expect(targetScore(sugg({ kind: 'up', w: 2.5 }), true, true)).toBeNull();
   });
 });
 

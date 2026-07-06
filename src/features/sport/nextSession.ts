@@ -1,6 +1,6 @@
 import { styleMeta } from '@/data/exercises';
 import type { StrengthSession, TrainingProfile } from '@/types';
-import { exerciseHistory } from './progression';
+import { epley1RM, exerciseHistory, type ExercisePoint } from './progression';
 
 export type SuggestionKind = 'up' | 'reps' | 'keep' | 'deload';
 
@@ -143,4 +143,83 @@ export function formatSuggestion(
     return `+${load} kg × ${reps}`;
   }
   return `${load} kg × ${reps}`;
+}
+
+function loadLabel(w: number, bodyweight: boolean): string {
+  const load = String(w).replace('.', ',');
+  if (bodyweight) return w > 0 ? `+${load} kg` : 'PDC';
+  return `${load} kg`;
+}
+
+/**
+ * État du cycle de double progression pour un exercice : à charge donnée,
+ * on remplit la fourchette de reps du style ; une fois en haut, la charge
+ * monte et on repart en bas. `reps` situe le meilleur set actuel dans la
+ * fourchette [lo, hi], `next` décrit l'étape suivante.
+ */
+export interface OverloadTrack {
+  lo: number;
+  hi: number;
+  /** Reps du meilleur set à la charge actuelle (peut déborder de [lo, hi]). */
+  reps: number;
+  /** Libellé de la charge actuelle ("80 kg", "PDC", "+10 kg"). */
+  current: string;
+  /** Libellé de l'étape suivante ("82,5 kg", "+1-2 reps", "consolide"). */
+  next: string;
+  kind: SuggestionKind;
+}
+
+export function overloadTrack(
+  last: ExercisePoint,
+  s: NextSuggestion,
+  repRange: [number, number],
+  bodyweight: boolean,
+): OverloadTrack {
+  const [lo, hi] = repRange;
+  let next: string;
+  switch (s.kind) {
+    case 'up':
+      next =
+        bodyweight && last.topW <= 0
+          ? `lest ${loadLabel(s.w, true)}`
+          : loadLabel(s.w, bodyweight);
+      break;
+    case 'deload':
+      next = `${loadLabel(s.w, bodyweight)} deload`;
+      break;
+    case 'keep':
+      next = 'consolide';
+      break;
+    default: {
+      const gain = s.repsMax - last.topReps;
+      next = gain > 1 ? `+1-${gain} reps` : '+1 rep';
+    }
+  }
+  return {
+    lo,
+    hi,
+    reps: last.topReps,
+    current: loadLabel(last.topW, bodyweight),
+    next,
+    kind: s.kind,
+  };
+}
+
+/**
+ * Score cible pour tracer la ligne d'objectif sur le graphique de
+ * progression : e1RM de la suggestion (échelle e1RM), ou reps cibles pour
+ * du poids du corps strict (échelle reps). Null si les échelles diffèrent
+ * (passage PDC → lest).
+ */
+export function targetScore(
+  s: NextSuggestion,
+  bodyweight: boolean,
+  lastPureBodyweight: boolean,
+): number | null {
+  if (bodyweight && lastPureBodyweight) {
+    if (s.w > 0) return null;
+    return s.repsMin;
+  }
+  if (s.w <= 0) return null;
+  return Math.round(epley1RM(s.w, s.repsMin) * 10) / 10;
 }
