@@ -1,7 +1,11 @@
-import { splitMeta, styleMeta } from '@/data/exercises';
+import { styleMeta } from '@/data/exercises';
 import type { StrengthSession, TrainingProfile } from '@/types';
 import type { ExerciseResolver } from './coach';
-import { exerciseHistory, weekSessionCount } from './progression';
+import {
+  exerciseHistory,
+  trackedExerciseIds,
+  weekSessionCount,
+} from './progression';
 
 const POINTS_PER_EXERCISE = 6;
 
@@ -17,9 +21,8 @@ export function buildCoachContext(
   extras?: { objectifNutrition?: string; poids?: number },
 ): Record<string, unknown> {
   const style = styleMeta(profile.style);
-  const split = splitMeta(profile.split);
 
-  const exercices = profile.trackedExercises.flatMap((id) => {
+  const exercices = trackedExerciseIds(profile, sessions).flatMap((id) => {
     const def = resolve(id);
     if (!def) return [];
     const points = exerciseHistory(sessions, id, def.bodyweight).slice(
@@ -54,7 +57,7 @@ export function buildCoachContext(
     profil: {
       style: style.label,
       repsCibles: `${style.repRange[0]}-${style.repRange[1]}`,
-      split: split.label,
+      seancesTypes: profile.sessionTemplates.map((t) => t.name),
       seancesParSemaineVisees: profile.sessionsPerWeek,
       seancesRealisees7j: weekSessionCount(
         sessions.map((s) => s.date),

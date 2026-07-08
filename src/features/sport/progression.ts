@@ -1,4 +1,5 @@
-import type { StrengthSession, StrengthSet } from '@/types';
+import { allTemplateExerciseIds } from '@/data/exercises';
+import type { StrengthSession, StrengthSet, TrainingProfile } from '@/types';
 
 /**
  * 1RM estimé (formule d'Epley). Retourne 0 si la charge est nulle :
@@ -109,6 +110,21 @@ export function summarizeExercise(
     last.best >= bestEver &&
     points.slice(0, -1).every((p) => p.best < last.best);
   return { points, last, prev, deltaPct, bestEver, isPR };
+}
+
+/**
+ * Ids de tous les exercices à suivre : ceux planifiés dans les séances types
+ * du profil, unis à ceux réellement déjà loggés (séances libres incluses).
+ */
+export function trackedExerciseIds(
+  profile: Pick<TrainingProfile, 'sessionTemplates'>,
+  sessions: StrengthSession[],
+): string[] {
+  const ids = new Set(allTemplateExerciseIds(profile));
+  for (const s of sessions) {
+    for (const e of s.exercises) ids.add(e.exerciseId);
+  }
+  return [...ids];
 }
 
 /** Nombre de séances (dates uniques) sur les 7 derniers jours, aujourd'hui inclus. */

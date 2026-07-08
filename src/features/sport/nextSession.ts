@@ -1,4 +1,4 @@
-import { styleMeta } from '@/data/exercises';
+import { repRangeFor, targetSetsFor } from '@/data/exercises';
 import type { StrengthSession, TrainingProfile } from '@/types';
 import { epley1RM, exerciseHistory, type ExercisePoint } from './progression';
 
@@ -34,14 +34,15 @@ export function suggestNext(
   exerciseId: string,
   bodyweight: boolean,
 ): NextSuggestion | null {
-  const [lo, hi] = styleMeta(profile.style).repRange;
+  const [lo, hi] = repRangeFor(profile, exerciseId);
   const points = exerciseHistory(sessions, exerciseId, bodyweight);
   if (points.length === 0) return null;
 
   const last = points[points.length - 1];
   const prev = points.length > 1 ? points[points.length - 2] : null;
   const rpe = last.avgRpe;
-  const sets = last.setCount || DEFAULT_SETS;
+  const sets =
+    targetSetsFor(profile, exerciseId) ?? last.setCount ?? DEFAULT_SETS;
   const progressed = prev !== null && last.best > prev.best;
 
   // Poids du corps strict : progression en répétitions, puis passage au lest.

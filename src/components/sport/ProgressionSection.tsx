@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react';
-import { makeExerciseResolver, styleMeta } from '@/data/exercises';
+import { makeExerciseResolver, repRangeFor } from '@/data/exercises';
 import { overloadTrack, suggestNext } from '@/features/sport/nextSession';
-import { summarizeExercise } from '@/features/sport/progression';
+import {
+  summarizeExercise,
+  trackedExerciseIds,
+} from '@/features/sport/progression';
 import { useSportStore } from '@/store/useSportStore';
 import { formatShortDate } from '@/lib/date';
 import ExerciseDetailModal from './ExerciseDetailModal';
@@ -57,7 +60,7 @@ export default function ProgressionSection({ profile }: Props) {
 
   const rows = useMemo(
     () =>
-      profile.trackedExercises.flatMap((id) => {
+      trackedExerciseIds(profile, sessions).flatMap((id) => {
         const def = resolve(id);
         if (!def) return [];
         const summary = summarizeExercise(sessions, id, def.bodyweight);
@@ -68,7 +71,7 @@ export default function ProgressionSection({ profile }: Props) {
             ? overloadTrack(
                 summary.last,
                 next,
-                styleMeta(profile.style).repRange,
+                repRangeFor(profile, id),
                 def.bodyweight,
               )
             : null;
