@@ -240,7 +240,7 @@ export function makeExerciseResolver(
 }
 
 /** Cherche un exercice dans les séances types du profil, quel que soit l'ordre. */
-function findPlanned(
+export function findPlannedExercise(
   templates: TrainingProfile['sessionTemplates'],
   exerciseId: string,
 ): PlannedExercise | null {
@@ -259,7 +259,7 @@ export function repRangeFor(
   profile: Pick<TrainingProfile, 'style' | 'sessionTemplates'>,
   exerciseId: string,
 ): [number, number] {
-  const planned = findPlanned(profile.sessionTemplates, exerciseId);
+  const planned = findPlannedExercise(profile.sessionTemplates, exerciseId);
   if (planned) return [planned.repsMin, planned.repsMax];
   return styleMeta(profile.style).repRange;
 }
@@ -269,7 +269,9 @@ export function targetSetsFor(
   profile: Pick<TrainingProfile, 'sessionTemplates'>,
   exerciseId: string,
 ): number | null {
-  return findPlanned(profile.sessionTemplates, exerciseId)?.sets ?? null;
+  return (
+    findPlannedExercise(profile.sessionTemplates, exerciseId)?.sets ?? null
+  );
 }
 
 /** Ids uniques de tous les exercices planifiés dans les séances types. */

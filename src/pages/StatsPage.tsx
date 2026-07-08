@@ -34,12 +34,15 @@ import { useNutritionStore } from '@/store/useNutritionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useTrackingStore } from '@/store/useTrackingStore';
 
+type Tab = 'essential' | 'details';
+
 export default function StatsPage() {
   const weights = useTrackingStore((s) => s.weights);
   const log = useNutritionStore((s) => s.log);
   const startWeight = useSettingsStore((s) => s.startWeight);
   const targets = useSettingsStore((s) => s.targets);
 
+  const [tab, setTab] = useState<Tab>('essential');
   const [weightRange, setWeightRange] = useState<WeightRange>(30);
   const [kcalRange, setKcalRange] = useState<CalorieRange>(7);
   const [macroRange, setMacroRange] = useState<MacroRange>(7);
@@ -67,172 +70,227 @@ export default function StatsPage() {
 
   return (
     <div className="tp active">
-      <section className="stat-head">
-        <h1>Stats</h1>
-        <p>Biometric data stream · analyse de tendance</p>
+      <section className="stat-head stat-head-row">
+        <div>
+          <h1>Stats</h1>
+          <p>Poids &amp; calories</p>
+        </div>
+        <button
+          type="button"
+          className="stat-head-add"
+          onClick={() => setAddOpen(true)}
+          aria-label="Ajouter une pesée"
+        >
+          <span className="material-symbols-outlined">add</span>
+        </button>
       </section>
 
-      <WeightStatsGrid onAdd={() => setAddOpen(true)} />
+      <div className="stat-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'essential'}
+          className={`stat-tab ${tab === 'essential' ? 'on' : ''}`}
+          onClick={() => setTab('essential')}
+        >
+          Essentiel
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'details'}
+          className={`stat-tab ${tab === 'details' ? 'on' : ''}`}
+          onClick={() => setTab('details')}
+        >
+          Détails
+        </button>
+      </div>
 
-      <section className="stat-card stat-card-big">
-        <div className="stat-card-head">
-          <div className="stat-card-title">
-            <h3>Poids global</h3>
-            <p>Weight projection · EMA · objectif</p>
-          </div>
-          <RangeSelector
-            options={WEIGHT_RANGES}
-            value={weightRange}
-            onChange={setWeightRange}
-          />
-        </div>
-        <div className="stat-chart-wrap" style={{ height: 240 }}>
-          <WeightChart
-            weights={weights}
-            range={weightRange}
-            goalWeight={startWeight}
-          />
-        </div>
-      </section>
+      {tab === 'essential' ? (
+        <>
+          <WeightStatsGrid onAdd={() => setAddOpen(true)} />
 
-      <section className="stat-card">
-        <div className="stat-card-head">
-          <div className="stat-card-title">
-            <h3>
-              <span
-                className="stat-dot"
-                style={{ background: 'var(--cyan)' }}
+          <section className="stat-card stat-card-big">
+            <div className="stat-card-head">
+              <div className="stat-card-title">
+                <h3>Poids global</h3>
+                <p>Weight projection · EMA · objectif</p>
+              </div>
+              <RangeSelector
+                options={WEIGHT_RANGES}
+                value={weightRange}
+                onChange={setWeightRange}
               />
-              Tendance palier
-            </h3>
-          </div>
-        </div>
-        <PalierChart />
-      </section>
+            </div>
+            <div className="stat-chart-wrap" style={{ height: 240 }}>
+              <WeightChart
+                weights={weights}
+                range={weightRange}
+                goalWeight={startWeight}
+              />
+            </div>
+          </section>
 
-      <section className="stat-card">
-        <div className="stat-card-head">
-          <div className="stat-card-title">
-            <h3>
-              <span className="stat-dot" style={{ background: 'var(--yel)' }} />
-              Tendance phase
-            </h3>
-          </div>
-        </div>
-        <PhaseChart />
-      </section>
+          <section className="stat-card">
+            <div className="stat-card-head">
+              <div className="stat-card-title">
+                <h3>
+                  <span
+                    className="stat-dot"
+                    style={{ background: 'var(--org)' }}
+                  />
+                  Bilan calorique
+                </h3>
+                <p>Target vs réel kcal</p>
+              </div>
+              <RangeSelector
+                options={CALORIE_RANGES}
+                value={kcalRange}
+                onChange={setKcalRange}
+              />
+            </div>
+            <div className="stat-chart-wrap" style={{ height: 180 }}>
+              <KcalBalanceChart range={kcalRange} />
+            </div>
+            <CalorieSummary summary={kcalData.summary} />
+          </section>
 
-      <section className="stat-card">
-        <div className="stat-card-head">
-          <div className="stat-card-title">
-            <h3>
-              <span className="stat-dot" style={{ background: 'var(--pur)' }} />
-              Comparaison phases
-            </h3>
-            <p>Superposition des segments · delta depuis J0</p>
-          </div>
-        </div>
-        <PhaseComparisonChart />
-      </section>
+          <section className="stat-card">
+            <div className="stat-card-head">
+              <div className="stat-card-title">
+                <h3>
+                  <span
+                    className="stat-dot"
+                    style={{ background: 'var(--pnk)' }}
+                  />
+                  Analyse poids
+                </h3>
+                <p>Trend 72 jours</p>
+              </div>
+            </div>
+            <WeightAnalysisCard />
+          </section>
+        </>
+      ) : (
+        <>
+          <section className="stat-card">
+            <div className="stat-card-head">
+              <div className="stat-card-title">
+                <h3>
+                  <span
+                    className="stat-dot"
+                    style={{ background: 'var(--cyan)' }}
+                  />
+                  Tendance palier
+                </h3>
+              </div>
+            </div>
+            <PalierChart />
+          </section>
 
-      <section className="stat-card">
-        <div className="stat-card-head">
-          <div className="stat-card-title">
-            <h3>
-              <span className="stat-dot" style={{ background: 'var(--org)' }} />
-              Bilan calorique
-            </h3>
-            <p>Target vs réel kcal</p>
-          </div>
-          <RangeSelector
-            options={CALORIE_RANGES}
-            value={kcalRange}
-            onChange={setKcalRange}
-          />
-        </div>
-        <div className="stat-chart-wrap" style={{ height: 180 }}>
-          <KcalBalanceChart range={kcalRange} />
-        </div>
-        <CalorieSummary summary={kcalData.summary} />
-      </section>
+          <section className="stat-card">
+            <div className="stat-card-head">
+              <div className="stat-card-title">
+                <h3>
+                  <span
+                    className="stat-dot"
+                    style={{ background: 'var(--yel)' }}
+                  />
+                  Tendance phase
+                </h3>
+              </div>
+            </div>
+            <PhaseChart />
+          </section>
 
-      <section className="stat-card">
-        <div className="stat-card-head">
-          <div className="stat-card-title">
-            <h3>Répartition macros</h3>
-            <p>Moyenne sur la fenêtre</p>
-          </div>
-          <RangeSelector
-            options={MACRO_RANGES}
-            value={macroRange}
-            onChange={setMacroRange}
-          />
-        </div>
-        <div className="stat-macros-body">
-          <div className="stat-donut-wrap" style={{ height: 160, width: 160 }}>
-            <MacroDonutChart range={macroRange} />
-          </div>
-          <MacroLegend averages={macroData.averages} />
-        </div>
-        <MacroAveragesGrid
-          averages={macroData.averages}
-          targetProtein={targets.prot}
-        />
-      </section>
+          <section className="stat-card">
+            <div className="stat-card-head">
+              <div className="stat-card-title">
+                <h3>
+                  <span
+                    className="stat-dot"
+                    style={{ background: 'var(--pur)' }}
+                  />
+                  Comparaison phases
+                </h3>
+                <p>Superposition des segments · delta depuis J0</p>
+              </div>
+            </div>
+            <PhaseComparisonChart />
+          </section>
 
-      <section className="stat-card">
-        <div className="stat-card-head">
-          <div className="stat-card-title">
-            <h3>
-              <span className="stat-dot" style={{ background: 'var(--grn)' }} />
-              Protéines
-            </h3>
-            <p>7 derniers jours</p>
-          </div>
-        </div>
-        <div className="stat-chart-wrap" style={{ height: 180 }}>
-          <ProteinChart />
-        </div>
-      </section>
+          <section className="stat-card">
+            <div className="stat-card-head">
+              <div className="stat-card-title">
+                <h3>Répartition macros</h3>
+                <p>Moyenne sur la fenêtre</p>
+              </div>
+              <RangeSelector
+                options={MACRO_RANGES}
+                value={macroRange}
+                onChange={setMacroRange}
+              />
+            </div>
+            <div className="stat-macros-body">
+              <div
+                className="stat-donut-wrap"
+                style={{ height: 160, width: 160 }}
+              >
+                <MacroDonutChart range={macroRange} />
+              </div>
+              <MacroLegend averages={macroData.averages} />
+            </div>
+            <MacroAveragesGrid
+              averages={macroData.averages}
+              targetProtein={targets.prot}
+            />
+          </section>
 
-      <section className="stat-card">
-        <div className="stat-card-head">
-          <div className="stat-card-title">
-            <h3>
-              <span className="stat-dot" style={{ background: 'var(--pnk)' }} />
-              Analyse poids
-            </h3>
-            <p>Trend 72 jours</p>
-          </div>
-        </div>
-        <WeightAnalysisCard />
-      </section>
+          <section className="stat-card">
+            <div className="stat-card-head">
+              <div className="stat-card-title">
+                <h3>
+                  <span
+                    className="stat-dot"
+                    style={{ background: 'var(--grn)' }}
+                  />
+                  Protéines
+                </h3>
+                <p>7 derniers jours</p>
+              </div>
+            </div>
+            <div className="stat-chart-wrap" style={{ height: 180 }}>
+              <ProteinChart />
+            </div>
+          </section>
 
-      <section className="stat-card">
-        <div className="stat-card-head">
-          <div className="stat-card-title">
-            <h3>Journal des pesées</h3>
-            <p>Weight history log</p>
-          </div>
-          <button
-            type="button"
-            className="stat-export-btn"
-            onClick={() => setAddOpen(true)}
-          >
-            <span className="material-symbols-outlined">add</span>
-            Ajouter
-          </button>
-        </div>
-        <div className="stat-wh">
-          <div className="stat-wh-head">
-            <span>Date</span>
-            <span>Phase</span>
-            <span>Poids</span>
-            <span className="right">Tendance</span>
-          </div>
-          <WeightHistoryTable onEdit={setEditDate} />
-        </div>
-      </section>
+          <section className="stat-card">
+            <div className="stat-card-head">
+              <div className="stat-card-title">
+                <h3>Journal des pesées</h3>
+                <p>Weight history log</p>
+              </div>
+              <button
+                type="button"
+                className="stat-export-btn"
+                onClick={() => setAddOpen(true)}
+              >
+                <span className="material-symbols-outlined">add</span>
+                Ajouter
+              </button>
+            </div>
+            <div className="stat-wh">
+              <div className="stat-wh-head">
+                <span>Date</span>
+                <span>Phase</span>
+                <span>Poids</span>
+                <span className="right">Tendance</span>
+              </div>
+              <WeightHistoryTable onEdit={setEditDate} />
+            </div>
+          </section>
+        </>
+      )}
 
       <WeightEditModal
         open={editDate !== null}

@@ -1,6 +1,7 @@
 import { getActiveConfig } from './config';
 import { geminiTransport } from './geminiClient';
 import { groqTransport } from './groqClient';
+import { recallMeal } from './mealMemory';
 import {
   AI_RECIPE_SYSTEM_PROMPT,
   AI_SYSTEM_PROMPT,
@@ -9,7 +10,9 @@ import {
 } from './prompts';
 import {
   AI_COACH_SYSTEM_PROMPT,
+  AI_SESSION_ADJUST_SYSTEM_PROMPT,
   buildCoachUserMessage,
+  buildSessionAdjustUserMessage,
   type CoachContext,
 } from './sportPrompts';
 import {
@@ -17,6 +20,7 @@ import {
   parseCoachJson,
   parseMealJson,
   parseRecipeJson,
+  parseSessionAdjustJson,
   type AiCoachResult,
   type AiError,
   type AiMealResult,
@@ -24,6 +28,7 @@ import {
   type AiProvider,
   type AiRecipeResult,
   type AiRequest,
+  type AiSessionAnalysisResult,
   type AiTransport,
 } from './types';
 
@@ -62,6 +67,16 @@ export async function analyzeMeal(
   args: AnalyzeMealArgs,
 ): Promise<AiMealResult | AiError> {
   const { description, imageB64 } = args;
+
+  // Repas déjà décrit et validé avec ce texte exact : on réutilise les
+  // valeurs confirmées par l'utilisateur plutôt que de ré-estimer, plus
+  // rapide et plus cohérent d'une fois sur l'autre. Uniquement pour les
+  // descriptions texte (une photo change potentiellement le contenu réel).
+  if (!imageB64 && description) {
+    const remembered = recallMeal(description);
+    if (remembered) return remembered;
+  }
+
   const { provider, apiKey } = getActiveConfig();
 
   if (!apiKey) return { ...err('nokey'), provider };
@@ -132,5 +147,29 @@ export async function analyzeTraining(
   if (typeof text !== 'string') return { ...text, provider };
 
   const result = parseCoachJson(text);
+  return result ?? { ...err('parse'), provider };
+}
+
+/**
+ * Analyse une séance qui vient d'être terminée et propose, exercice par
+ * exercice, le poids/séries/reps à viser la prochaine fois que cette même
+ * séance type sera refaite.
+ */
+export async function analyzeSessionAdjustments(
+  context: CoachContext,
+): Promise<AiSessionAnalysisResult | AiError> {
+  const { provider, apiKey } = getActiveConfig();
+
+  if (!apiKey) return { ...err('nokey'), provider };
+
+  const text = await runWithRetry(TRANSPORTS[provider], {
+    apiKey,
+    system: AI_SESSION_ADJUST_SYSTEM_PROMPT,
+    parts: [{ text: buildSessionAdjustUserMessage(context) }],
+    hasImage: false,
+  });
+  if (typeof text !== 'string') return { ...text, provider };
+
+  const result = parseSessionAdjustJson(text);
   return result ?? { ...err('parse'), provider };
 }

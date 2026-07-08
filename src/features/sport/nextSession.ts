@@ -1,8 +1,12 @@
-import { repRangeFor, targetSetsFor } from '@/data/exercises';
+import {
+  findPlannedExercise,
+  repRangeFor,
+  targetSetsFor,
+} from '@/data/exercises';
 import type { StrengthSession, TrainingProfile } from '@/types';
 import { epley1RM, exerciseHistory, type ExercisePoint } from './progression';
 
-export type SuggestionKind = 'up' | 'reps' | 'keep' | 'deload';
+export type SuggestionKind = 'up' | 'reps' | 'keep' | 'deload' | 'ai';
 
 export interface NextSuggestion {
   kind: SuggestionKind;
@@ -36,14 +40,47 @@ export function suggestNext(
 ): NextSuggestion | null {
   const [lo, hi] = repRangeFor(profile, exerciseId);
   const points = exerciseHistory(sessions, exerciseId, bodyweight);
-  if (points.length === 0) return null;
+  const targetSets = targetSetsFor(profile, exerciseId);
+  const planned = findPlannedExercise(profile.sessionTemplates, exerciseId);
+
+  if (points.length === 0) {
+    // Aucun historique : si l'IA a fixé un objectif après analyse d'une
+    // séance (ex. exercice tout juste ajouté au programme), on le respecte.
+    if (planned?.aiTargetWeight !== undefined) {
+      return {
+        kind: 'ai',
+        w: planned.aiTargetWeight,
+        repsMin: lo,
+        repsMax: hi,
+        sets: targetSets ?? DEFAULT_SETS,
+        why: "Objectif fixé par l'analyse IA de ta dernière séance.",
+      };
+    }
+    return null;
+  }
 
   const last = points[points.length - 1];
   const prev = points.length > 1 ? points[points.length - 2] : null;
   const rpe = last.avgRpe;
-  const sets =
-    targetSetsFor(profile, exerciseId) ?? last.setCount ?? DEFAULT_SETS;
+  const sets = targetSets ?? last.setCount ?? DEFAULT_SETS;
   const progressed = prev !== null && last.best > prev.best;
+
+  // Une analyse IA post-séance reste valable tant qu'aucune séance réelle
+  // plus récente n'a eu lieu pour cet exercice depuis (sinon l'algorithme
+  // reprend la main sur la base de cette nouvelle donnée réelle).
+  if (
+    planned?.aiTargetWeight !== undefined &&
+    planned.aiTargetSourceSessionId === last.sessionId
+  ) {
+    return {
+      kind: 'ai',
+      w: planned.aiTargetWeight,
+      repsMin: lo,
+      repsMax: hi,
+      sets,
+      why: "Objectif fixé par l'analyse IA de ta dernière séance.",
+    };
+  }
 
   // Poids du corps strict : progression en répétitions, puis passage au lest.
   if (bodyweight && last.topW <= 0) {
@@ -184,6 +221,9 @@ export function overloadTrack(
         bodyweight && last.topW <= 0
           ? `lest ${loadLabel(s.w, true)}`
           : loadLabel(s.w, bodyweight);
+      break;
+    case 'ai':
+      next = `${loadLabel(s.w, bodyweight)} · IA`;
       break;
     case 'deload':
       next = `${loadLabel(s.w, bodyweight)} deload`;

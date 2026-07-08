@@ -25,7 +25,11 @@ export default function OverloadTrackBar({ track, size = 'sm' }: Props) {
             className="material-symbols-outlined kl-track-next-ico"
             aria-hidden
           >
-            {kind === 'deload' ? 'south' : 'arrow_forward'}
+            {kind === 'deload'
+              ? 'south'
+              : kind === 'ai'
+                ? 'auto_awesome'
+                : 'arrow_forward'}
           </span>
           {next}
         </span>

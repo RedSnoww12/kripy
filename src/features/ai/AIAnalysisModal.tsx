@@ -8,6 +8,8 @@ import {
 } from 'react';
 import Modal from '@/components/ui/Modal';
 import { analyzeMeal } from './client';
+import { checkMealPlausibility } from './mealCheck';
+import { rememberMeal } from './mealMemory';
 import { describeAiError, type AiError, type AiMealResult } from './types';
 import { compressImage, readFileAsDataUrl } from './imageUtils';
 import MicButton from './MicButton';
@@ -171,6 +173,7 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
       {status.kind === 'result' && (
         <AiResult
           result={status.result}
+          description={description.trim()}
           onConfirm={(edited) => {
             onConfirm(edited);
             close();
@@ -191,10 +194,12 @@ const MACRO_FIELDS = [
 
 function AiResult({
   result,
+  description,
   onConfirm,
   onReset,
 }: {
   result: AiMealResult;
+  description: string;
   onConfirm: (edited: AiMealResult) => void;
   onReset: () => void;
 }) {
@@ -225,16 +230,20 @@ function AiResult({
     return Number.isFinite(n) ? n : 0;
   };
 
+  const current: AiMealResult = {
+    nom: nom.trim() || 'Repas',
+    kcal: num(kcal),
+    prot: num(macros.prot),
+    gluc: num(macros.gluc),
+    lip: num(macros.lip),
+    fib: num(macros.fib),
+    details: result.details,
+  };
+  const warnings = checkMealPlausibility(current);
+
   const handleConfirm = () => {
-    onConfirm({
-      nom: nom.trim() || 'Repas',
-      kcal: num(kcal),
-      prot: num(macros.prot),
-      gluc: num(macros.gluc),
-      lip: num(macros.lip),
-      fib: num(macros.fib),
-      details: result.details,
-    });
+    if (description) rememberMeal(description, current);
+    onConfirm(current);
   };
 
   return (
@@ -249,7 +258,7 @@ function AiResult({
         <div
           style={{
             fontSize: '.62rem',
-            color: 'var(--t2)',
+            color: result.fromMemory ? 'var(--acc)' : 'var(--t2)',
             textTransform: 'uppercase',
             letterSpacing: 1,
             fontWeight: 800,
@@ -257,7 +266,9 @@ function AiResult({
             textAlign: 'center',
           }}
         >
-          Estimation du repas — modifiable
+          {result.fromMemory
+            ? '🔁 Repas déjà validé — réutilisé'
+            : 'Estimation du repas — modifiable'}
         </div>
 
         <input
@@ -389,6 +400,28 @@ function AiResult({
             >
               {result.details}
             </div>
+          </div>
+        )}
+
+        {warnings.length > 0 && (
+          <div
+            style={{
+              marginTop: 14,
+              padding: '10px 14px',
+              background: 'var(--redG, rgba(255,107,107,.1))',
+              color: 'var(--red)',
+              borderRadius: 14,
+              textAlign: 'left',
+              lineHeight: 1.5,
+              fontSize: '.72rem',
+            }}
+          >
+            <div style={{ fontWeight: 800, marginBottom: 4 }}>
+              ⚠️ À vérifier
+            </div>
+            {warnings.map((w, i) => (
+              <div key={i}>{w}</div>
+            ))}
           </div>
         )}
       </div>

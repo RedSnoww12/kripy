@@ -75,6 +75,7 @@ export const STORAGE_KEYS = {
   uiPrefs: 'nt_ui_prefs',
   sportProfile: 'nt_sport_profile',
   strengthLog: 'nt_strength_log',
+  aiMealMemory: 'nt_ai_meal_memory',
 } as const;
 
 export const SYNC_KEYS: readonly string[] = [
@@ -108,4 +109,5 @@ export const SYNC_KEYS: readonly string[] = [
   STORAGE_KEYS.budget,
   STORAGE_KEYS.sportProfile,
   STORAGE_KEYS.strengthLog,
+  STORAGE_KEYS.aiMealMemory,
 ];

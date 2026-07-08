@@ -30,6 +30,76 @@ function session(
   };
 }
 
+const profileWithAiTarget: TrainingProfile = {
+  ...profile,
+  sessionTemplates: [
+    {
+      id: 'push',
+      name: 'Push',
+      exercises: [
+        {
+          exerciseId: 'bench',
+          sets: 4,
+          repsMin: 8,
+          repsMax: 10,
+          aiTargetWeight: 82.5,
+          aiTargetSourceSessionId: 2,
+        },
+      ],
+    },
+  ],
+};
+
+describe('suggestNext — surcharge fixée par une analyse IA', () => {
+  it("applique l'objectif IA quand la source est la dernière séance", () => {
+    const sessions = [
+      session(1, '2026-01-07', [{ w: 77.5, r: 8, rpe: 8 }]),
+      session(2, '2026-01-10', [{ w: 80, r: 9, rpe: 8.5 }]),
+    ];
+    const s = suggestNext(profileWithAiTarget, sessions, 'bench', false);
+    expect(s?.kind).toBe('ai');
+    expect(s?.w).toBe(82.5);
+    expect(s?.sets).toBe(4);
+    expect(s?.repsMin).toBe(8);
+    expect(s?.repsMax).toBe(10);
+  });
+
+  it("ignore l'objectif IA périmé dès qu'une séance plus récente existe", () => {
+    const sessions = [
+      session(1, '2026-01-07', [{ w: 77.5, r: 8, rpe: 8 }]),
+      session(2, '2026-01-10', [{ w: 80, r: 9, rpe: 8.5 }]),
+      session(3, '2026-01-13', [{ w: 82.5, r: 8, rpe: 8.5 }]),
+    ];
+    const s = suggestNext(profileWithAiTarget, sessions, 'bench', false);
+    expect(s?.kind).not.toBe('ai');
+  });
+
+  it("fixe l'objectif IA même sans aucun historique préalable", () => {
+    const noHistoryProfile: TrainingProfile = {
+      ...profile,
+      sessionTemplates: [
+        {
+          id: 'push',
+          name: 'Push',
+          exercises: [
+            {
+              exerciseId: 'bench',
+              sets: 3,
+              repsMin: 6,
+              repsMax: 12,
+              aiTargetWeight: 60,
+            },
+          ],
+        },
+      ],
+    };
+    const s = suggestNext(noHistoryProfile, [], 'bench', false);
+    expect(s?.kind).toBe('ai');
+    expect(s?.w).toBe(60);
+    expect(s?.sets).toBe(3);
+  });
+});
+
 describe('suggestNext — exercices chargés', () => {
   it('renvoie null sans historique', () => {
     expect(suggestNext(profile, [], 'bench', false)).toBeNull();
@@ -190,6 +260,16 @@ describe('overloadTrack', () => {
       false,
     );
     expect(t.next).toBe('72,5 kg deload');
+  });
+
+  it('décrit un objectif fixé par l’IA', () => {
+    const t = overloadTrack(
+      point(80, 8),
+      sugg({ kind: 'ai', w: 82.5 }),
+      [6, 12],
+      false,
+    );
+    expect(t.next).toBe('82,5 kg · IA');
   });
 });
 
