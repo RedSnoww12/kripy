@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { normalizeProfile } from '@/features/sport/profileMigration';
 import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
 import type { StrengthSession, TrainingProfile } from '@/types';
 
@@ -15,9 +16,13 @@ interface SportState {
 }
 
 function readAll() {
+  const raw = loadJSON<unknown>(STORAGE_KEYS.sportProfile, null);
+  const sessions = loadJSON<StrengthSession[]>(STORAGE_KEYS.strengthLog, []);
   return {
-    profile: loadJSON<TrainingProfile | null>(STORAGE_KEYS.sportProfile, null),
-    sessions: loadJSON<StrengthSession[]>(STORAGE_KEYS.strengthLog, []),
+    // Normalise systématiquement : un profil à l'ancien format (ou corrompu)
+    // stocké en local / dans le cloud ne doit jamais faire planter la page.
+    profile: normalizeProfile(raw),
+    sessions: Array.isArray(sessions) ? sessions : [],
   };
 }
 
