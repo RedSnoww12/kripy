@@ -9,9 +9,50 @@ import {
 
 const POINTS_PER_EXERCISE = 6;
 
+function formatSet(w: number, r: number, rpe?: number): string {
+  const load = w > 0 ? `${w}kg×${r}` : `${r}reps`;
+  return rpe ? `${load}@RPE${rpe}` : load;
+}
+
+/**
+ * Pour chaque séance type du programme, retrouve sa dernière réalisation
+ * effective et compare, exercice par exercice, la cible planifiée (séries ×
+ * reps) au réalisé (séries loguées, charge, reps). C'est ce qui permet au
+ * coach IA de juger l'adhérence au programme, pas seulement la progression
+ * brute par exercice.
+ */
+function buildProgramme(
+  profile: TrainingProfile,
+  sessions: StrengthSession[],
+  resolve: ExerciseResolver,
+) {
+  return profile.sessionTemplates.map((t) => {
+    const last = [...sessions].reverse().find((s) => s.templateId === t.id);
+    return {
+      nom: t.name,
+      derniereRealisation: last?.date ?? null,
+      ressentiDerniereSeance: last?.feel ?? null,
+      exercices: t.exercises.map((pe) => {
+        const def = resolve(pe.exerciseId);
+        const actual = last?.exercises.find(
+          (e) => e.exerciseId === pe.exerciseId,
+        );
+        return {
+          nom: def?.name ?? pe.exerciseId,
+          seriesCibles: pe.sets,
+          repsCibles: `${pe.repsMin}-${pe.repsMax}`,
+          seriesReellesDerniereSeance:
+            actual?.sets.map((s) => formatSet(s.w, s.r, s.rpe)) ?? null,
+        };
+      }),
+    };
+  });
+}
+
 /**
  * Construit le résumé compact (sérialisable en JSON) envoyé au coach IA :
- * profil, adhérence hebdo et progression des exercices suivis.
+ * profil, programme enregistré (séances types + adhérence), progression des
+ * exercices suivis.
  */
 export function buildCoachContext(
   profile: TrainingProfile,
@@ -21,6 +62,7 @@ export function buildCoachContext(
   extras?: { objectifNutrition?: string; poids?: number },
 ): Record<string, unknown> {
   const style = styleMeta(profile.style);
+  const programme = buildProgramme(profile, sessions, resolve);
 
   const exercices = trackedExerciseIds(profile, sessions).flatMap((id) => {
     const def = resolve(id);
@@ -57,7 +99,6 @@ export function buildCoachContext(
     profil: {
       style: style.label,
       repsCibles: `${style.repRange[0]}-${style.repRange[1]}`,
-      seancesTypes: profile.sessionTemplates.map((t) => t.name),
       seancesParSemaineVisees: profile.sessionsPerWeek,
       seancesRealisees7j: weekSessionCount(
         sessions.map((s) => s.date),
@@ -68,6 +109,7 @@ export function buildCoachContext(
         : {}),
       ...(extras?.poids ? { poidsCorporelKg: extras.poids } : {}),
     },
+    programme,
     seancesRecentes: recents,
     exercices,
     date: todayIso,

@@ -32,6 +32,8 @@ export interface AiMealResult {
   lip: number;
   fib: number;
   details?: string;
+  /** true si ce résultat provient d'un repas déjà décrit et validé, sans nouvel appel IA. */
+  fromMemory?: boolean;
 }
 
 export interface AiRecipeResult {
@@ -139,6 +141,68 @@ export function parseCoachJson(text: string): AiCoachResult | null {
   if (!analyse && conseils.length === 0 && ajustements.length === 0)
     return null;
   return { analyse, conseils, ajustements };
+}
+
+/** Nouveaux objectifs proposés par l'IA pour un exercice, pour la prochaine occurrence de cette séance type. */
+export interface AiSessionAdjustment {
+  /** Doit correspondre exactement au nom d'exercice envoyé dans le contexte. */
+  exercice: string;
+  sets: number;
+  repsMin: number;
+  repsMax: number;
+  /** Poids de départ conseillé (kg). Lest ajouté pour un exercice au poids du corps, 0 = poids du corps strict. */
+  poids: number;
+  /** Explication courte de l'ajustement. */
+  note: string;
+}
+
+export interface AiSessionAnalysisResult {
+  resume: string;
+  ajustements: AiSessionAdjustment[];
+}
+
+function toFiniteNumber(v: unknown): number | null {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+export function parseSessionAdjustJson(
+  text: string,
+): AiSessionAnalysisResult | null {
+  const obj = extractJson(text);
+  if (!obj) return null;
+  const resume = typeof obj.resume === 'string' ? obj.resume.trim() : '';
+  const ajustements = Array.isArray(obj.ajustements)
+    ? obj.ajustements.flatMap((a): AiSessionAdjustment[] => {
+        if (!a || typeof a !== 'object') return [];
+        const rec = a as Record<string, unknown>;
+        const sets = toFiniteNumber(rec.sets);
+        const repsMin = toFiniteNumber(rec.repsMin);
+        const repsMax = toFiniteNumber(rec.repsMax);
+        const poids = toFiniteNumber(rec.poids);
+        if (
+          typeof rec.exercice !== 'string' ||
+          sets === null ||
+          repsMin === null ||
+          repsMax === null ||
+          poids === null
+        ) {
+          return [];
+        }
+        return [
+          {
+            exercice: rec.exercice,
+            sets: Math.max(1, Math.round(sets)),
+            repsMin: Math.max(1, Math.round(repsMin)),
+            repsMax: Math.max(1, Math.round(repsMax)),
+            poids: Math.max(0, poids),
+            note: typeof rec.note === 'string' ? rec.note : '',
+          },
+        ];
+      })
+    : [];
+  if (!resume && ajustements.length === 0) return null;
+  return { resume, ajustements };
 }
 
 export function parseRecipeJson(text: string): AiRecipeResult | null {

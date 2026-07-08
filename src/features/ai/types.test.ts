@@ -5,6 +5,7 @@ import {
   parseCoachJson,
   parseMealJson,
   parseRecipeJson,
+  parseSessionAdjustJson,
 } from './types';
 
 describe('extractJson', () => {
@@ -80,6 +81,50 @@ describe('parseCoachJson', () => {
   it('renvoie null quand la réponse est vide', () => {
     expect(parseCoachJson('{"analyse":"","conseils":[]}')).toBeNull();
     expect(parseCoachJson('pas de json')).toBeNull();
+  });
+});
+
+describe('parseSessionAdjustJson', () => {
+  it('parse une analyse de séance complète', () => {
+    const r = parseSessionAdjustJson(
+      '{"resume":"Bonne séance.","ajustements":[{"exercice":"Dips","sets":4,"repsMin":9,"repsMax":11,"poids":12.5,"note":"RPE bas"}]}',
+    );
+    expect(r?.resume).toBe('Bonne séance.');
+    expect(r?.ajustements).toEqual([
+      {
+        exercice: 'Dips',
+        sets: 4,
+        repsMin: 9,
+        repsMax: 11,
+        poids: 12.5,
+        note: 'RPE bas',
+      },
+    ]);
+  });
+
+  it('arrondit sets/reps et borne le poids à 0 minimum', () => {
+    const r = parseSessionAdjustJson(
+      '{"resume":"x","ajustements":[{"exercice":"Squat","sets":3.6,"repsMin":5.4,"repsMax":5.4,"poids":-10,"note":""}]}',
+    );
+    expect(r?.ajustements[0]).toMatchObject({
+      sets: 4,
+      repsMin: 5,
+      repsMax: 5,
+      poids: 0,
+    });
+  });
+
+  it('ignore un ajustement avec un champ numérique manquant ou invalide', () => {
+    const r = parseSessionAdjustJson(
+      '{"resume":"x","ajustements":[{"exercice":"Squat","sets":"beaucoup","repsMin":5,"repsMax":8,"poids":100,"note":""},{"exercice":"Dips","sets":3,"repsMin":8,"repsMax":10,"poids":0,"note":""}]}',
+    );
+    expect(r?.ajustements).toHaveLength(1);
+    expect(r?.ajustements[0].exercice).toBe('Dips');
+  });
+
+  it('renvoie null quand résumé et ajustements sont tous deux vides', () => {
+    expect(parseSessionAdjustJson('{"resume":"","ajustements":[]}')).toBeNull();
+    expect(parseSessionAdjustJson('pas de json')).toBeNull();
   });
 });
 

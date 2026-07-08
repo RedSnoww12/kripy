@@ -22,6 +22,15 @@ export interface PlannedExercise {
   sets: number;
   repsMin: number;
   repsMax: number;
+  /**
+   * Poids de départ recommandé par l'analyse IA post-séance pour la
+   * prochaine occurrence de cette séance type. Reste valable tant qu'aucune
+   * séance réelle plus récente que `aiTargetSourceSessionId` n'a eu lieu
+   * pour cet exercice — after quoi la prescription algorithmique
+   * (`suggestNext`) reprend la main normalement.
+   */
+  aiTargetWeight?: number;
+  aiTargetSourceSessionId?: number;
 }
 
 /** Une séance nommée par l'utilisateur (ex. "Upper A") avec ses exercices cibles. */

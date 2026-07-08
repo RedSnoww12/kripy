@@ -1017,6 +1017,63 @@
   text-transform: uppercase;
   letter-spacing: 0.2em;
 }
+.stat-head-row {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.stat-head-add {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: none;
+  background: var(--s1);
+  color: var(--t2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.stat-head-add:hover {
+  background: var(--s2);
+  color: var(--t1);
+}
+
+/* Onglets Essentiel / Détails */
+.stat-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: var(--s0);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 16px;
+}
+.stat-tab {
+  height: 38px;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  color: var(--t3);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.stat-tab.on {
+  background: var(--s2);
+  color: var(--t1);
+}
 
 /* Quick add weight input */
 .stat-add {
