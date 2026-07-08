@@ -11,8 +11,9 @@ import {
 
 const profile: TrainingProfile = {
   style: 'hypertrophy', // fourchette 6-12
+  split: 'ppl',
   sessionsPerWeek: 3,
-  sessionTemplates: [],
+  trackedExercises: ['bench', 'pullup'],
   customExercises: [],
 };
 

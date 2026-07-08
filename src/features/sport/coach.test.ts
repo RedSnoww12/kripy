@@ -6,14 +6,9 @@ const TODAY = '2026-01-14';
 
 const profile: TrainingProfile = {
   style: 'hypertrophy',
+  split: 'ppl',
   sessionsPerWeek: 3,
-  sessionTemplates: [
-    {
-      id: 'push',
-      name: 'Push',
-      exercises: [{ exerciseId: 'bench', sets: 3, repsMin: 6, repsMax: 12 }],
-    },
-  ],
+  trackedExercises: ['bench'],
   customExercises: [],
 };
 

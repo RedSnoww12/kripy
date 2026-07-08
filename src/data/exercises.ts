@@ -1,9 +1,4 @@
-import type {
-  CustomExercise,
-  PlannedExercise,
-  TrainingProfile,
-  TrainingStyle,
-} from '@/types';
+import type { CustomExercise, SplitType, TrainingStyle } from '@/types';
 
 export interface ExerciseDef {
   id: string;
@@ -219,8 +214,46 @@ export const TRAINING_STYLES: readonly TrainingStyleMeta[] = [
   },
 ] as const;
 
+export interface SplitMeta {
+  key: SplitType;
+  label: string;
+  desc: string;
+  days: string[];
+}
+
+export const SPLIT_TYPES: readonly SplitMeta[] = [
+  {
+    key: 'ppl',
+    label: 'PPL',
+    desc: 'Push · Pull · Legs',
+    days: ['Push', 'Pull', 'Legs'],
+  },
+  {
+    key: 'upper_lower',
+    label: 'Upper / Lower',
+    desc: 'Haut · Bas du corps',
+    days: ['Upper', 'Lower'],
+  },
+  {
+    key: 'fullbody',
+    label: 'Full Body',
+    desc: 'Tout le corps à chaque séance',
+    days: ['Full Body'],
+  },
+  {
+    key: 'free',
+    label: 'Libre',
+    desc: 'Sans structure imposée',
+    days: ['Séance A', 'Séance B', 'Séance C'],
+  },
+] as const;
+
 export function styleMeta(style: TrainingStyle): TrainingStyleMeta {
   return TRAINING_STYLES.find((s) => s.key === style) ?? TRAINING_STYLES[0];
+}
+
+export function splitMeta(split: SplitType): SplitMeta {
+  return SPLIT_TYPES.find((s) => s.key === split) ?? SPLIT_TYPES[0];
 }
 
 /**
@@ -237,70 +270,4 @@ export function makeExerciseResolver(
     if (c) return { name: c.name, bodyweight: c.bodyweight };
     return null;
   };
-}
-
-/** Cherche un exercice dans les séances types du profil, quel que soit l'ordre. */
-function findPlanned(
-  templates: TrainingProfile['sessionTemplates'],
-  exerciseId: string,
-): PlannedExercise | null {
-  for (const t of templates) {
-    const p = t.exercises.find((e) => e.exerciseId === exerciseId);
-    if (p) return p;
-  }
-  return null;
-}
-
-/**
- * Fourchette de reps à viser pour un exercice : celle définie dans sa séance
- * type si l'exercice y figure, sinon la fourchette par défaut du style.
- */
-export function repRangeFor(
-  profile: Pick<TrainingProfile, 'style' | 'sessionTemplates'>,
-  exerciseId: string,
-): [number, number] {
-  const planned = findPlanned(profile.sessionTemplates, exerciseId);
-  if (planned) return [planned.repsMin, planned.repsMax];
-  return styleMeta(profile.style).repRange;
-}
-
-/** Nombre de séries cible défini dans une séance type, ou null si non planifié. */
-export function targetSetsFor(
-  profile: Pick<TrainingProfile, 'sessionTemplates'>,
-  exerciseId: string,
-): number | null {
-  return findPlanned(profile.sessionTemplates, exerciseId)?.sets ?? null;
-}
-
-/** Ids uniques de tous les exercices planifiés dans les séances types. */
-export function allTemplateExerciseIds(
-  profile: Pick<TrainingProfile, 'sessionTemplates'>,
-): string[] {
-  const ids = new Set<string>();
-  for (const t of profile.sessionTemplates) {
-    for (const e of t.exercises) ids.add(e.exerciseId);
-  }
-  return [...ids];
-}
-
-/** Catalogue groupé par muscle, pour les sélecteurs d'exercices. */
-export function exerciseGroupsByMuscle(): (readonly [
-  string,
-  readonly ExerciseDef[],
-])[] {
-  const map = new Map<string, ExerciseDef[]>();
-  for (const exo of EXERCISE_CATALOG) {
-    const list = map.get(exo.muscle) ?? [];
-    map.set(exo.muscle, [...list, exo]);
-  }
-  return [...map.entries()];
-}
-
-/** Valeurs par défaut d'un exercice ajouté à une séance type. */
-export function defaultPlannedExercise(
-  exerciseId: string,
-  style: TrainingStyle,
-): PlannedExercise {
-  const [repsMin, repsMax] = styleMeta(style).repRange;
-  return { exerciseId, sets: 3, repsMin, repsMax };
 }

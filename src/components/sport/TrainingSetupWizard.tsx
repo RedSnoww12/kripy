@@ -1,16 +1,13 @@
 import { useMemo, useState } from 'react';
 import {
   EXERCISE_CATALOG,
+  SPLIT_TYPES,
   TRAINING_STYLES,
-  defaultPlannedExercise,
-  exerciseGroupsByMuscle,
 } from '@/data/exercises';
 import { toast } from '@/components/ui/toastStore';
-import { sanitizeInteger } from '@/lib/numericInput';
 import type {
   CustomExercise,
-  PlannedExercise,
-  SessionTemplate,
+  SplitType,
   TrainingProfile,
   TrainingStyle,
 } from '@/types';
@@ -23,17 +20,9 @@ interface Props {
 
 const STEP_TITLES = [
   'Comment tu t’entraînes ?',
-  'Combien de séances par semaine ?',
-  'Construis tes séances',
+  'Ton organisation',
+  'Tes exercices à suivre',
 ] as const;
-
-function newTemplate(index: number): SessionTemplate {
-  return {
-    id: `tpl_${Date.now()}_${index}`,
-    name: `Séance ${index}`,
-    exercises: [],
-  };
-}
 
 export default function TrainingSetupWizard({
   initial,
@@ -44,72 +33,33 @@ export default function TrainingSetupWizard({
   const [style, setStyle] = useState<TrainingStyle>(
     initial?.style ?? 'hypertrophy',
   );
+  const [split, setSplit] = useState<SplitType>(initial?.split ?? 'ppl');
   const [freq, setFreq] = useState(initial?.sessionsPerWeek ?? 3);
-  const [templates, setTemplates] = useState<SessionTemplate[]>(
-    initial?.sessionTemplates ?? [],
+  const [tracked, setTracked] = useState<string[]>(
+    initial?.trackedExercises ?? [],
   );
   const [customs, setCustoms] = useState<CustomExercise[]>(
     initial?.customExercises ?? [],
   );
-  const [pickerFor, setPickerFor] = useState<string | null>(null);
   const [customName, setCustomName] = useState('');
   const [customBw, setCustomBw] = useState(false);
 
-  const groups = useMemo(() => exerciseGroupsByMuscle(), []);
+  const groups = useMemo(() => {
+    const map = new Map<string, typeof EXERCISE_CATALOG>();
+    for (const exo of EXERCISE_CATALOG) {
+      const list = map.get(exo.muscle) ?? [];
+      map.set(exo.muscle, [...list, exo]);
+    }
+    return [...map.entries()];
+  }, []);
 
-  const resolveName = (id: string) =>
-    EXERCISE_CATALOG.find((e) => e.id === id)?.name ??
-    customs.find((c) => c.id === id)?.name ??
-    id;
-
-  const addTemplate = () => {
-    setTemplates((prev) => [...prev, newTemplate(prev.length + 1)]);
-  };
-
-  const removeTemplate = (id: string) => {
-    setTemplates((prev) => prev.filter((t) => t.id !== id));
-    if (pickerFor === id) setPickerFor(null);
-  };
-
-  const renameTemplate = (id: string, name: string) => {
-    setTemplates((prev) => prev.map((t) => (t.id === id ? { ...t, name } : t)));
-  };
-
-  const toggleExerciseInTemplate = (templateId: string, exerciseId: string) => {
-    setTemplates((prev) =>
-      prev.map((t) => {
-        if (t.id !== templateId) return t;
-        const exists = t.exercises.some((e) => e.exerciseId === exerciseId);
-        return {
-          ...t,
-          exercises: exists
-            ? t.exercises.filter((e) => e.exerciseId !== exerciseId)
-            : [...t.exercises, defaultPlannedExercise(exerciseId, style)],
-        };
-      }),
-    );
-  };
-
-  const updatePlanned = (
-    templateId: string,
-    exerciseId: string,
-    patch: Partial<PlannedExercise>,
-  ) => {
-    setTemplates((prev) =>
-      prev.map((t) => {
-        if (t.id !== templateId) return t;
-        return {
-          ...t,
-          exercises: t.exercises.map((e) =>
-            e.exerciseId === exerciseId ? { ...e, ...patch } : e,
-          ),
-        };
-      }),
+  const toggleExercise = (id: string) => {
+    setTracked((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
   const addCustom = () => {
-    if (!pickerFor) return;
     const name = customName.trim();
     if (!name) return;
     const exists =
@@ -125,25 +75,26 @@ export default function TrainingSetupWizard({
       bodyweight: customBw,
     };
     setCustoms((prev) => [...prev, custom]);
-    toggleExerciseInTemplate(pickerFor, custom.id);
+    setTracked((prev) => [...prev, custom.id]);
     setCustomName('');
     setCustomBw(false);
   };
 
+  const removeCustom = (id: string) => {
+    setCustoms((prev) => prev.filter((c) => c.id !== id));
+    setTracked((prev) => prev.filter((x) => x !== id));
+  };
+
   const finish = () => {
-    const withExercises = templates.filter((t) => t.exercises.length > 0);
-    if (withExercises.length === 0) {
-      toast('Crée au moins une séance avec un exercice', 'error');
+    if (tracked.length === 0) {
+      toast('Choisis au moins un exercice à suivre', 'error');
       return;
     }
-    const finalTemplates = withExercises.map((t, i) => ({
-      ...t,
-      name: t.name.trim() || `Séance ${i + 1}`,
-    }));
     onDone({
       style,
+      split,
       sessionsPerWeek: freq,
-      sessionTemplates: finalTemplates,
+      trackedExercises: tracked,
       customExercises: customs,
     });
   };
@@ -186,226 +137,132 @@ export default function TrainingSetupWizard({
       )}
 
       {step === 1 && (
-        <div className="kl-wiz-freq">
-          {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-            <button
-              key={n}
-              type="button"
-              className={`kl-wiz-freq-btn ${n === freq ? 'on' : ''}`}
-              onClick={() => setFreq(n)}
-              aria-pressed={n === freq}
-            >
-              {n}
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="kl-sport-section-lbl">
+            <span className="kl-sport-section-bar" aria-hidden />
+            TYPE DE SÉANCE
+          </div>
+          <div className="kl-wiz-splits">
+            {SPLIT_TYPES.map((s) => {
+              const on = s.key === split;
+              return (
+                <button
+                  key={s.key}
+                  type="button"
+                  className={`kl-wiz-split ${on ? 'on' : ''}`}
+                  onClick={() => setSplit(s.key)}
+                  aria-pressed={on}
+                >
+                  <span className="kl-wiz-split-name">{s.label}</span>
+                  <span className="kl-wiz-split-desc">{s.desc}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="kl-sport-section-lbl">
+            <span className="kl-sport-section-bar" aria-hidden />
+            SÉANCES PAR SEMAINE
+          </div>
+          <div className="kl-wiz-freq">
+            {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+              <button
+                key={n}
+                type="button"
+                className={`kl-wiz-freq-btn ${n === freq ? 'on' : ''}`}
+                onClick={() => setFreq(n)}
+                aria-pressed={n === freq}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </>
       )}
 
       {step === 2 && (
         <>
-          {templates.map((t) => (
-            <div key={t.id} className="kl-tpl-card">
-              <div className="kl-tpl-head">
-                <input
-                  type="text"
-                  className="kl-tpl-name-inp"
-                  value={t.name}
-                  placeholder="Nom de la séance (ex : Upper A)"
-                  onChange={(e) => renameTemplate(t.id, e.target.value)}
-                  aria-label="Nom de la séance"
-                />
-                <button
-                  type="button"
-                  className="kl-tpl-del"
-                  onClick={() => removeTemplate(t.id)}
-                  aria-label={`Supprimer la séance ${t.name}`}
-                >
-                  <span className="material-symbols-outlined">delete</span>
-                </button>
+          {groups.map(([muscle, exos]) => (
+            <div key={muscle}>
+              <div className="kl-sport-section-lbl">
+                <span className="kl-sport-section-bar" aria-hidden />
+                {muscle.toUpperCase()}
               </div>
-
-              {t.exercises.length > 0 && (
-                <div className="kl-tpl-exos">
-                  {t.exercises.map((pe) => (
-                    <div key={pe.exerciseId} className="kl-tpl-exo-row">
-                      <span className="kl-tpl-exo-name">
-                        {resolveName(pe.exerciseId)}
-                      </span>
-                      <div className="kl-tpl-exo-fields">
-                        <label className="kl-tpl-field">
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            value={pe.sets}
-                            onChange={(e) =>
-                              updatePlanned(t.id, pe.exerciseId, {
-                                sets:
-                                  parseInt(
-                                    sanitizeInteger(e.target.value),
-                                    10,
-                                  ) || 1,
-                              })
-                            }
-                            aria-label={`${resolveName(pe.exerciseId)} nombre de séries`}
-                          />
-                          <span>séries</span>
-                        </label>
-                        <label className="kl-tpl-field kl-tpl-field-reps">
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            value={pe.repsMin}
-                            onChange={(e) =>
-                              updatePlanned(t.id, pe.exerciseId, {
-                                repsMin:
-                                  parseInt(
-                                    sanitizeInteger(e.target.value),
-                                    10,
-                                  ) || 1,
-                              })
-                            }
-                            aria-label={`${resolveName(pe.exerciseId)} reps minimum`}
-                          />
-                          <span>—</span>
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            value={pe.repsMax}
-                            onChange={(e) =>
-                              updatePlanned(t.id, pe.exerciseId, {
-                                repsMax:
-                                  parseInt(
-                                    sanitizeInteger(e.target.value),
-                                    10,
-                                  ) || 1,
-                              })
-                            }
-                            aria-label={`${resolveName(pe.exerciseId)} reps maximum`}
-                          />
-                          <span>reps</span>
-                        </label>
-                      </div>
-                      <button
-                        type="button"
-                        className="kl-tpl-exo-del"
-                        onClick={() =>
-                          toggleExerciseInTemplate(t.id, pe.exerciseId)
-                        }
-                        aria-label={`Retirer ${resolveName(pe.exerciseId)}`}
-                      >
-                        <span className="material-symbols-outlined">close</span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <button
-                type="button"
-                className="kl-tpl-add-exo"
-                onClick={() => setPickerFor(pickerFor === t.id ? null : t.id)}
-                aria-expanded={pickerFor === t.id}
-              >
-                <span className="material-symbols-outlined" aria-hidden>
-                  {pickerFor === t.id ? 'expand_less' : 'add'}
-                </span>
-                {pickerFor === t.id ? 'Fermer' : 'Ajouter un exercice'}
-              </button>
-
-              {pickerFor === t.id && (
-                <div className="kl-tpl-picker">
-                  {groups.map(([muscle, exos]) => (
-                    <div key={muscle}>
-                      <div className="kl-tpl-picker-lbl">
-                        {muscle.toUpperCase()}
-                      </div>
-                      <div className="kl-sport-muscles kl-wiz-exos">
-                        {exos.map((e) => {
-                          const on = t.exercises.some(
-                            (pe) => pe.exerciseId === e.id,
-                          );
-                          return (
-                            <button
-                              key={e.id}
-                              type="button"
-                              className={`kl-sport-muscle ${on ? 'on' : ''}`}
-                              onClick={() =>
-                                toggleExerciseInTemplate(t.id, e.id)
-                              }
-                              aria-pressed={on}
-                            >
-                              {e.name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-
-                  {customs.length > 0 && (
-                    <>
-                      <div className="kl-tpl-picker-lbl">PERSO</div>
-                      <div className="kl-sport-muscles kl-wiz-exos">
-                        {customs.map((c) => {
-                          const on = t.exercises.some(
-                            (pe) => pe.exerciseId === c.id,
-                          );
-                          return (
-                            <button
-                              key={c.id}
-                              type="button"
-                              className={`kl-sport-muscle ${on ? 'on' : ''}`}
-                              onClick={() =>
-                                toggleExerciseInTemplate(t.id, c.id)
-                              }
-                              aria-pressed={on}
-                            >
-                              {c.name}
-                              {c.bodyweight ? ' · PDC' : ''}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </>
-                  )}
-
-                  <div className="kl-wiz-custom">
-                    <input
-                      type="text"
-                      className="kl-sport-notes-inp"
-                      placeholder="Créer un exercice (ex : Planche)"
-                      value={customName}
-                      onChange={(e) => setCustomName(e.target.value)}
-                    />
+              <div className="kl-sport-muscles kl-wiz-exos">
+                {exos.map((e) => {
+                  const on = tracked.includes(e.id);
+                  return (
                     <button
+                      key={e.id}
                       type="button"
-                      className={`kl-wiz-custom-bw ${customBw ? 'on' : ''}`}
-                      onClick={() => setCustomBw((v) => !v)}
-                      aria-pressed={customBw}
-                      title="Exercice au poids du corps"
+                      className={`kl-sport-muscle ${on ? 'on' : ''}`}
+                      onClick={() => toggleExercise(e.id)}
+                      aria-pressed={on}
                     >
-                      PDC
+                      {e.name}
                     </button>
-                    <button
-                      type="button"
-                      className="kl-wiz-custom-add"
-                      onClick={addCustom}
-                      aria-label="Ajouter l'exercice personnalisé"
-                    >
-                      <span className="material-symbols-outlined">add</span>
-                    </button>
-                  </div>
-                </div>
-              )}
+                  );
+                })}
+              </div>
             </div>
           ))}
 
-          <button type="button" className="kl-tpl-new" onClick={addTemplate}>
-            <span className="material-symbols-outlined" aria-hidden>
-              add
-            </span>
-            Nouvelle séance
-          </button>
+          <div className="kl-sport-section-lbl">
+            <span className="kl-sport-section-bar" aria-hidden />
+            PERSO
+          </div>
+          {customs.length > 0 && (
+            <div className="kl-sport-muscles kl-wiz-exos">
+              {customs.map((c) => {
+                const on = tracked.includes(c.id);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className={`kl-sport-muscle ${on ? 'on' : ''}`}
+                    onClick={() => toggleExercise(c.id)}
+                    onDoubleClick={() => removeCustom(c.id)}
+                    aria-pressed={on}
+                  >
+                    {c.name}
+                    {c.bodyweight ? ' · PDC' : ''}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <div className="kl-wiz-custom">
+            <input
+              type="text"
+              className="kl-sport-notes-inp"
+              placeholder="Ajouter un exercice (ex : Planche)"
+              value={customName}
+              onChange={(e) => setCustomName(e.target.value)}
+            />
+            <button
+              type="button"
+              className={`kl-wiz-custom-bw ${customBw ? 'on' : ''}`}
+              onClick={() => setCustomBw((v) => !v)}
+              aria-pressed={customBw}
+              title="Exercice au poids du corps"
+            >
+              PDC
+            </button>
+            <button
+              type="button"
+              className="kl-wiz-custom-add"
+              onClick={addCustom}
+              aria-label="Ajouter l'exercice personnalisé"
+            >
+              <span className="material-symbols-outlined">add</span>
+            </button>
+          </div>
+          {tracked.length > 0 && (
+            <div className="kl-wiz-count">
+              {tracked.length} exercice{tracked.length > 1 ? 's' : ''} suivi
+              {tracked.length > 1 ? 's' : ''}
+            </div>
+          )}
         </>
       )}
 

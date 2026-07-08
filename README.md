@@ -120,16 +120,9 @@ Plutôt que de te montrer ton poids brut (qui fluctue de ±1 kg par jour selon l
 ### Sport
 
 - **Profil d'entraînement** par compte : style (hypertrophie, force,
-  powerlifting, endurance, street workout, street lifting, cross training)
-  et fréquence hebdo visée
-- **Séances types nommées et sur-mesure** : construis tes propres séances
-  (« Upper A », « Lower A »…) avec, pour chaque exercice, le nombre de
-  séries et la fourchette de reps ciblés
-- **Au lancement d'une séance** : choix entre une séance type, une **séance
-  libre** (street workout, imprévu…) ou aucune séance — puis pour chaque
-  exercice, l'objectif (séries × reps × poids suggéré) affiché juste
-  au-dessus de ce que tu logues réellement, avec un compteur de progression
-- **Suivi de la surcharge progressive** sur les exercices suivis :
+  powerlifting, endurance, street workout, street lifting, cross training),
+  split (PPL / Upper-Lower / Full Body / libre) et fréquence hebdo
+- **Suivi de la surcharge progressive** sur les exercices choisis :
   séries charge × reps avec **RPE par série**, 1RM estimé (Epley), volume,
   records (PR), deltas et sparklines — gère aussi le poids du corps (reps / lest)
 - **Coach intégré** : conseils locaux (progression, deload, stagnation,
