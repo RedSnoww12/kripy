@@ -8,8 +8,6 @@ export type TrainingStyle =
   | 'crosstraining'
   | 'general';
 
-export type SplitType = 'ppl' | 'upper_lower' | 'fullbody' | 'free';
-
 export interface CustomExercise {
   id: string;
   name: string;
@@ -17,13 +15,28 @@ export interface CustomExercise {
   bodyweight: boolean;
 }
 
+/** Un exercice tel que planifié dans une séance type : cible fixée à l'avance. */
+export interface PlannedExercise {
+  exerciseId: string;
+  /** Nombre de séries visées. */
+  sets: number;
+  repsMin: number;
+  repsMax: number;
+}
+
+/** Une séance nommée par l'utilisateur (ex. "Upper A") avec ses exercices cibles. */
+export interface SessionTemplate {
+  id: string;
+  name: string;
+  exercises: PlannedExercise[];
+}
+
 export interface TrainingProfile {
   style: TrainingStyle;
-  split: SplitType;
   /** Nombre de séances visées par semaine (1..7). */
   sessionsPerWeek: number;
-  /** Ids d'exercices suivis pour la surcharge progressive. */
-  trackedExercises: string[];
+  /** Séances définies par l'utilisateur (nom + exercices/séries/reps cibles). */
+  sessionTemplates: SessionTemplate[];
   customExercises: CustomExercise[];
 }
 
@@ -44,8 +57,10 @@ export interface SessionExercise {
 export interface StrengthSession {
   id: number;
   date: string;
-  /** Jour du split : Push, Pull, Legs, Upper, Lower, Full Body… */
+  /** Nom de la séance (celui de la séance type suivie, ou libre). */
   label: string;
+  /** Id de la séance type suivie, absent pour une séance libre. */
+  templateId?: string;
   exercises: SessionExercise[];
   /** Ressenti global de la séance (1 = épuisé … 5 = excellent). */
   feel?: number;

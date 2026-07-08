@@ -1,7 +1,8 @@
-import { styleMeta } from '@/data/exercises';
+import { repRangeFor } from '@/data/exercises';
 import type { TrainingProfile, StrengthSession } from '@/types';
 import {
   summarizeExercise,
+  trackedExerciseIds,
   weekSessionCount,
   type ProgressionSummary,
 } from './progression';
@@ -123,7 +124,6 @@ export function coachTips(
   todayIso: string,
 ): CoachTip[] {
   const tips: CoachTip[] = [];
-  const meta = styleMeta(profile.style);
 
   const count = weekSessionCount(
     sessions.map((s) => s.date),
@@ -153,12 +153,13 @@ export function coachTips(
     });
   }
 
-  for (const exerciseId of profile.trackedExercises) {
+  for (const exerciseId of trackedExerciseIds(profile, sessions)) {
     const def = resolve(exerciseId);
     if (!def) continue;
     const summary = summarizeExercise(sessions, exerciseId, def.bodyweight);
     if (summary.points.length < 2) continue;
-    const tip = exerciseTip(summary, def.name, def.bodyweight, meta.repRange);
+    const repRange = repRangeFor(profile, exerciseId);
+    const tip = exerciseTip(summary, def.name, def.bodyweight, repRange);
     if (tip) tips.push(tip);
   }
 

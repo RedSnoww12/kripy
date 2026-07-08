@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { StrengthSession } from '@/types';
+import type { StrengthSession, TrainingProfile } from '@/types';
 import {
   epley1RM,
   exerciseHistory,
   setScore,
   summarizeExercise,
+  trackedExerciseIds,
   weekSessionCount,
 } from './progression';
 
@@ -119,6 +120,35 @@ describe('summarizeExercise', () => {
     expect(s.isPR).toBe(false);
     expect(s.deltaPct).toBeLessThan(0);
     expect(s.bestEver).toBeCloseTo(116.7, 1);
+  });
+});
+
+describe('trackedExerciseIds', () => {
+  const profile: Pick<TrainingProfile, 'sessionTemplates'> = {
+    sessionTemplates: [
+      {
+        id: 'upper',
+        name: 'Upper A',
+        exercises: [{ exerciseId: 'dips', sets: 4, repsMin: 8, repsMax: 10 }],
+      },
+    ],
+  };
+
+  it('inclut les exercices planifiés même sans historique', () => {
+    expect(trackedExerciseIds(profile, [])).toEqual(['dips']);
+  });
+
+  it('ajoute les exercices loggés en séance libre', () => {
+    const sessions = [session(1, '2026-01-10', [{ w: 20, r: 8 }], 'curl')];
+    expect(trackedExerciseIds(profile, sessions).sort()).toEqual([
+      'curl',
+      'dips',
+    ]);
+  });
+
+  it('ne duplique pas un exercice à la fois planifié et loggé', () => {
+    const sessions = [session(1, '2026-01-10', [{ w: 0, r: 10 }], 'dips')];
+    expect(trackedExerciseIds(profile, sessions)).toEqual(['dips']);
   });
 });
 

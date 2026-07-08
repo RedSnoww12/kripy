@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import Modal from '@/components/ui/Modal';
-import { styleMeta } from '@/data/exercises';
+import { repRangeFor } from '@/data/exercises';
 import {
   formatSuggestion,
   overloadTrack,
@@ -52,7 +52,7 @@ export default function ExerciseDetailModal({
     const next = suggestNext(profile, sessions, exerciseId, bodyweight);
     const pure = bodyweight && last.topW <= 0;
     const track = next
-      ? overloadTrack(last, next, styleMeta(profile.style).repRange, bodyweight)
+      ? overloadTrack(last, next, repRangeFor(profile, exerciseId), bodyweight)
       : null;
     const target = next ? targetScore(next, bodyweight, pure) : null;
 

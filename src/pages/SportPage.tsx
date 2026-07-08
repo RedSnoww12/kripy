@@ -8,7 +8,7 @@ import TrainingSetupWizard from '@/components/sport/TrainingSetupWizard';
 import SessionLogger from '@/components/sport/SessionLogger';
 import CoachCard from '@/components/sport/CoachCard';
 import ProgressionSection from '@/components/sport/ProgressionSection';
-import { styleMeta, splitMeta } from '@/data/exercises';
+import { styleMeta } from '@/data/exercises';
 import { weekSessionCount } from '@/features/sport/progression';
 import { useSportStore } from '@/store/useSportStore';
 import { useTrackingStore } from '@/store/useTrackingStore';
@@ -69,7 +69,7 @@ export default function SportPage() {
         weekCount={weekCount}
         target={profile.sessionsPerWeek}
         streak={streak}
-        programLabel={`${styleMeta(profile.style).label} · ${splitMeta(profile.split).label}`}
+        programLabel={`${styleMeta(profile.style).label} · ${profile.sessionTemplates.length} séance${profile.sessionTemplates.length > 1 ? 's' : ''}`}
         onEdit={() => setEditing(true)}
       />
 
