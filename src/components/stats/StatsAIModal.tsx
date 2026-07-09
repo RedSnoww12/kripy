@@ -6,8 +6,14 @@ import {
   type AiError,
   type AiStatsResult,
 } from '@/features/ai/types';
+import { buildPhaseAdvice } from '@/features/analysis/phaseAdvisor';
 import { buildStatsAiContext } from '@/features/analysis/statsAiContext';
-import { trend72, weightStats } from '@/features/analysis/trend';
+import {
+  recommendAction,
+  trend72,
+  weightStats,
+} from '@/features/analysis/trend';
+import { computeBmr } from '@/features/settings/tdeeCalc';
 import { PHASE_NAMES } from '@/data/constants';
 import { todayISO } from '@/lib/date';
 import { useNutritionStore } from '@/store/useNutritionStore';
@@ -33,6 +39,8 @@ export default function StatsAIModal({ open, onClose }: Props) {
   const targets = useSettingsStore((s) => s.targets);
   const startWeight = useSettingsStore((s) => s.startWeight);
   const height = useSettingsStore((s) => s.height);
+  const sex = useSettingsStore((s) => s.sex);
+  const age = useSettingsStore((s) => s.age);
   const palier = usePalierStore((s) => s.palier);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
 
@@ -59,6 +67,25 @@ export default function StatsAIModal({ open, onClose }: Props) {
         })
       : null;
 
+    // Décisions déterministes du moteur Système Fluide — mêmes calculs que
+    // la carte « Coach métabolique » de la Home, réutilisés tels quels ici
+    // pour que le bilan IA ne contredise jamais l'algorithme.
+    const recommendation = trend
+      ? recommendAction(phase, trend, targets.kcal)
+      : null;
+    const currentWeight =
+      stats?.cur ?? (weights.length ? weights[weights.length - 1].w : 0);
+    const bmr = computeBmr(currentWeight, height, sex, age);
+    const phaseAdvice = buildPhaseAdvice({
+      phase,
+      currentKcal: targets.kcal,
+      bmr,
+      weights,
+      trend,
+      goalWeight: startWeight,
+      currentWeight,
+    });
+
     const context = buildStatsAiContext({
       weights,
       log,
@@ -68,9 +95,11 @@ export default function StatsAIModal({ open, onClose }: Props) {
       today,
       trend,
       stats,
+      recommendation,
+      phaseAdvice,
     });
 
-    void analyzeStats(context).then((result) => {
+    void analyzeStats(context, recommendation?.act ?? null).then((result) => {
       if (cancelled) return;
       if ('reason' in result) setStatus({ kind: 'error', error: result });
       else setStatus({ kind: 'result', result });
@@ -79,7 +108,18 @@ export default function StatsAIModal({ open, onClose }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [open, weights, log, phase, targets, startWeight, height, palier]);
+  }, [
+    open,
+    weights,
+    log,
+    phase,
+    targets,
+    startWeight,
+    height,
+    sex,
+    age,
+    palier,
+  ]);
 
   const close = () => {
     setStatus({ kind: 'idle' });

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { TrendResult, WeightEntry, WeightStats } from '@/types';
+import type {
+  Recommendation,
+  TrendResult,
+  WeightEntry,
+  WeightStats,
+} from '@/types';
+import type { PhaseAdvice } from './phaseAdvisor';
 import { buildStatsAiContext } from './statsAiContext';
 
 const TODAY = '2026-07-08';
@@ -61,6 +67,8 @@ describe('buildStatsAiContext', () => {
       today: TODAY,
       trend,
       stats,
+      recommendation: null,
+      phaseAdvice: null,
     });
 
     expect(ctx.objectif).toBe('Déficit');
@@ -83,6 +91,8 @@ describe('buildStatsAiContext', () => {
       today: TODAY,
       trend: { ...trend, dir: 'observing' },
       stats,
+      recommendation: null,
+      phaseAdvice: null,
     });
 
     expect(ctx.objectif).toBe('Prise de masse');
@@ -101,6 +111,8 @@ describe('buildStatsAiContext', () => {
       today: TODAY,
       trend: null,
       stats: null,
+      recommendation: null,
+      phaseAdvice: null,
     });
 
     expect(ctx.objectif).toBe('Maintien');
@@ -127,6 +139,8 @@ describe('buildStatsAiContext', () => {
       today: TODAY,
       trend: null,
       stats,
+      recommendation: null,
+      phaseAdvice: null,
     });
 
     const calories = ctx.calories as Record<string, unknown>;
@@ -136,5 +150,84 @@ describe('buildStatsAiContext', () => {
     const macros = ctx.macros as Record<string, unknown>;
     expect(macros.proteinesMoyennesG).toBe(145);
     expect(macros.cibleProteinesG).toBe(160);
+  });
+
+  it('expose la décision algorithmique quand une recommandation existe', () => {
+    const recommendation: Recommendation = {
+      act: '+200',
+      tp: 'warn',
+      msg: 'Stagnation — passe à 2300 kcal (+200)',
+      reason: 'Ton métabolisme tient, augmente pour progresser.',
+    };
+    const ctx = buildStatsAiContext({
+      weights: weightsOver(10, 80, 0),
+      log: {},
+      phase: 'A',
+      targets: { kcal: 2200, prot: 150, gluc: 250, lip: 75, fib: 30 },
+      goalWeight: 75,
+      today: TODAY,
+      trend,
+      stats,
+      recommendation,
+      phaseAdvice: null,
+    });
+
+    const decision = ctx.decisionAlgorithmique as Record<string, unknown>;
+    expect(decision.action).toBe('+200');
+    expect(decision.message).toContain('+200');
+    expect(ctx.coachMetabolique).toBeNull();
+  });
+
+  it("signale l'absence de tendance fiable et n'attribue aucune action", () => {
+    const ctx = buildStatsAiContext({
+      weights: weightsOver(2, 80, 0),
+      log: {},
+      phase: 'B',
+      targets: { kcal: 2100, prot: 160, gluc: 220, lip: 65, fib: 30 },
+      goalWeight: 76,
+      today: TODAY,
+      trend: null,
+      stats: null,
+      recommendation: null,
+      phaseAdvice: null,
+    });
+
+    const decision = ctx.decisionAlgorithmique as Record<string, unknown>;
+    expect(decision.action).toBeNull();
+    expect(decision.raison).toContain('aucun ajustement');
+  });
+
+  it('expose le coach métabolique (paliers, ratio BMR, fatigue) quand présent', () => {
+    const phaseAdvice: PhaseAdvice = {
+      action: 'continue',
+      targetPhase: null,
+      tone: 'warn',
+      headline: '3 paliers tenus — pense à programmer une sortie',
+      reason: 'Tu es à 92% de ton BMR.',
+      bmrRatio: 0.92,
+      bmrGapKcal: 150,
+      paliersInPhase: 3,
+      initialKcal: 2500,
+      fatigue: 'medium',
+      options: [],
+      suppressAnalysis: false,
+    };
+    const ctx = buildStatsAiContext({
+      weights: weightsOver(10, 80, -0.05),
+      log: {},
+      phase: 'B',
+      targets: { kcal: 2100, prot: 160, gluc: 220, lip: 65, fib: 30 },
+      goalWeight: 76,
+      today: TODAY,
+      trend,
+      stats,
+      recommendation: null,
+      phaseAdvice,
+    });
+
+    const coach = ctx.coachMetabolique as Record<string, unknown>;
+    expect(coach.fatigue).toBe('medium');
+    expect(coach.paliersDansLaPhase).toBe(3);
+    expect(coach.ratioBmrPct).toBe(92);
   });
 });
