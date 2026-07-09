@@ -205,6 +205,38 @@ export function parseSessionAdjustJson(
   return { resume, ajustements };
 }
 
+export interface AiStatsResult {
+  /** Bilan chiffré : la tendance est-elle adaptée à l'objectif ? */
+  bilan: string;
+  /** 3-5 actions concrètes adaptées à l'objectif (sèche/masse/maintien). */
+  recommandations: string[];
+  /** Ajustement suggéré de la cible kcal quotidienne, null si rien à changer. */
+  ajustementKcal: number | null;
+}
+
+const STATS_KCAL_ADJUST_MAX = 500;
+
+export function parseStatsJson(text: string): AiStatsResult | null {
+  const obj = extractJson(text);
+  if (!obj) return null;
+  const bilan = typeof obj.bilan === 'string' ? obj.bilan.trim() : '';
+  const recommandations = Array.isArray(obj.recommandations)
+    ? obj.recommandations
+        .filter((r): r is string => typeof r === 'string' && r.trim() !== '')
+        .slice(0, 6)
+    : [];
+  const rawAdjust = toFiniteNumber(obj.ajustementKcal);
+  const ajustementKcal =
+    rawAdjust === null || rawAdjust === 0
+      ? null
+      : Math.max(
+          -STATS_KCAL_ADJUST_MAX,
+          Math.min(STATS_KCAL_ADJUST_MAX, Math.round(rawAdjust)),
+        );
+  if (!bilan && recommandations.length === 0) return null;
+  return { bilan, recommandations, ajustementKcal };
+}
+
 export function parseRecipeJson(text: string): AiRecipeResult | null {
   const obj = extractJson(text);
   if (!obj) return null;

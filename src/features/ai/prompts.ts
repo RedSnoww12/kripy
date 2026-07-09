@@ -352,13 +352,41 @@ export function buildRecipeUserMessage(description: string): string {
   return `Ingrédients de la recette :\n${description}\n\n${hints.join('\n')}`;
 }
 
-export function buildUserMessage(description: string): string {
+export interface MealMessageOptions {
+  /** Consignes libres de l'utilisateur, prioritaires sur les portions standard. */
+  instructions?: string;
+  /** Nombre de photos jointes (0 ou absent = analyse texte pure). */
+  photoCount?: number;
+}
+
+function multiPhotoHint(photoCount: number): string {
+  return `PLUSIEURS PHOTOS (${photoCount}) : elles montrent le MÊME repas (angles différents ou plats/accompagnements séparés d'un même repas). Combine TOUT ce qui est visible en UN SEUL total, sans compter deux fois un aliment présent sur plusieurs photos.`;
+}
+
+function instructionsHint(instructions: string): string {
+  return `INSTRUCTIONS DE L'UTILISATEUR (à respecter IMPÉRATIVEMENT, prioritaires sur les portions standard) : ${instructions}`;
+}
+
+export function buildUserMessage(
+  description: string,
+  opts?: MealMessageOptions,
+): string {
+  const instructions = opts?.instructions?.trim();
+  const photoCount = opts?.photoCount ?? 0;
+
   if (!description) {
-    return [
-      'Analyse la photo du repas et donne le total nutritionnel.',
+    const lines = [
+      photoCount >= 2
+        ? 'Analyse les photos du repas et donne le total nutritionnel.'
+        : 'Analyse la photo du repas et donne le total nutritionnel.',
+    ];
+    if (photoCount >= 2) lines.push('', multiPhotoHint(photoCount));
+    if (instructions) lines.push('', instructionsHint(instructions));
+    lines.push(
       '',
       'RAPPEL MÉTHODE : décompose le plat en composants visibles, quantifie chacun, calcule par composant, additionne, puis vérifie via Atwater (prot×4 + gluc×4 + lip×9 ≈ kcal ±10 %).',
-    ].join('\n');
+    );
+    return lines.join('\n');
   }
 
   const lower = description.toLowerCase();
@@ -372,6 +400,9 @@ export function buildUserMessage(description: string): string {
   );
 
   const hints: string[] = [];
+
+  if (photoCount >= 2) hints.push(multiPhotoHint(photoCount));
+  if (instructions) hints.push(instructionsHint(instructions));
 
   if (gramsMatch) {
     const raw = parseFloat(gramsMatch[1].replace(',', '.'));

@@ -6,6 +6,7 @@ import {
   parseMealJson,
   parseRecipeJson,
   parseSessionAdjustJson,
+  parseStatsJson,
 } from './types';
 
 describe('extractJson', () => {
@@ -125,6 +126,59 @@ describe('parseSessionAdjustJson', () => {
   it('renvoie null quand résumé et ajustements sont tous deux vides', () => {
     expect(parseSessionAdjustJson('{"resume":"","ajustements":[]}')).toBeNull();
     expect(parseSessionAdjustJson('pas de json')).toBeNull();
+  });
+});
+
+describe('parseStatsJson', () => {
+  it('parse un bilan complet', () => {
+    const r = parseStatsJson(
+      '{"bilan":"Perte de 0,5 kg/sem, adaptée à la sèche.","recommandations":["Monte les protéines à 160g","Traque le week-end"],"ajustementKcal":-150}',
+    );
+    expect(r).toEqual({
+      bilan: 'Perte de 0,5 kg/sem, adaptée à la sèche.',
+      recommandations: ['Monte les protéines à 160g', 'Traque le week-end'],
+      ajustementKcal: -150,
+    });
+  });
+
+  it('convertit un ajustement nul ou absent en null', () => {
+    expect(
+      parseStatsJson('{"bilan":"OK","recommandations":[],"ajustementKcal":0}')
+        ?.ajustementKcal,
+    ).toBeNull();
+    expect(
+      parseStatsJson('{"bilan":"OK","recommandations":["a"]}')?.ajustementKcal,
+    ).toBeNull();
+    expect(
+      parseStatsJson(
+        '{"bilan":"OK","recommandations":[],"ajustementKcal":null}',
+      )?.ajustementKcal,
+    ).toBeNull();
+  });
+
+  it("borne l'ajustement kcal à ±500 et l'arrondit", () => {
+    expect(
+      parseStatsJson(
+        '{"bilan":"OK","recommandations":[],"ajustementKcal":-1200}',
+      )?.ajustementKcal,
+    ).toBe(-500);
+    expect(
+      parseStatsJson(
+        '{"bilan":"OK","recommandations":[],"ajustementKcal":149.6}',
+      )?.ajustementKcal,
+    ).toBe(150);
+  });
+
+  it('filtre les recommandations non textuelles ou vides', () => {
+    const r = parseStatsJson(
+      '{"bilan":"OK","recommandations":["garde le cap", 42, "", {"x":1}, "bois de l\'eau"]}',
+    );
+    expect(r?.recommandations).toEqual(['garde le cap', "bois de l'eau"]);
+  });
+
+  it("renvoie null si rien d'exploitable", () => {
+    expect(parseStatsJson('{"autre":"chose"}')).toBeNull();
+    expect(parseStatsJson('pas du json')).toBeNull();
   });
 });
 
