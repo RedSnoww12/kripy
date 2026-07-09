@@ -1,3 +1,4 @@
+import type { RecommendAction } from '@/types';
 import { getActiveConfig } from './config';
 import { geminiTransport } from './geminiClient';
 import { groqTransport } from './groqClient';
@@ -176,13 +177,26 @@ export async function analyzeTraining(
   return result ?? { ...err('parse'), provider };
 }
 
+/** Convertit la décision mécanique du Système Fluide en ajustement kcal forcé. */
+function forcedKcalAdjustment(action: RecommendAction | null): number | null {
+  if (action === '+200') return 200;
+  if (action === '-200') return -200;
+  return null;
+}
+
 /**
  * Analyse des statistiques (poids, calories, macros) : renvoie un bilan et
  * des recommandations adaptées à l'objectif en cours (sèche, prise de masse,
- * maintien…).
+ * maintien…), dans le cadre de la méthode Système Fluide.
+ *
+ * `algoAction` est la décision déjà calculée déterministiquement par
+ * `recommendAction` (moteur Système Fluide, sans IA). Le "ajustementKcal"
+ * renvoyé par l'IA est TOUJOURS écrasé par cette valeur : le modèle peut se
+ * tromper ou désobéir au prompt, l'algorithme ne peut pas être contourné.
  */
 export async function analyzeStats(
   context: StatsContext,
+  algoAction: RecommendAction | null,
 ): Promise<AiStatsResult | AiError> {
   const { provider, apiKey } = getActiveConfig();
 
@@ -197,7 +211,8 @@ export async function analyzeStats(
   if (typeof text !== 'string') return { ...text, provider };
 
   const result = parseStatsJson(text);
-  return result ?? { ...err('parse'), provider };
+  if (!result) return { ...err('parse'), provider };
+  return { ...result, ajustementKcal: forcedKcalAdjustment(algoAction) };
 }
 
 /**
