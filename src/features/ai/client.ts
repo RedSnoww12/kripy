@@ -1,6 +1,7 @@
 import { getActiveConfig } from './config';
 import { geminiTransport } from './geminiClient';
 import { groqTransport } from './groqClient';
+import { applyMealMargin } from './mealMargin';
 import { recallMeal } from './mealMemory';
 import {
   AI_RECIPE_SYSTEM_PROMPT,
@@ -16,11 +17,17 @@ import {
   type CoachContext,
 } from './sportPrompts';
 import {
+  AI_STATS_SYSTEM_PROMPT,
+  buildStatsUserMessage,
+  type StatsContext,
+} from './statsPrompts';
+import {
   err,
   parseCoachJson,
   parseMealJson,
   parseRecipeJson,
   parseSessionAdjustJson,
+  parseStatsJson,
   type AiCoachResult,
   type AiError,
   type AiMealResult,
@@ -29,6 +36,7 @@ import {
   type AiRecipeResult,
   type AiRequest,
   type AiSessionAnalysisResult,
+  type AiStatsResult,
   type AiTransport,
 } from './types';
 
@@ -60,19 +68,31 @@ async function runWithRetry(
 
 interface AnalyzeMealArgs {
   description: string;
-  imageB64: string | null;
+  imagesB64: string[];
+  /** Consignes libres transmises à l'IA (ex : « sauce à part »). */
+  instructions?: string;
+  /** Marge de sécurité en % appliquée au résultat (repas au restaurant…). */
+  marginPct?: number;
 }
 
 export async function analyzeMeal(
   args: AnalyzeMealArgs,
 ): Promise<AiMealResult | AiError> {
-  const { description, imageB64 } = args;
+  const { description, imagesB64 } = args;
+  const instructions = args.instructions?.trim() ?? '';
+  const marginPct = args.marginPct ?? 0;
 
   // Repas déjà décrit et validé avec ce texte exact : on réutilise les
   // valeurs confirmées par l'utilisateur plutôt que de ré-estimer, plus
   // rapide et plus cohérent d'une fois sur l'autre. Uniquement pour les
-  // descriptions texte (une photo change potentiellement le contenu réel).
-  if (!imageB64 && description) {
+  // descriptions texte pures : une photo, des instructions ou une marge
+  // changent potentiellement le résultat attendu.
+  if (
+    imagesB64.length === 0 &&
+    description &&
+    !instructions &&
+    marginPct <= 0
+  ) {
     const remembered = recallMeal(description);
     if (remembered) return remembered;
   }
@@ -80,22 +100,28 @@ export async function analyzeMeal(
   const { provider, apiKey } = getActiveConfig();
 
   if (!apiKey) return { ...err('nokey'), provider };
-  if (!description && !imageB64) return { ...err('empty'), provider };
+  if (!description && imagesB64.length === 0)
+    return { ...err('empty'), provider };
 
-  const parts: AiPart[] = [];
-  if (imageB64) parts.push({ image: imageB64 });
-  parts.push({ text: buildUserMessage(description) });
+  const parts: AiPart[] = imagesB64.map((image) => ({ image }));
+  parts.push({
+    text: buildUserMessage(description, {
+      instructions,
+      photoCount: imagesB64.length,
+    }),
+  });
 
   const text = await runWithRetry(TRANSPORTS[provider], {
     apiKey,
     system: AI_SYSTEM_PROMPT,
     parts,
-    hasImage: Boolean(imageB64),
+    hasImage: imagesB64.length > 0,
   });
   if (typeof text !== 'string') return { ...text, provider };
 
   const result = parseMealJson(text);
-  return result ?? { ...err('parse'), provider };
+  if (!result) return { ...err('parse'), provider };
+  return applyMealMargin(result, marginPct);
 }
 
 interface AnalyzeRecipeArgs {
@@ -147,6 +173,30 @@ export async function analyzeTraining(
   if (typeof text !== 'string') return { ...text, provider };
 
   const result = parseCoachJson(text);
+  return result ?? { ...err('parse'), provider };
+}
+
+/**
+ * Analyse des statistiques (poids, calories, macros) : renvoie un bilan et
+ * des recommandations adaptées à l'objectif en cours (sèche, prise de masse,
+ * maintien…).
+ */
+export async function analyzeStats(
+  context: StatsContext,
+): Promise<AiStatsResult | AiError> {
+  const { provider, apiKey } = getActiveConfig();
+
+  if (!apiKey) return { ...err('nokey'), provider };
+
+  const text = await runWithRetry(TRANSPORTS[provider], {
+    apiKey,
+    system: AI_STATS_SYSTEM_PROMPT,
+    parts: [{ text: buildStatsUserMessage(context) }],
+    hasImage: false,
+  });
+  if (typeof text !== 'string') return { ...text, provider };
+
+  const result = parseStatsJson(text);
   return result ?? { ...err('parse'), provider };
 }
 

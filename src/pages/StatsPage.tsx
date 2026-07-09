@@ -14,6 +14,7 @@ import WeightAnalysisCard from '@/components/stats/WeightAnalysisCard';
 import WeightHistoryTable from '@/components/stats/WeightHistoryTable';
 import WeightEditModal from '@/components/stats/WeightEditModal';
 import WeightAddModal from '@/components/stats/WeightAddModal';
+import StatsAIModal from '@/components/stats/StatsAIModal';
 import RangeSelector from '@/components/charts/RangeSelector';
 import {
   WEIGHT_RANGES,
@@ -30,6 +31,7 @@ import {
   type MacroRange,
 } from '@/features/analysis/charts/macroAverages';
 import { todayISO } from '@/lib/date';
+import { PHASE_NAMES } from '@/data/constants';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useTrackingStore } from '@/store/useTrackingStore';
@@ -41,8 +43,10 @@ export default function StatsPage() {
   const log = useNutritionStore((s) => s.log);
   const startWeight = useSettingsStore((s) => s.startWeight);
   const targets = useSettingsStore((s) => s.targets);
+  const phase = useSettingsStore((s) => s.phase);
 
   const [tab, setTab] = useState<Tab>('essential');
+  const [aiOpen, setAiOpen] = useState(false);
   const [weightRange, setWeightRange] = useState<WeightRange>(30);
   const [kcalRange, setKcalRange] = useState<CalorieRange>(7);
   const [macroRange, setMacroRange] = useState<MacroRange>(7);
@@ -109,6 +113,28 @@ export default function StatsPage() {
       {tab === 'essential' ? (
         <>
           <WeightStatsGrid onAdd={() => setAddOpen(true)} />
+
+          <button
+            type="button"
+            className="stat-ai-cta"
+            onClick={() => setAiOpen(true)}
+          >
+            <span
+              className="material-symbols-outlined stat-ai-cta-ico"
+              aria-hidden
+            >
+              auto_awesome
+            </span>
+            <span className="stat-ai-cta-body">
+              <strong>Analyser mes stats avec l&apos;IA</strong>
+              <small>
+                Recommandations pour ta phase « {PHASE_NAMES[phase]} »
+              </small>
+            </span>
+            <span className="material-symbols-outlined" aria-hidden>
+              chevron_right
+            </span>
+          </button>
 
           <section className="stat-card stat-card-big">
             <div className="stat-card-head">
@@ -298,6 +324,7 @@ export default function StatsPage() {
         onClose={() => setEditDate(null)}
       />
       <WeightAddModal open={addOpen} onClose={() => setAddOpen(false)} />
+      <StatsAIModal open={aiOpen} onClose={() => setAiOpen(false)} />
     </div>
   );
 }

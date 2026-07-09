@@ -9,6 +9,7 @@ import {
 import Modal from '@/components/ui/Modal';
 import { analyzeMeal } from './client';
 import { checkMealPlausibility } from './mealCheck';
+import { MEAL_MARGIN_OPTIONS } from './mealMargin';
 import { rememberMeal } from './mealMemory';
 import { describeAiError, type AiError, type AiMealResult } from './types';
 import { compressImage, readFileAsDataUrl } from './imageUtils';
@@ -26,25 +27,34 @@ type Status =
   | { kind: 'error'; error: AiError }
   | { kind: 'result'; result: AiMealResult };
 
+const MAX_PHOTOS = 4;
+
 export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [imageB64, setImageB64] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
   const [description, setDescription] = useState('');
+  const [instructions, setInstructions] = useState('');
+  const [margin, setMargin] = useState(0);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
 
   const reset = useCallback(() => {
-    setImageB64(null);
+    setImages([]);
     setDescription('');
+    setInstructions('');
+    setMargin(0);
     setStatus({ kind: 'idle' });
   }, []);
 
-  const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleFiles = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    if (files.length === 0) return;
     try {
-      const raw = await readFileAsDataUrl(file);
-      const compressed = await compressImage(raw, 1024, 0.8);
-      setImageB64(compressed);
+      const compressed: string[] = [];
+      for (const file of files) {
+        const raw = await readFileAsDataUrl(file);
+        compressed.push(await compressImage(raw, 1024, 0.8));
+      }
+      setImages((prev) => [...prev, ...compressed].slice(0, MAX_PHOTOS));
     } catch {
       setStatus({
         kind: 'error',
@@ -55,12 +65,18 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
     }
   };
 
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleAnalyze = async (event: FormEvent) => {
     event.preventDefault();
     setStatus({ kind: 'loading' });
     const result = await analyzeMeal({
       description: description.trim(),
-      imageB64,
+      imagesB64: images,
+      instructions: instructions.trim(),
+      marginPct: margin,
     });
     if ('reason' in result) {
       setStatus({ kind: 'error', error: result });
@@ -80,42 +96,86 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
 
       {status.kind !== 'result' && (
         <form onSubmit={handleAnalyze}>
-          <label
-            htmlFor="aiPhoto"
-            className="btn btn-o"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-              marginBottom: 10,
-              cursor: 'pointer',
-            }}
-          >
-            <span className="material-symbols-outlined">photo_camera</span>
-            {imageB64 ? 'Changer la photo' : 'Ajouter une photo'}
-          </label>
+          {images.length < MAX_PHOTOS && (
+            <label
+              htmlFor="aiPhoto"
+              className="btn btn-o"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                marginBottom: 10,
+                cursor: 'pointer',
+              }}
+            >
+              <span className="material-symbols-outlined">photo_camera</span>
+              {images.length > 0
+                ? `Ajouter une autre photo (${images.length}/${MAX_PHOTOS})`
+                : 'Ajouter une ou plusieurs photos'}
+            </label>
+          )}
           <input
             ref={fileInputRef}
             id="aiPhoto"
             type="file"
             accept="image/*"
+            multiple
             hidden
-            onChange={handleFile}
+            onChange={handleFiles}
           />
 
-          {imageB64 && (
-            <img
-              src={imageB64}
-              alt="Aperçu"
+          {images.length > 0 && (
+            <div
               style={{
-                width: '100%',
-                borderRadius: 'var(--r)',
+                display: 'grid',
+                gridTemplateColumns:
+                  images.length === 1 ? '1fr' : 'repeat(2, 1fr)',
+                gap: 8,
                 marginBottom: 10,
-                maxHeight: 220,
-                objectFit: 'cover',
               }}
-            />
+            >
+              {images.map((img, i) => (
+                <div key={i} style={{ position: 'relative' }}>
+                  <img
+                    src={img}
+                    alt={`Photo ${i + 1}`}
+                    style={{
+                      width: '100%',
+                      borderRadius: 'var(--r)',
+                      maxHeight: images.length === 1 ? 220 : 120,
+                      height: images.length === 1 ? undefined : 120,
+                      objectFit: 'cover',
+                      display: 'block',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    aria-label={`Retirer la photo ${i + 1}`}
+                    style={{
+                      position: 'absolute',
+                      top: 6,
+                      right: 6,
+                      width: 26,
+                      height: 26,
+                      borderRadius: '50%',
+                      border: 'none',
+                      background: 'rgba(0,0,0,.6)',
+                      color: '#fff',
+                      fontSize: '.8rem',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
 
           <textarea
@@ -133,6 +193,65 @@ export default function AIAnalysisModal({ open, onClose, onConfirm }: Props) {
               setDescription((prev) => (prev ? `${prev} ${chunk}` : chunk))
             }
           />
+
+          <input
+            className="inp"
+            placeholder="Instructions pour l'IA (ex: sauce à part, grosse portion…)"
+            value={instructions}
+            onChange={(e) => setInstructions(e.target.value)}
+            aria-label="Instructions pour l'IA"
+            style={{ marginTop: 8, fontSize: '.8rem' }}
+          />
+
+          <div style={{ marginTop: 10 }}>
+            <div
+              style={{
+                fontSize: '.62rem',
+                color: 'var(--t2)',
+                textTransform: 'uppercase',
+                letterSpacing: '.6px',
+                fontWeight: 800,
+                marginBottom: 6,
+              }}
+            >
+              🍽️ Au resto ? Marge d'erreur
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button
+                type="button"
+                className="chip"
+                aria-pressed={margin === 0}
+                onClick={() => setMargin(0)}
+                style={{
+                  cursor: 'pointer',
+                  border: 'none',
+                  background: margin === 0 ? 'var(--acc)' : 'var(--s2)',
+                  color: margin === 0 ? 'var(--s0)' : 'var(--t2)',
+                  fontWeight: 700,
+                }}
+              >
+                Aucune
+              </button>
+              {MEAL_MARGIN_OPTIONS.map((pct) => (
+                <button
+                  key={pct}
+                  type="button"
+                  className="chip"
+                  aria-pressed={margin === pct}
+                  onClick={() => setMargin(pct)}
+                  style={{
+                    cursor: 'pointer',
+                    border: 'none',
+                    background: margin === pct ? 'var(--acc)' : 'var(--s2)',
+                    color: margin === pct ? 'var(--s0)' : 'var(--t2)',
+                    fontWeight: 700,
+                  }}
+                >
+                  +{pct} %
+                </button>
+              ))}
+            </div>
+          </div>
 
           {status.kind === 'error' && (
             <div
