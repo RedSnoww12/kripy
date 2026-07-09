@@ -39,3 +39,6 @@ pnpm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
+
+# Sorties générées par les scripts d'analyse ponctuels
+scripts/results/
