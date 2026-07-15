@@ -3,28 +3,7 @@
    Data-First hierarchy · Tonal nesting · LED accents
    ============================================================ */
 
-/* ── Material Symbols baseline ────────────────────────── */
-.material-symbols-outlined {
-  font-family: 'Material Symbols Outlined', sans-serif;
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased;
-  font-variation-settings:
-    'FILL' 0,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24;
-  user-select: none;
-}
+/* Base .material-symbols-outlined définie dans base.css (police Rounded) */
 
 /* ── HOME v2 — Kinetic Lab mockup adaptation ──────────── */
 
