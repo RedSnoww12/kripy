@@ -212,7 +212,7 @@ export default function ActivityScreen({
                   cursor: 'pointer',
                   background: on ? (i === 0 ? T.s3 : T.cyan) : T.s2,
                   border: `1px solid ${on && i > 0 ? T.cyan : T.outline}`,
-                  color: on && i > 0 ? '#0a1410' : T.t2,
+                  color: on && i > 0 ? 'var(--on-acc)' : T.t2,
                   ...mono,
                   fontSize: 13,
                   fontWeight: 800,

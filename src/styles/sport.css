@@ -156,7 +156,7 @@
 }
 .kl-sport-split.on {
   background: var(--grad-primary);
-  color: #0a1410;
+  color: var(--on-acc);
 }
 .kl-sport-split:active {
   transform: scale(0.97);
@@ -337,7 +337,7 @@
   width: 100%;
   height: 48px;
   background: var(--grad-primary);
-  color: #0a1410;
+  color: var(--on-acc);
   border: none;
   border-radius: 12px;
   font-family: 'Inter', sans-serif;
@@ -380,14 +380,14 @@
 .kl-sport-heat-cell {
   aspect-ratio: 1/1;
   border-radius: 3px;
-  background: var(--s3);
+  background: var(--s2);
   transition: background var(--dur-fast) var(--ease-out);
 }
 .kl-sport-heat-cell.tier-1 {
-  background: color-mix(in srgb, var(--acc2) 40%, transparent);
+  background: color-mix(in srgb, var(--acc) 30%, transparent);
 }
 .kl-sport-heat-cell.tier-2 {
-  background: color-mix(in srgb, var(--acc2) 70%, transparent);
+  background: color-mix(in srgb, var(--acc) 60%, transparent);
 }
 .kl-sport-heat-cell.tier-3 {
   background: var(--acc);
@@ -649,7 +649,7 @@
 }
 .kl-wiz-freq-btn.on {
   background: var(--grad-primary);
-  color: #0a1410;
+  color: var(--on-acc);
 }
 .kl-wiz-exos {
   margin-bottom: 4px;
@@ -1016,7 +1016,7 @@
   font-size: 8.5px;
   font-weight: 800;
   letter-spacing: 0.12em;
-  color: #0a1410;
+  color: var(--on-acc);
   background: var(--yel);
   border-radius: 5px;
   padding: 2px 5px;
@@ -1336,7 +1336,7 @@
   height: 52px;
   border-radius: 50%;
   background: var(--grad-primary);
-  color: #0a1410;
+  color: var(--on-acc);
   display: flex;
   align-items: center;
   justify-content: center;

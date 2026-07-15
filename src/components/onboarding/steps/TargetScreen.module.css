@@ -223,7 +223,7 @@
 .preset.active {
   background: var(--phase);
   border-color: var(--phase);
-  color: #0a1410;
+  color: var(--on-acc);
 }
 
 .warning {

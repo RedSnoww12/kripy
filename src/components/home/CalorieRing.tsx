@@ -84,7 +84,7 @@ export default function CalorieRing({ consumed, target, baseTarget }: Props) {
         >
           <defs>
             <linearGradient id="klRingG" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="var(--acc)" />
+              <stop offset="0" stopColor="var(--accL, var(--acc))" />
               <stop offset="1" stopColor="var(--acc2)" />
             </linearGradient>
           </defs>

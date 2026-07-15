@@ -140,7 +140,7 @@ export default function PhaseScreen({
                     background: sel
                       ? color
                       : `color-mix(in srgb, ${color} 13%, transparent)`,
-                    color: sel ? '#0a1410' : color,
+                    color: sel ? 'var(--on-acc)' : color,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
