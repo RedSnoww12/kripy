@@ -206,13 +206,13 @@
   color: var(--acc);
 }
 
-/* ── Global inputs ────────────────────────────────────── */
+/* ── Global inputs — surface inset + ring focus indigo ── */
 .inp {
   flex: 1;
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-  background: var(--s3);
+  background: var(--s0);
   border: none;
   border-radius: var(--r);
   padding: 14px 16px;
@@ -220,15 +220,15 @@
   font-size: 16px;
   font-family: inherit;
   transition:
-    background var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-fast) var(--ease-out);
+    background 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out);
   min-height: 50px;
   font-weight: 500;
-  box-shadow: inset 0 0 0 0 transparent;
+  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 .inp:focus {
-  background: var(--s4);
-  box-shadow: inset 0 -1px 0 0 var(--acc);
+  background: var(--s0);
+  box-shadow: inset 0 0 0 1.5px var(--acc);
 }
 .inp::placeholder {
   color: var(--t3);
@@ -237,7 +237,12 @@
   letter-spacing: 0.01em;
 }
 
-/* ── Buttons ──────────────────────────────────────────── */
+/* ── Buttons — hiérarchie stricte (design bleu) ───────────
+   1. .btn-p  primaire (1 max/écran) : dégradé indigo + ombre portée
+   2. .btn-s  secondaire tonal : fond indigo 12%, texte accent clair
+   3. .btn-o  neutre bordé : surface + hairline inset
+   4. .btn-d  destructif tonal : fond rouge 12%, texte rouge
+   Tous : retour tactile scale 140ms ease-out-quint. */
 .btn {
   padding: 13px 22px;
   border-radius: var(--r);
@@ -246,10 +251,11 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   transition:
-    transform var(--dur-fast) var(--ease-out),
-    background var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-fast) var(--ease-out),
-    filter var(--dur-fast) var(--ease-out);
+    transform 140ms var(--ease-out),
+    background 200ms var(--ease-out),
+    color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    filter 200ms var(--ease-out);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -264,43 +270,61 @@
 }
 .btn:active {
   transform: scale(0.96);
-  filter: brightness(0.94);
 }
 
-/* Primary: signature gradient — machined, not plastic */
+/* Primary: dégradé indigo — machined, not plastic */
 .btn-p {
   background: var(--grad-primary);
-  color: #0a1410;
-  box-shadow: var(--glow-soft);
+  color: var(--on-acc);
+  box-shadow:
+    0 6px 18px -6px rgba(107, 138, 255, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 .btn-p:active {
-  box-shadow: 0 0 0 0 transparent;
+  transform: scale(0.96) translateY(1px);
+  filter: brightness(1.1);
+  box-shadow:
+    0 3px 10px -6px rgba(107, 138, 255, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
-/* Outline / ghost: filled tonal, not bordered */
+/* Neutre bordé : surface + hairline inset */
 .btn-o {
-  background: var(--s3);
+  background: var(--s1);
   color: var(--t1);
+  box-shadow: inset 0 0 0 1px var(--hairline);
   font-weight: 600;
   text-transform: none;
   letter-spacing: 0;
   font-size: 0.78rem;
 }
 .btn-o:active {
-  background: var(--s4);
+  background: var(--s2);
 }
 
-/* Secondary: cyan LED */
+/* Secondaire tonal : indigo doux */
 .btn-s {
-  background: var(--cyan);
-  color: #062028;
-  box-shadow: 0 0 24px 0 color-mix(in srgb, var(--cyan) 18%, transparent);
+  background: rgba(107, 138, 255, 0.12);
+  color: var(--accL);
+}
+.btn-s:active {
+  background: rgba(107, 138, 255, 0.2);
+}
+[data-theme='light'] .btn-s {
+  background: rgba(74, 102, 224, 0.12);
+}
+[data-theme='light'] .btn-s:active {
+  background: rgba(74, 102, 224, 0.2);
 }
 
-/* Destructive: red */
+/* Destructif tonal */
 .btn-d {
-  background: var(--red);
-  color: #fff;
+  background: rgba(255, 107, 107, 0.12);
+  color: var(--red);
+  box-shadow: inset 0 0 0 1px rgba(255, 107, 107, 0.18);
+}
+.btn-d:active {
+  background: rgba(255, 107, 107, 0.2);
 }
 
 /* Size variants */
@@ -334,15 +358,15 @@
 /* Selected tab/state on buttons (imp-tab) */
 .imp-tab.sel {
   background: var(--grad-primary);
-  color: #0a1410;
+  color: var(--on-acc);
 }
 
-/* ── Cards & Titles ───────────────────────────────────── */
+/* ── Cards & Titles — plus aérées (design bleu) ───────── */
 .card {
-  background: var(--s2);
+  background: var(--s1);
   border-radius: var(--r2);
-  padding: 20px;
-  margin-bottom: 14px;
+  padding: 21px 20px;
+  margin-bottom: 18px;
   border: none;
   box-shadow: var(--shadow);
   transition: background var(--dur-base) var(--ease-out);
@@ -486,10 +510,10 @@
   width: 100%;
   max-width: 430px;
   transform: translateX(-50%);
-  background: rgba(18, 19, 23, 0.8);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  box-shadow: 0 0 32px 0 rgba(88, 222, 160, 0.06);
+  background: rgba(15, 17, 23, 0.78);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  box-shadow: 0 1px 0 rgba(143, 166, 255, 0.07);
   padding: 0 var(--gutter);
   padding-top: env(safe-area-inset-top);
   height: calc(64px + env(safe-area-inset-top));
@@ -504,8 +528,8 @@
   min-width: 0;
 }
 [data-theme='light'] .hdr {
-  background: rgba(247, 248, 250, 0.8);
-  box-shadow: 0 0 32px 0 rgba(45, 183, 123, 0.06);
+  background: rgba(247, 248, 251, 0.8);
+  box-shadow: 0 1px 0 rgba(74, 102, 224, 0.1);
 }
 [data-theme='light'] .auth {
   background: var(--bg);
@@ -585,53 +609,53 @@
 
 /* ── Tabs ─────────────────────────────────────────────── */
 .tc {
-  padding: calc(80px + env(safe-area-inset-top)) var(--gutter) 120px;
+  padding: calc(88px + env(safe-area-inset-top)) var(--gutter) 132px;
 }
 .tp {
   display: none;
 }
 .tp.active {
   display: block;
-  animation: fi var(--dur-slow) var(--ease-out);
+  animation: tabIn 220ms var(--ease-out);
 }
-@keyframes fi {
+@keyframes tabIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(6px) scale(0.998);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 .tp.active > * {
-  animation: cardRise var(--dur-slow) var(--ease-out) backwards;
+  animation: rise 260ms var(--ease-out) backwards;
 }
 .tp.active > *:nth-child(1) {
-  animation-delay: 30ms;
+  animation-delay: 10ms;
 }
 .tp.active > *:nth-child(2) {
-  animation-delay: 70ms;
+  animation-delay: 30ms;
 }
 .tp.active > *:nth-child(3) {
-  animation-delay: 110ms;
+  animation-delay: 55ms;
 }
 .tp.active > *:nth-child(4) {
-  animation-delay: 150ms;
+  animation-delay: 80ms;
 }
 .tp.active > *:nth-child(5) {
-  animation-delay: 190ms;
+  animation-delay: 105ms;
 }
 .tp.active > *:nth-child(6) {
-  animation-delay: 220ms;
+  animation-delay: 125ms;
 }
 .tp.active > *:nth-child(n + 7) {
-  animation-delay: 250ms;
+  animation-delay: 145ms;
 }
-@keyframes cardRise {
+@keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -652,7 +676,7 @@
   }
 }
 
-/* ── Nav: Glass + gradient active indicator ──────────── */
+/* ── Nav: Glass + pilule active dégradé indigo ────────── */
 .nav {
   position: fixed;
   bottom: 14px;
@@ -660,24 +684,24 @@
   transform: translateX(-50%);
   width: calc(100% - 28px);
   max-width: 402px;
-  background: rgba(31, 31, 36, 0.8);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  background: rgba(24, 27, 35, 0.82);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
   display: flex;
-  padding: 10px 8px;
-  padding-bottom: max(10px, calc(env(safe-area-inset-bottom) - 4px));
+  padding: 8px;
+  padding-bottom: max(8px, calc(env(safe-area-inset-bottom) - 4px));
   z-index: 100;
-  border-radius: 22px;
+  border-radius: 24px;
   box-shadow:
-    var(--glow),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    0 12px 40px -12px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(143, 166, 255, 0.08);
   transition: background var(--dur-slow) var(--ease-out);
 }
 [data-theme='light'] .nav {
-  background: rgba(232, 234, 240, 0.82);
+  background: rgba(232, 234, 242, 0.85);
   box-shadow:
-    var(--glow),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+    0 12px 40px -12px rgba(26, 29, 46, 0.18),
+    inset 0 0 0 1px rgba(74, 102, 224, 0.1);
 }
 
 .theme-toggle {
@@ -716,53 +740,33 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 7px 2px;
+  padding: 8px 2px;
   font-size: 0.52rem;
   color: var(--t3);
-  background: none;
+  background: transparent;
   border: none;
   cursor: pointer;
   text-decoration: none;
   transition:
-    color var(--dur-base) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
+    background 240ms var(--ease-out),
+    color 240ms var(--ease-out),
+    transform 140ms var(--ease-out);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   position: relative;
-  border-radius: 12px;
-  min-height: 52px;
+  border-radius: 16px;
+  min-height: 54px;
   font-family: 'JetBrains Mono', monospace;
-}
-.nav a::before,
-.nav button::before {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  width: 22px;
-  height: 2px;
-  background: var(--acc);
-  border-radius: 2px;
-  transform: translateX(-50%) scaleX(0);
-  opacity: 0;
-  box-shadow: 0 0 12px var(--acc);
-  transition:
-    transform var(--dur-slow) var(--ease-spring),
-    opacity var(--dur-base) var(--ease-out);
-}
-.nav a.active::before,
-.nav button.active::before {
-  transform: translateX(-50%) scaleX(1);
-  opacity: 1;
 }
 .nav a:active,
 .nav button:active {
-  transform: scale(0.93);
+  transform: scale(0.9);
 }
 .nav a.active,
 .nav button.active {
-  color: var(--t1);
+  background: var(--grad-primary);
+  color: var(--on-acc);
 }
 .nav a svg,
 .nav button svg {
@@ -770,28 +774,20 @@
   height: 22px;
   pointer-events: none;
   stroke-width: 1.8;
-  transition:
-    stroke-width var(--dur-base) var(--ease-out),
-    transform var(--dur-slow) var(--ease-spring);
+  transition: stroke-width var(--dur-base) var(--ease-out);
 }
 .nav a.active svg,
 .nav button.active svg {
   stroke-width: 2.2;
-  transform: scale(1.08);
-  filter: drop-shadow(0 0 6px var(--accG));
 }
 .nav a .material-symbols-outlined,
 .nav button .material-symbols-outlined {
   font-size: 22px;
   line-height: 1;
   pointer-events: none;
-  transition:
-    font-variation-settings var(--dur-base) var(--ease-out),
-    transform var(--dur-slow) var(--ease-spring);
+  transition: font-variation-settings 240ms var(--ease-out);
 }
 .nav a.active .material-symbols-outlined,
 .nav button.active .material-symbols-outlined {
   font-variation-settings: 'FILL' 1;
-  transform: scale(1.08);
-  filter: drop-shadow(0 0 6px var(--accG));
 }

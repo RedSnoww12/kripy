@@ -12,36 +12,38 @@
 }
 
 :root {
-  /* ── Tonal Architecture (dark-first) ── */
-  --bg: #121317; /* surface / Level 0 — obsidian base          */
-  --s1: #1a1b20; /* surface-container-low / Level 1            */
-  --s2: #1f1f24; /* surface-container / Level 2 — std cards    */
-  --s3: #2a2b31; /* surface-container-high                     */
-  --s4: #343439; /* surface-container-highest / Level 3        */
-  --s0: #0e0f12; /* surface-container-lowest (even rows)       */
+  /* ── Tonal Architecture (dark-first, Indigo edition) ── */
+  --bg: #0f1117; /* surface / Level 0 — obsidian base          */
+  --s1: #181b23; /* surface-container-low / Level 1 — cards    */
+  --s2: #1c2029; /* surface-container / Level 2 — hover        */
+  --s3: #242938; /* surface-container-high — tab active        */
+  --s4: #2c3140; /* surface-container-highest / Level 3        */
+  --s0: #12141b; /* surface-container-lowest (inset, inputs)   */
+  --hairline: #232838; /* bordure inset des surfaces neutres    */
 
-  /* ── Primary (Emerald LED) with engineered gradient ── */
-  --acc: #6aefaf; /* primary                                    */
-  --acc2: #4ad295; /* primary-container                          */
+  /* ── Primary (Indigo LED) with engineered gradient ── */
+  --acc: #6b8aff; /* primary                                    */
+  --acc2: #5674e8; /* primary-container                          */
+  --accL: #8fa6ff; /* accent clair — texte accent                */
   --accG: rgba(
-    106,
-    239,
-    175,
+    107,
+    138,
+    255,
     0.1
   ); /* halo overlay                               */
-  --surface-tint: #58dea0; /* tonal tint / ambient glow                  */
+  --surface-tint: #7c97ff; /* tonal tint / ambient glow                  */
   --outline-variant: rgba(
-    61,
-    74,
-    65,
+    62,
+    72,
+    99,
     0.2
   ); /* ghost border (use sparingly)       */
 
   /* ── Accent LEDs (pop against dark surface) ── */
-  --grn: #6aefaf;
-  --grnG: rgba(106, 239, 175, 0.1);
-  --cyan: #4dd0e1;
-  --cyanG: rgba(77, 208, 225, 0.1);
+  --grn: #8fa6ff;
+  --grnG: rgba(143, 166, 255, 0.1);
+  --cyan: #5ac8fa;
+  --cyanG: rgba(90, 200, 250, 0.1);
   --pnk: #ff6b9d;
   --pnkG: rgba(255, 107, 157, 0.1);
   --pur: #9f9bff;
@@ -55,50 +57,54 @@
   --brn: #e17055;
 
   /* ── Material 3 tokens (home v2 palette) ── */
-  --m3-tertiary: #28efea;
-  --m3-tertiary-G: rgba(40, 239, 234, 0.1);
-  --m3-primary-fixed-dim: #58dea0;
+  --m3-tertiary: #5ac8fa;
+  --m3-tertiary-G: rgba(90, 200, 250, 0.1);
+  --m3-primary-fixed-dim: #7c97ff;
   --m3-pnk: #ff64b0;
   --m3-pnk-G: rgba(255, 100, 176, 0.12);
   --m3-org: #ff9f64;
   --m3-org-G: rgba(255, 159, 100, 0.12);
-  --m3-on-surface-variant: #bccabf; /* greenish secondary text (Material 3) */
+  --m3-on-surface-variant: #a9b3c9; /* blueish secondary text (Material 3) */
 
   /* ── Text (never pure white — halatuation kills readability) ── */
-  --t1: #f5f7fa;
-  --t2: #9aa0ab;
-  --t3: #5a5e6b;
+  --t1: #f2f5fb;
+  --t2: #98a0b3;
+  --t3: #5c6375;
 
-  /* ── Radius ── */
-  --r: 14px;
-  --r2: 18px;
+  /* ── Radius (plus aéré) ── */
+  --r: 13px;
+  --r2: 22px;
   --r3: 24px;
 
   /* ── Elevation via tonal shift + optional glow, never black shadows ── */
   --shadow: 0 0 0 0 transparent;
-  --glow: 0 0 32px 0 rgba(88, 222, 160, 0.06);
-  --glow-soft: 0 0 24px 0 rgba(88, 222, 160, 0.04);
+  --glow: 0 0 32px 0 rgba(107, 138, 255, 0.06);
+  --glow-soft: 0 0 24px 0 rgba(107, 138, 255, 0.04);
 
   /* ── Gradient signatures ── */
-  --grad-primary: linear-gradient(135deg, #6aefaf 0%, #4ad295 100%);
+  --grad-primary: linear-gradient(135deg, #7c97ff 0%, #5674e8 100%);
   --grad-primary-soft: linear-gradient(
     135deg,
-    rgba(106, 239, 175, 0.22),
-    rgba(74, 210, 149, 0.06)
+    rgba(107, 138, 255, 0.22),
+    rgba(86, 116, 232, 0.06)
   );
   --grad-glass: linear-gradient(
     180deg,
-    rgba(31, 31, 36, 0.92),
-    rgba(31, 31, 36, 0.78)
+    rgba(28, 32, 41, 0.92),
+    rgba(28, 32, 41, 0.78)
   );
+  --grad-hero: linear-gradient(165deg, #222a4e 0%, #1a2036 55%, #171b2b 100%);
+
+  /* ── On-primary (texte posé sur le dégradé indigo) ── */
+  --on-acc: #0b1029;
 
   /* ── Phase accents ── */
-  --phA: #6aefaf;
+  --phA: #6b8aff;
   --phB: #ff6b9d;
   --phC: #9f9bff;
   --phD: #ffb347;
   --phE: #6c5ce7;
-  --phF: #4dd0e1;
+  --phF: #5ac8fa;
 
   /* ── Motion ── */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -114,29 +120,31 @@
 
 /* ── Light theme (inverted tonal architecture, still low-chroma) ── */
 [data-theme='light'] {
-  --bg: #f7f8fa;
-  --s1: #f1f2f6;
-  --s2: #e8eaf0;
-  --s3: #dfe2ea;
-  --s4: #cfd3dd;
+  --bg: #f7f8fb;
+  --s1: #f1f2f7;
+  --s2: #e8eaf2;
+  --s3: #dfe2ee;
+  --s4: #cfd3e2;
   --s0: #fdfdfe;
-  --m3-tertiary: #2e9fb5;
-  --m3-tertiary-G: rgba(46, 159, 181, 0.12);
-  --m3-primary-fixed-dim: #3dbe87;
+  --hairline: #d8dcea;
+  --m3-tertiary: #1e88c7;
+  --m3-tertiary-G: rgba(30, 136, 199, 0.12);
+  --m3-primary-fixed-dim: #4a66e0;
   --m3-pnk: #d9447a;
   --m3-pnk-G: rgba(217, 68, 122, 0.12);
   --m3-org: #c46a24;
   --m3-org-G: rgba(196, 106, 36, 0.12);
-  --m3-on-surface-variant: #475b52; /* darker greenish grey pour contraste WCAG AA */
-  --acc: #2db77b;
-  --acc2: #1e9a64;
-  --accG: rgba(45, 183, 123, 0.1);
-  --surface-tint: #2db77b;
-  --outline-variant: rgba(61, 74, 65, 0.14);
-  --grn: #2db77b;
-  --grnG: rgba(45, 183, 123, 0.1);
-  --cyan: #2e9fb5;
-  --cyanG: rgba(46, 159, 181, 0.1);
+  --m3-on-surface-variant: #49536e; /* darker blueish grey pour contraste WCAG AA */
+  --acc: #4a66e0;
+  --acc2: #3a53c4;
+  --accL: #4a66e0;
+  --accG: rgba(74, 102, 224, 0.1);
+  --surface-tint: #4a66e0;
+  --outline-variant: rgba(62, 72, 99, 0.14);
+  --grn: #4a66e0;
+  --grnG: rgba(74, 102, 224, 0.1);
+  --cyan: #1e88c7;
+  --cyanG: rgba(30, 136, 199, 0.1);
   --pnk: #d9447a;
   --pnkG: rgba(217, 68, 122, 0.1);
   --pur: #6e69d0;
@@ -150,24 +158,26 @@
   --t1: #1a1d2e;
   --t2: #5a6071;
   --t3: #9aa0ad;
-  --grad-primary: linear-gradient(135deg, #2db77b 0%, #1e9a64 100%);
+  --grad-primary: linear-gradient(135deg, #5b76ec 0%, #3a53c4 100%);
   --grad-primary-soft: linear-gradient(
     135deg,
-    rgba(45, 183, 123, 0.18),
-    rgba(30, 154, 100, 0.04)
+    rgba(74, 102, 224, 0.18),
+    rgba(58, 83, 196, 0.04)
   );
   --grad-glass: linear-gradient(
     180deg,
-    rgba(232, 234, 240, 0.92),
-    rgba(232, 234, 240, 0.78)
+    rgba(232, 234, 242, 0.92),
+    rgba(232, 234, 242, 0.78)
   );
-  --glow: 0 0 32px 0 rgba(45, 183, 123, 0.08);
-  --phA: #2db77b;
+  --grad-hero: linear-gradient(165deg, #e3e8fb 0%, #edf0fa 55%, #f1f3fa 100%);
+  --on-acc: #ffffff;
+  --glow: 0 0 32px 0 rgba(74, 102, 224, 0.08);
+  --phA: #4a66e0;
   --phB: #d9447a;
   --phC: #6e69d0;
   --phD: #d68524;
   --phE: #5f4dd0;
-  --phF: #2e9fb5;
+  --phF: #1e88c7;
 }
 
 html {
@@ -223,11 +233,11 @@ select {
   font-size: 16px;
 }
 
-/* No border-box focus ring — use inline underline accent on inputs */
+/* Focus ring inset indigo (design bleu) */
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  box-shadow: inset 0 -1px 0 0 var(--acc);
+  box-shadow: inset 0 0 0 1.5px var(--acc);
   border-radius: var(--r);
 }
 
@@ -255,6 +265,33 @@ button:focus-visible {
   html {
     font-size: 13px;
   }
+}
+
+/* ── Icônes — Material Symbols Rounded ──
+   La classe historique .material-symbols-outlined est conservée dans le
+   markup mais rendue avec la famille Rounded (coins doux, plus moderne).
+   Google ne définit la classe que pour la famille chargée, on la définit
+   donc nous-mêmes. */
+.material-symbols-outlined,
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ── Typography primitives ── */

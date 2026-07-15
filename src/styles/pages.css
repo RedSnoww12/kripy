@@ -1067,12 +1067,17 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   transition:
-    background var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out);
+    background 210ms var(--ease-out),
+    color 210ms var(--ease-out),
+    box-shadow 210ms var(--ease-out),
+    transform 140ms var(--ease-out);
 }
 .stat-tab.on {
-  background: var(--s2);
+  background: var(--s3);
   color: var(--t1);
+}
+.stat-tab:active {
+  transform: scale(0.96);
 }
 
 /* CTA analyse IA des stats */
@@ -1318,9 +1323,9 @@
 /* Stat card (analytics container) */
 .stat-card {
   background: var(--s1);
-  border-radius: 18px;
+  border-radius: 22px;
   padding: 22px 20px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   border: none;
   box-shadow: inset 0 0 0 1px
     color-mix(in srgb, var(--outline-variant) 60%, transparent);
@@ -2556,7 +2561,7 @@
 }
 .meal-qm-preset.active {
   background: var(--grad-primary);
-  color: #0a1410;
+  color: var(--on-acc);
 }
 .meal-qm-inp {
   width: 100%;
@@ -2903,7 +2908,7 @@
 }
 .fav-c:active {
   background: var(--grad-primary);
-  color: #0a1410;
+  color: var(--on-acc);
 }
 
 /* ── RECIPES v2 ───────────────────────────────────────── */
@@ -3081,7 +3086,7 @@
 }
 .rcp-mode-btn.active {
   background: var(--grad-primary);
-  color: #0a1410;
+  color: var(--on-acc);
   border-color: transparent;
 }
 

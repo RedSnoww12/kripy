@@ -78,7 +78,7 @@
 }
 .preset-btn:active,
 .preset-btn.sel {
-  color: #0a1410;
+  color: var(--on-acc);
   background: var(--grad-primary);
   box-shadow: var(--glow-soft);
 }
@@ -204,7 +204,7 @@
   box-sizing: border-box;
   animation: mSlide var(--dur-slow) var(--ease-spring);
   box-shadow:
-    0 -32px 64px 0 rgba(88, 222, 160, 0.06),
+    0 -32px 64px 0 rgba(107, 138, 255, 0.06),
     0 -8px 32px 0 rgba(0, 0, 0, 0.4);
 }
 .modal *,
@@ -280,7 +280,7 @@
 }
 .qq button:active {
   background: var(--grad-primary);
-  color: #0a1410;
+  color: var(--on-acc);
 }
 
 /* Phase modal */
@@ -312,7 +312,7 @@
   border: none;
   animation: mSlide var(--dur-slow) var(--ease-spring);
   box-shadow:
-    0 -32px 64px 0 rgba(88, 222, 160, 0.06),
+    0 -32px 64px 0 rgba(107, 138, 255, 0.06),
     0 -8px 32px 0 rgba(0, 0, 0, 0.4);
 }
 .phm-c::before {
@@ -487,7 +487,7 @@
   justify-content: center;
   font-size: 0.7rem;
   font-weight: 800;
-  color: #0a1410;
+  color: var(--on-acc);
 }
 .toast.success::before {
   background: var(--acc);

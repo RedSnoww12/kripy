@@ -52,7 +52,7 @@ export default function OnbFooter({
           borderRadius: 16,
           border: 'none',
           background: disabled ? T.s3 : T.grad,
-          color: disabled ? T.t3 : '#0a1410',
+          color: disabled ? T.t3 : 'var(--on-acc)',
           ...mono,
           fontSize: 13,
           fontWeight: 800,
@@ -61,7 +61,7 @@ export default function OnbFooter({
           cursor: disabled ? 'default' : 'pointer',
           boxShadow: disabled
             ? 'none'
-            : `0 8px 24px rgba(106,239,175,.25), 0 0 0 1px rgba(106,239,175,.2)`,
+            : `0 8px 24px rgba(107,138,255,.25), 0 0 0 1px rgba(107,138,255,.2)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
