@@ -4,6 +4,7 @@ import {
   allTemplateExerciseIds,
   defaultPlannedExercise,
   repRangeFor,
+  sortByPriority,
   targetSetsFor,
 } from './exercises';
 
@@ -72,5 +73,48 @@ describe('defaultPlannedExercise', () => {
       repsMin: 3,
       repsMax: 6,
     });
+  });
+});
+
+describe('sortByPriority', () => {
+  it('place les exercices prioritaires en premier', () => {
+    const items = [
+      { exerciseId: 'dips', priority: false },
+      { exerciseId: 'pullup', priority: true },
+      { exerciseId: 'squat', priority: false },
+    ];
+    expect(sortByPriority(items).map((e) => e.exerciseId)).toEqual([
+      'pullup',
+      'dips',
+      'squat',
+    ]);
+  });
+
+  it('conserve l’ordre relatif au sein de chaque groupe (tri stable)', () => {
+    const items = [
+      { exerciseId: 'a', priority: true },
+      { exerciseId: 'b', priority: false },
+      { exerciseId: 'c', priority: true },
+      { exerciseId: 'd', priority: false },
+    ];
+    expect(sortByPriority(items).map((e) => e.exerciseId)).toEqual([
+      'a',
+      'c',
+      'b',
+      'd',
+    ]);
+  });
+
+  it('ne modifie rien sans exercice prioritaire', () => {
+    const items = [
+      { exerciseId: 'a' },
+      { exerciseId: 'b', priority: false },
+      { exerciseId: 'c' },
+    ];
+    expect(sortByPriority(items).map((e) => e.exerciseId)).toEqual([
+      'a',
+      'b',
+      'c',
+    ]);
   });
 });

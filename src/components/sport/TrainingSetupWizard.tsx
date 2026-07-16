@@ -227,7 +227,10 @@ export default function TrainingSetupWizard({
               {t.exercises.length > 0 && (
                 <div className="kl-tpl-exos">
                   {t.exercises.map((pe) => (
-                    <div key={pe.exerciseId} className="kl-tpl-exo-row">
+                    <div
+                      key={pe.exerciseId}
+                      className={`kl-tpl-exo-row ${pe.priority ? 'priority' : ''}`}
+                    >
                       <span className="kl-tpl-exo-name">
                         {resolveName(pe.exerciseId)}
                       </span>
@@ -285,6 +288,26 @@ export default function TrainingSetupWizard({
                           <span>reps</span>
                         </label>
                       </div>
+                      <button
+                        type="button"
+                        className={`kl-tpl-exo-priority ${pe.priority ? 'on' : ''}`}
+                        onClick={() =>
+                          updatePlanned(t.id, pe.exerciseId, {
+                            priority: !pe.priority,
+                          })
+                        }
+                        aria-pressed={Boolean(pe.priority)}
+                        aria-label={
+                          pe.priority
+                            ? `Retirer ${resolveName(pe.exerciseId)} des priorités`
+                            : `Marquer ${resolveName(pe.exerciseId)} en priorité`
+                        }
+                        title="Exercice prioritaire"
+                      >
+                        <span className="material-symbols-outlined" aria-hidden>
+                          star
+                        </span>
+                      </button>
                       <button
                         type="button"
                         className="kl-tpl-exo-del"

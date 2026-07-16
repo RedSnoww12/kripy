@@ -17,6 +17,7 @@ const KIND_ICONS: Record<CoachTipKind, string> = {
   deload: 'battery_low',
   info: 'lightbulb',
   pr: 'trophy',
+  priority: 'star',
 };
 
 export default function CoachCard({ profile }: Props) {

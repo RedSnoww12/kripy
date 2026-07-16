@@ -23,6 +23,12 @@ export interface PlannedExercise {
   repsMin: number;
   repsMax: number;
   /**
+   * Exercice prioritaire de la séance : à loguer en premier (frais) et dont
+   * l'adhérence aux séries cibles est jugée plus strictement. Indépendant du
+   * style d'entraînement — librement défini exercice par exercice.
+   */
+  priority?: boolean;
+  /**
    * Poids de départ recommandé par l'analyse IA post-séance pour la
    * prochaine occurrence de cette séance type. Reste valable tant qu'aucune
    * séance réelle plus récente que `aiTargetSourceSessionId` n'a eu lieu

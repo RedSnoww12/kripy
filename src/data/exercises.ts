@@ -306,3 +306,22 @@ export function defaultPlannedExercise(
   const [repsMin, repsMax] = styleMeta(style).repRange;
   return { exerciseId, sets: 3, repsMin, repsMax };
 }
+
+/**
+ * Trie une liste d'exercices planifiés en plaçant les prioritaires en
+ * premier (tri stable : l'ordre relatif au sein de chaque groupe est
+ * conservé). Utilisé pour loguer les exercices prioritaires en premier,
+ * quand l'énergie et la concentration sont les plus disponibles.
+ */
+export function sortByPriority<T extends { priority?: boolean }>(
+  items: readonly T[],
+): T[] {
+  return items
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => {
+      const pa = a.item.priority ? 0 : 1;
+      const pb = b.item.priority ? 0 : 1;
+      return pa !== pb ? pa - pb : a.index - b.index;
+    })
+    .map(({ item }) => item);
+}

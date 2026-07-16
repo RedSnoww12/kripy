@@ -39,6 +39,7 @@ export function buildSessionAdjustContext(
       {
         nom: def.name,
         poidsDuCorps: def.bodyweight,
+        prioritaire: pe.priority === true,
         cibleActuelle: {
           sets: pe.sets,
           repsMin: pe.repsMin,
