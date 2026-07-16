@@ -17,7 +17,13 @@ const profile: TrainingProfile = {
       id: 'upper',
       name: 'Upper A',
       exercises: [
-        { exerciseId: 'dips', sets: 4, repsMin: 8, repsMax: 10 },
+        {
+          exerciseId: 'dips',
+          sets: 4,
+          repsMin: 8,
+          repsMax: 10,
+          priority: true,
+        },
         { exerciseId: 'bench', sets: 3, repsMin: 6, repsMax: 8 },
       ],
     },
@@ -53,6 +59,7 @@ describe('buildCoachContext', () => {
     const exos = programme[0].exercices as Array<Record<string, unknown>>;
     expect(exos[0]).toMatchObject({
       nom: 'Dips',
+      prioritaire: true,
       seriesCibles: 4,
       repsCibles: '8-10',
       seriesReellesDerniereSeance: ['10kg×9@RPE8'],
@@ -60,6 +67,7 @@ describe('buildCoachContext', () => {
     // Développé couché planifié mais pas fait lors de la dernière séance
     expect(exos[1]).toMatchObject({
       nom: 'Développé couché',
+      prioritaire: false,
       seriesReellesDerniereSeance: null,
     });
   });

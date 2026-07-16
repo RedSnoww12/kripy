@@ -109,3 +109,110 @@ describe('coachTips', () => {
     expect(tips.every((t) => t.exerciseName === undefined)).toBe(true);
   });
 });
+
+describe('coachTips — adhérence aux exercices prioritaires', () => {
+  const priorityProfile: TrainingProfile = {
+    style: 'hypertrophy',
+    sessionsPerWeek: 3,
+    sessionTemplates: [
+      {
+        id: 'upper',
+        name: 'Upper A',
+        exercises: [
+          {
+            exerciseId: 'pullup',
+            sets: 5,
+            repsMin: 6,
+            repsMax: 8,
+            priority: true,
+          },
+          { exerciseId: 'bench', sets: 3, repsMin: 6, repsMax: 12 },
+        ],
+      },
+    ],
+    customExercises: [],
+  };
+
+  const resolvePriority = (id: string) => {
+    if (id === 'pullup') return { name: 'Tractions', bodyweight: true };
+    if (id === 'bench') return { name: 'Développé couché', bodyweight: false };
+    return null;
+  };
+
+  function upperSession(
+    id: number,
+    date: string,
+    pullupSets: number,
+  ): StrengthSession {
+    return {
+      id,
+      date,
+      label: 'Upper A',
+      templateId: 'upper',
+      exercises: [
+        {
+          exerciseId: 'pullup',
+          sets: Array.from({ length: pullupSets }, () => ({ w: 0, r: 6 })),
+        },
+        { exerciseId: 'bench', sets: [{ w: 80, r: 8 }] },
+      ],
+    };
+  }
+
+  it('signale un exercice prioritaire sous sa cible de séries à la dernière séance', () => {
+    const sessions = [upperSession(1, '2026-01-13', 3)];
+    const tips = coachTips(priorityProfile, sessions, resolvePriority, TODAY);
+    const tip = tips.find((t) => t.kind === 'priority');
+    expect(tip).toBeDefined();
+    expect(tip?.exerciseName).toBe('Tractions');
+    expect(tip?.msg).toContain('3/5');
+    expect(tip?.msg).toContain('Upper A');
+  });
+
+  it('ne signale rien quand la cible prioritaire est atteinte', () => {
+    const sessions = [upperSession(1, '2026-01-13', 5)];
+    const tips = coachTips(priorityProfile, sessions, resolvePriority, TODAY);
+    expect(tips.some((t) => t.kind === 'priority')).toBe(false);
+  });
+
+  it('signale un exercice prioritaire totalement absent de la dernière séance', () => {
+    const sessions: StrengthSession[] = [
+      {
+        id: 1,
+        date: '2026-01-13',
+        label: 'Upper A',
+        templateId: 'upper',
+        exercises: [{ exerciseId: 'bench', sets: [{ w: 80, r: 8 }] }],
+      },
+    ];
+    const tips = coachTips(priorityProfile, sessions, resolvePriority, TODAY);
+    const tip = tips.find((t) => t.kind === 'priority');
+    expect(tip).toBeDefined();
+    expect(tip?.msg).toContain('pas fait');
+  });
+
+  it('ne signale rien pour les exercices non prioritaires sous leur cible', () => {
+    const sessions: StrengthSession[] = [
+      {
+        id: 1,
+        date: '2026-01-13',
+        label: 'Upper A',
+        templateId: 'upper',
+        exercises: [
+          {
+            exerciseId: 'pullup',
+            sets: Array.from({ length: 5 }, () => ({ w: 0, r: 6 })),
+          },
+          { exerciseId: 'bench', sets: [{ w: 80, r: 8 }] },
+        ],
+      },
+    ];
+    const tips = coachTips(priorityProfile, sessions, resolvePriority, TODAY);
+    expect(tips.some((t) => t.kind === 'priority')).toBe(false);
+  });
+
+  it('ne signale rien sans historique pour cette séance type', () => {
+    const tips = coachTips(priorityProfile, [], resolvePriority, TODAY);
+    expect(tips.some((t) => t.kind === 'priority')).toBe(false);
+  });
+});

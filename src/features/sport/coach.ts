@@ -7,7 +7,14 @@ import {
   type ProgressionSummary,
 } from './progression';
 
-export type CoachTipKind = 'up' | 'down' | 'keep' | 'deload' | 'info' | 'pr';
+export type CoachTipKind =
+  | 'up'
+  | 'down'
+  | 'keep'
+  | 'deload'
+  | 'info'
+  | 'pr'
+  | 'priority';
 
 export interface CoachTip {
   kind: CoachTipKind;
@@ -114,6 +121,48 @@ function formatBest(best: number, bodyweight: boolean, topW: number): string {
 }
 
 /**
+ * Vérifie, pour chaque séance type, si les exercices marqués prioritaires ont
+ * bien reçu leur nombre de séries cible lors de la dernière occurrence de
+ * cette séance. Contrairement aux tips de progression (basés sur l'historique
+ * de charge), celui-ci fait respecter concrètement la planification : un
+ * exercice prioritaire qui n'obtient pas ses séries doit être signalé, pas
+ * juste toléré.
+ */
+function priorityAdherenceTips(
+  profile: TrainingProfile,
+  sessions: StrengthSession[],
+  resolve: ExerciseResolver,
+): CoachTip[] {
+  const tips: CoachTip[] = [];
+  for (const template of profile.sessionTemplates) {
+    const priorityExos = template.exercises.filter((e) => e.priority);
+    if (priorityExos.length === 0) continue;
+    const last = [...sessions]
+      .reverse()
+      .find((s) => s.templateId === template.id);
+    if (!last) continue;
+
+    for (const pe of priorityExos) {
+      const def = resolve(pe.exerciseId);
+      if (!def) continue;
+      const done = last.exercises.find((e) => e.exerciseId === pe.exerciseId);
+      const actualSets = done?.sets.length ?? 0;
+      if (actualSets >= pe.sets) continue;
+      const missing = pe.sets - actualSets;
+      tips.push({
+        kind: 'priority',
+        exerciseName: def.name,
+        msg:
+          actualSets === 0
+            ? `Exercice prioritaire de ${template.name} pas fait à la dernière séance : loggue-le en tout premier la prochaine fois pour tenir tes ${pe.sets} séries prévues.`
+            : `${actualSets}/${pe.sets} séries seulement à la dernière séance de ${template.name} (prioritaire) : loggue-le en tout premier pour ne plus sacrifier les ${missing} série${missing > 1 ? 's' : ''} manquante${missing > 1 ? 's' : ''}.`,
+      });
+    }
+  }
+  return tips;
+}
+
+/**
  * Conseils "coach" locaux, calculés à partir de l'historique : adhérence
  * hebdo, progression par exercice suivi, RPE et fourchettes de reps du style.
  */
@@ -141,6 +190,8 @@ export function coachTips(
       msg: `Objectif hebdo atteint (${count}/${profile.sessionsPerWeek} séances). La régularité est la base de la progression.`,
     });
   }
+
+  tips.push(...priorityAdherenceTips(profile, sessions, resolve));
 
   const feels = sessions
     .slice(-3)

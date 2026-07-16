@@ -98,4 +98,87 @@ describe('normalizeProfile', () => {
     expect(normalizeProfile('string')).toBeNull();
     expect(normalizeProfile(42)).toBeNull();
   });
+
+  it('conserve le flag priority', () => {
+    const current = {
+      style: 'strength',
+      sessionsPerWeek: 2,
+      sessionTemplates: [
+        {
+          id: 'upper',
+          name: 'Upper A',
+          exercises: [
+            {
+              exerciseId: 'pullup',
+              sets: 5,
+              repsMin: 6,
+              repsMax: 8,
+              priority: true,
+            },
+            { exerciseId: 'dips', sets: 3, repsMin: 8, repsMax: 10 },
+          ],
+        },
+      ],
+      customExercises: [],
+    };
+    const p = normalizeProfile(current);
+    expect(p?.sessionTemplates[0].exercises[0].priority).toBe(true);
+    expect(p?.sessionTemplates[0].exercises[1].priority).toBeUndefined();
+  });
+
+  it('conserve aiTargetWeight/aiTargetSourceSessionId à travers la normalisation', () => {
+    const current = {
+      style: 'hypertrophy',
+      sessionsPerWeek: 3,
+      sessionTemplates: [
+        {
+          id: 'upper',
+          name: 'Upper A',
+          exercises: [
+            {
+              exerciseId: 'bench',
+              sets: 4,
+              repsMin: 6,
+              repsMax: 10,
+              aiTargetWeight: 82.5,
+              aiTargetSourceSessionId: 12345,
+            },
+          ],
+        },
+      ],
+      customExercises: [],
+    };
+    const p = normalizeProfile(current);
+    expect(p?.sessionTemplates[0].exercises[0]).toMatchObject({
+      aiTargetWeight: 82.5,
+      aiTargetSourceSessionId: 12345,
+    });
+  });
+
+  it("n'ajoute pas aiTargetSourceSessionId sans aiTargetWeight valide", () => {
+    const current = {
+      style: 'hypertrophy',
+      sessionsPerWeek: 3,
+      sessionTemplates: [
+        {
+          id: 'upper',
+          name: 'Upper A',
+          exercises: [
+            {
+              exerciseId: 'bench',
+              sets: 4,
+              repsMin: 6,
+              repsMax: 10,
+              aiTargetSourceSessionId: 12345,
+            },
+          ],
+        },
+      ],
+      customExercises: [],
+    };
+    const p = normalizeProfile(current);
+    expect(
+      p?.sessionTemplates[0].exercises[0].aiTargetSourceSessionId,
+    ).toBeUndefined();
+  });
 });

@@ -55,12 +55,27 @@ function sanitizePlanned(v: unknown, style: TrainingStyle): PlannedExercise[] {
     const rec = e as Record<string, unknown>;
     if (typeof rec.exerciseId !== 'string') return [];
     const base = defaultPlannedExercise(rec.exerciseId, style);
+    const aiTargetWeight =
+      typeof rec.aiTargetWeight === 'number' &&
+      Number.isFinite(rec.aiTargetWeight)
+        ? rec.aiTargetWeight
+        : undefined;
+    const aiTargetSourceSessionId =
+      aiTargetWeight !== undefined &&
+      typeof rec.aiTargetSourceSessionId === 'number'
+        ? rec.aiTargetSourceSessionId
+        : undefined;
     return [
       {
         exerciseId: rec.exerciseId,
         sets: toCount(rec.sets, base.sets, 1, 20),
         repsMin: toCount(rec.repsMin, base.repsMin, 1, 100),
         repsMax: toCount(rec.repsMax, base.repsMax, 1, 100),
+        ...(rec.priority === true ? { priority: true } : {}),
+        ...(aiTargetWeight !== undefined ? { aiTargetWeight } : {}),
+        ...(aiTargetSourceSessionId !== undefined
+          ? { aiTargetSourceSessionId }
+          : {}),
       },
     ];
   });

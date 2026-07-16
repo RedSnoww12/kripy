@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react';
 import SessionPicker from '@/components/sport/SessionPicker';
 import SessionRecap from '@/components/sport/SessionRecap';
-import { exerciseGroupsByMuscle, makeExerciseResolver } from '@/data/exercises';
+import {
+  exerciseGroupsByMuscle,
+  makeExerciseResolver,
+  sortByPriority,
+} from '@/data/exercises';
 import {
   formatSuggestion,
   suggestNext,
@@ -87,7 +91,10 @@ export default function SessionLogger({ profile }: Props) {
 
   const exerciseIds = useMemo(() => {
     if (mode.kind === 'template') {
-      return mode.template.exercises.map((e) => e.exerciseId);
+      // Les exercices prioritaires se loguent en premier, à l'énergie
+      // maximale : c'est ce qui garantit le respect des séries de travail
+      // prévues plutôt que de les sacrifier en fin de séance.
+      return sortByPriority(mode.template.exercises).map((e) => e.exerciseId);
     }
     if (mode.kind === 'free') return freeExerciseIds;
     return [];
@@ -118,6 +125,14 @@ export default function SessionLogger({ profile }: Props) {
     }
     return map;
   }, [exerciseIds, profile, sessions, resolve]);
+
+  const isPriority = (exerciseId: string): boolean => {
+    if (mode.kind !== 'template') return false;
+    return (
+      mode.template.exercises.find((e) => e.exerciseId === exerciseId)
+        ?.priority === true
+    );
+  };
 
   const objectiveFor = (exerciseId: string): Objective | null => {
     const def = resolve(exerciseId);
@@ -455,7 +470,18 @@ export default function SessionLogger({ profile }: Props) {
           <div key={exerciseId} className="kl-log-exo">
             <div className="kl-log-exo-head">
               <div className="kl-log-exo-title">
-                <span className="kl-log-exo-name">{def.name}</span>
+                <span className="kl-log-exo-name">
+                  {isPriority(exerciseId) && (
+                    <span
+                      className="material-symbols-outlined kl-log-exo-priority-ico"
+                      aria-label="Exercice prioritaire"
+                      title="Exercice prioritaire"
+                    >
+                      star
+                    </span>
+                  )}
+                  {def.name}
+                </span>
                 {prev && (
                   <span className="kl-log-exo-prev">
                     dern.{' '}

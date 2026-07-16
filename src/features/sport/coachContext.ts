@@ -39,6 +39,7 @@ function buildProgramme(
         );
         return {
           nom: def?.name ?? pe.exerciseId,
+          prioritaire: pe.priority === true,
           seriesCibles: pe.sets,
           repsCibles: `${pe.repsMin}-${pe.repsMax}`,
           seriesReellesDerniereSeance:

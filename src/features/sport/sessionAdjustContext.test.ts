@@ -13,7 +13,7 @@ const template: SessionTemplate = {
   id: 'upper',
   name: 'Upper A',
   exercises: [
-    { exerciseId: 'dips', sets: 4, repsMin: 8, repsMax: 10 },
+    { exerciseId: 'dips', sets: 4, repsMin: 8, repsMax: 10, priority: true },
     { exerciseId: 'bench', sets: 3, repsMin: 6, repsMax: 8 },
   ],
 };
@@ -59,6 +59,7 @@ describe('buildSessionAdjustContext', () => {
     });
     const exos = ctx.exercices as Array<Record<string, unknown>>;
     const dips = exos.find((e) => e.nom === 'Dips')!;
+    expect(dips.prioritaire).toBe(true);
     expect(dips.cibleActuelle).toEqual({ sets: 4, repsMin: 8, repsMax: 10 });
     expect(dips.realiseCetteSeance).toEqual(['12.5kg×9@RPE8.5']);
     expect(dips.historiquePrecedent).toEqual([
