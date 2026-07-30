@@ -71,6 +71,27 @@ export interface RecipeBaseUnit {
 
 export type RecipeUnitsDict = Record<string, RecipeBaseUnit>;
 
+/**
+ * Recette publiée par un utilisateur et visible par toute la communauté.
+ * Stockée dans la collection Firestore `sharedRecipes` (une recette = un doc),
+ * contrairement aux données personnelles qui vivent dans `users/{uid}`.
+ */
+export interface SharedRecipe {
+  /** Id du document Firestore. */
+  id: string;
+  name: string;
+  tuple: FoodTuple;
+  /** Portions nommées (vide pour une recette à l'unité). */
+  portions: RecipePortion[];
+  /** Défini si la recette se compte à la pièce plutôt qu'aux 100g. */
+  unit?: RecipeBaseUnit;
+  authorUid: string;
+  /** Prénom/pseudo de l'auteur, ou null s'il n'en a pas renseigné. */
+  authorName: string | null;
+  /** Millisecondes epoch (converti depuis le Timestamp Firestore). */
+  createdAt: number;
+}
+
 export interface BarcodeEntry {
   name: string;
   kcal: number;

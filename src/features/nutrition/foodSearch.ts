@@ -26,12 +26,20 @@ function barcodesToTuples(barcodes: BarcodesDict): FoodsDict {
   return out;
 }
 
+/**
+ * Toutes les sources d'aliments fusionnées, par priorité croissante :
+ * base intégrée < recettes de la communauté < recettes perso < codes-barres
+ * scannés. Les données personnelles écrasent donc toujours une recette
+ * partagée de même nom.
+ */
 export function getAllFoods(
   recipes: RecipesDict,
   barcodes: BarcodesDict,
+  sharedRecipes: FoodsDict = {},
 ): FoodsDict {
   return {
     ...FOODS,
+    ...sharedRecipes,
     ...recipes,
     ...barcodesToTuples(barcodes),
   };
@@ -41,13 +49,14 @@ export function searchFoods(
   query: string,
   recipes: RecipesDict,
   barcodes: BarcodesDict,
+  sharedRecipes: FoodsDict = {},
 ): { name: string; tuple: FoodTuple }[] {
   const trimmed = query.trim();
   if (!trimmed) return [];
 
   const normalizedQuery = normalize(trimmed);
   const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
-  const foods = getAllFoods(recipes, barcodes);
+  const foods = getAllFoods(recipes, barcodes, sharedRecipes);
 
   const scored: { name: string; tuple: FoodTuple; score: number }[] = [];
   for (const [name, tuple] of Object.entries(foods)) {
@@ -77,9 +86,7 @@ function round1(value: number): number {
   return Math.round(value * 10) / 10;
 }
 
-export type Basis =
-  | { kind: 'per100g' }
-  | { kind: 'perUnit'; label: string };
+export type Basis = { kind: 'per100g' } | { kind: 'perUnit'; label: string };
 
 const PER_100G: Basis = { kind: 'per100g' };
 

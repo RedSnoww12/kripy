@@ -6,6 +6,7 @@ import { getAllFoods } from '@/features/nutrition/foodSearch';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { toast } from '@/components/ui/toastStore';
 import type { BarcodeEntry, FoodTuple } from '@/types';
+import { useSharedRecipeFoods } from '@/features/recipes/useSharedRecipeFoods';
 
 interface Props {
   open: boolean;
@@ -40,6 +41,7 @@ export default function ScannerModal({
 }: Props) {
   const barcodes = useNutritionStore((s) => s.barcodes);
   const recipes = useNutritionStore((s) => s.recipes);
+  const sharedFoods = useSharedRecipeFoods();
   const setBarcodes = useNutritionStore((s) => s.setBarcodes);
   const setRecipes = useNutritionStore((s) => s.setRecipes);
 
@@ -70,7 +72,7 @@ export default function ScannerModal({
       }
 
       setBusy(true);
-      const allFoods = getAllFoods(recipes, barcodes);
+      const allFoods = getAllFoods(recipes, barcodes, sharedFoods);
       const names = new Set(Object.keys(allFoods));
       const result = await lookupBarcode(code, names);
       setBusy(false);
@@ -96,7 +98,7 @@ export default function ScannerModal({
       setBarcodes({ ...barcodes, [code]: entry });
       setResolved({ code, name: entry.name, tuple: toTuple(entry) });
     },
-    [barcodes, busy, recipes, resolved, setBarcodes],
+    [barcodes, busy, recipes, resolved, setBarcodes, sharedFoods],
   );
 
   const { videoRef, state } = useBarcodeScanner({

@@ -15,6 +15,8 @@ import WeightHistoryTable from '@/components/stats/WeightHistoryTable';
 import WeightEditModal from '@/components/stats/WeightEditModal';
 import WeightAddModal from '@/components/stats/WeightAddModal';
 import StatsAIModal from '@/components/stats/StatsAIModal';
+import ProgressStatsCard from '@/components/stats/ProgressStatsCard';
+import WeightChartModal from '@/components/stats/WeightChartModal';
 import RangeSelector from '@/components/charts/RangeSelector';
 import {
   WEIGHT_RANGES,
@@ -52,6 +54,7 @@ export default function StatsPage() {
   const [macroRange, setMacroRange] = useState<MacroRange>(7);
   const [editDate, setEditDate] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
 
   const today = todayISO();
 
@@ -148,13 +151,42 @@ export default function StatsPage() {
                 onChange={setWeightRange}
               />
             </div>
-            <div className="stat-chart-wrap" style={{ height: 240 }}>
-              <WeightChart
-                weights={weights}
-                range={weightRange}
-                goalWeight={startWeight}
-              />
+            <button
+              type="button"
+              className="stat-chart-zoom"
+              onClick={() => setZoomOpen(true)}
+              aria-label="Agrandir le graphe de poids"
+            >
+              <div className="stat-chart-wrap" style={{ height: 240 }}>
+                <WeightChart
+                  weights={weights}
+                  range={weightRange}
+                  goalWeight={startWeight}
+                />
+              </div>
+              <span className="stat-chart-zoom-hint">
+                <span className="material-symbols-outlined" aria-hidden>
+                  open_in_full
+                </span>
+                Agrandir
+              </span>
+            </button>
+          </section>
+
+          <section className="stat-card">
+            <div className="stat-card-head">
+              <div className="stat-card-title">
+                <h3>
+                  <span
+                    className="stat-dot"
+                    style={{ background: 'var(--acc)' }}
+                  />
+                  Dynamique de progression
+                </h3>
+                <p>Régularité · rythme · adhérence</p>
+              </div>
             </div>
+            <ProgressStatsCard />
           </section>
 
           <section className="stat-card">
@@ -325,6 +357,7 @@ export default function StatsPage() {
       />
       <WeightAddModal open={addOpen} onClose={() => setAddOpen(false)} />
       <StatsAIModal open={aiOpen} onClose={() => setAiOpen(false)} />
+      <WeightChartModal open={zoomOpen} onClose={() => setZoomOpen(false)} />
     </div>
   );
 }

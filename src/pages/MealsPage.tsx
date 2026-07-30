@@ -24,6 +24,7 @@ import { useBudgetStore } from '@/store/useBudgetStore';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import type { FoodTuple, MealEntry, MealEntryUnit, MealSlot } from '@/types';
+import { useSharedRecipeFoods } from '@/features/recipes/useSharedRecipeFoods';
 
 type EditingState =
   | { mode: 'create'; food: string; tuple: FoodTuple }
@@ -44,6 +45,7 @@ export default function MealsPage() {
   const recipePortions = useNutritionStore((s) => s.recipePortions);
   const recipeUnits = useNutritionStore((s) => s.recipeUnits);
   const barcodes = useNutritionStore((s) => s.barcodes);
+  const sharedFoods = useSharedRecipeFoods();
   const addMealEntry = useNutritionStore((s) => s.addMealEntry);
   const removeMealEntry = useNutritionStore((s) => s.removeMealEntry);
   const updateMealEntry = useNutritionStore((s) => s.updateMealEntry);
@@ -96,7 +98,7 @@ export default function MealsPage() {
   };
 
   const handleEditEntry = (entry: MealEntry) => {
-    const tuple = getAllFoods(recipes, barcodes)[entry.food];
+    const tuple = getAllFoods(recipes, barcodes, sharedFoods)[entry.food];
     if (!tuple) {
       toast(`Aliment ${entry.food} introuvable dans la base`, 'warn');
       return;

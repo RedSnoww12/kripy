@@ -366,7 +366,11 @@ Le contenu de `dist/` est prêt à être servi. Pense à configurer le **fallbac
 1. Créer un projet Firebase dédié à la prod (éviter de partager le projet dev).
 2. Remplir les `VITE_FIREBASE_*` dans l'environnement du hoster.
 3. Autoriser le domaine final dans **Firebase Console → Authentication → Settings → Authorized domains**.
-4. Écrire et déployer des **règles Firestore** restrictives (`users/{uid}` accessible uniquement à l'user correspondant).
+4. Déployer les **règles Firestore** du repo : [`firestore.rules`](./firestore.rules) — `users/{uid}` accessible uniquement à l'user correspondant, et `sharedRecipes` lisible par tout utilisateur authentifié mais écrivable seulement par l'auteur de chaque recette. **Sans ce déploiement, le partage de recettes échoue** (les écritures sont refusées par le mode verrouillé par défaut).
+   ```bash
+   firebase deploy --only firestore:rules
+   # ou : console Firebase → Firestore Database → Règles → coller firestore.rules
+   ```
 5. Fournir les icônes PWA définitives dans `public/icons/` (192, 512, maskable-512).
 
 ---

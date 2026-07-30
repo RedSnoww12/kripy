@@ -5,6 +5,7 @@ export { useTrackingStore } from './useTrackingStore';
 export { usePalierStore } from './usePalierStore';
 export { useBudgetStore } from './useBudgetStore';
 export { useSportStore } from './useSportStore';
+export { useSharedRecipesStore } from './useSharedRecipesStore';
 
 import { useBudgetStore } from './useBudgetStore';
 import { useNutritionStore } from './useNutritionStore';

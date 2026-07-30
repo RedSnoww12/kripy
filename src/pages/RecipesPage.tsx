@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import RecipeForm from '@/components/recipes/RecipeForm';
 import RecipeList from '@/components/recipes/RecipeList';
+import SharedRecipeList from '@/components/recipes/SharedRecipeList';
 import type { FoodTuple } from '@/types';
 
 export interface EditingRecipe {
@@ -22,6 +23,7 @@ export default function RecipesPage() {
       </section>
       <RecipeForm editing={editing} onDone={() => setEditing(null)} />
       <RecipeList onEdit={(name, tuple) => setEditing({ name, tuple })} />
+      <SharedRecipeList />
     </div>
   );
 }

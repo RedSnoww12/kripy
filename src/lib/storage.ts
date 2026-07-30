@@ -76,6 +76,13 @@ export const STORAGE_KEYS = {
   sportProfile: 'nt_sport_profile',
   strengthLog: 'nt_strength_log',
   aiMealMemory: 'nt_ai_meal_memory',
+  /**
+   * Cache des recettes de la communauté (lecture seule côté client).
+   * Volontairement absent de SYNC_KEYS : cette donnée est partagée et
+   * rechargée depuis Firestore, la sauvegarder dans le doc utilisateur
+   * n'aurait aucun sens et gonflerait la synchro.
+   */
+  sharedRecipesCache: 'nt_shared_recipes',
 } as const;
 
 export const SYNC_KEYS: readonly string[] = [

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { getAllFoods } from '@/features/nutrition/foodSearch';
+import { useSharedRecipeFoods } from '@/features/recipes/useSharedRecipeFoods';
 import type { FoodTuple } from '@/types';
 
 interface Props {
@@ -14,17 +15,18 @@ export default function QuickPicks({ onSelect }: Props) {
   const recent = useNutritionStore((s) => s.recent);
   const recipes = useNutritionStore((s) => s.recipes);
   const barcodes = useNutritionStore((s) => s.barcodes);
+  const sharedFoods = useSharedRecipeFoods();
 
   const picks = useMemo(() => {
     const merged = Array.from(new Set([...favs, ...recent])).slice(
       0,
       MAX_CHIPS,
     );
-    const foods = getAllFoods(recipes, barcodes);
+    const foods = getAllFoods(recipes, barcodes, sharedFoods);
     return merged
       .map((name) => ({ name, tuple: foods[name] }))
       .filter((p): p is { name: string; tuple: FoodTuple } => Boolean(p.tuple));
-  }, [favs, recent, recipes, barcodes]);
+  }, [favs, recent, recipes, barcodes, sharedFoods]);
 
   if (picks.length === 0) return null;
 
