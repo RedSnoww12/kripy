@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNutritionStore } from '@/store/useNutritionStore';
+import { useSessionStore } from '@/store/useSessionStore';
+import { useSharedRecipesStore } from '@/store/useSharedRecipesStore';
 import { toast } from '@/components/ui/toastStore';
 import RecipeAIModal from '@/features/ai/RecipeAIModal';
 import type { AiRecipeResult } from '@/features/ai';
@@ -80,8 +82,11 @@ export default function RecipeForm({ editing, onDone }: Props) {
   const setRecipePortions = useNutritionStore((s) => s.setRecipePortions);
   const recipeUnits = useNutritionStore((s) => s.recipeUnits);
   const setRecipeUnits = useNutritionStore((s) => s.setRecipeUnits);
+  const user = useSessionStore((s) => s.user);
+  const publishShared = useSharedRecipesStore((s) => s.publish);
   const [form, setForm] = useState<FormState>(INITIAL);
   const [aiOpen, setAiOpen] = useState(false);
+  const [share, setShare] = useState(false);
 
   useEffect(() => {
     if (editing) {
@@ -131,6 +136,7 @@ export default function RecipeForm({ editing, onDone }: Props) {
 
   const reset = () => {
     setForm(INITIAL);
+    setShare(false);
     onDone();
   };
 
@@ -162,6 +168,10 @@ export default function RecipeForm({ editing, onDone }: Props) {
   };
 
   const handleSubmit = (event: FormEvent) => {
+    void submitRecipe(event);
+  };
+
+  const submitRecipe = async (event: FormEvent) => {
     event.preventDefault();
     const name = form.name.trim();
     if (!name) {
@@ -208,6 +218,26 @@ export default function RecipeForm({ editing, onDone }: Props) {
     setRecipeUnits(nextUnits);
 
     toast(editing ? `${name} mise à jour` : `${name} enregistrée`, 'success');
+
+    // Publication communautaire : la recette est déjà enregistrée localement,
+    // un échec de partage ne doit donc jamais faire perdre la saisie.
+    if (share && user) {
+      const published = await publishShared({
+        name,
+        tuple,
+        portions,
+        ...(isPerUnit ? { unit: { label: unitLabel } } : {}),
+        authorUid: user.uid,
+        authorName: user.displayName ?? null,
+      });
+      toast(
+        published
+          ? `${name} partagée avec la communauté`
+          : 'Partage impossible — recette gardée en local',
+        published ? 'success' : 'error',
+      );
+    }
+
     reset();
   };
 
@@ -413,6 +443,32 @@ export default function RecipeForm({ editing, onDone }: Props) {
               onClick={addPortion}
             >
               + Ajouter une portion
+            </button>
+          </div>
+        )}
+
+        {!isEditing && (
+          <div className="rcp-share">
+            <button
+              type="button"
+              className={`rcp-share-toggle${share ? ' on' : ''}`}
+              onClick={() => setShare((v) => !v)}
+              aria-pressed={share}
+              disabled={!user}
+            >
+              <span className="material-symbols-outlined" aria-hidden>
+                {share ? 'check_box' : 'check_box_outline_blank'}
+              </span>
+              <span className="rcp-share-body">
+                <span className="rcp-share-title">
+                  Partager avec la communauté
+                </span>
+                <span className="rcp-share-sub">
+                  {user
+                    ? 'La recette sera disponible dans la base de tous les utilisateurs.'
+                    : 'Connecte-toi pour pouvoir partager tes recettes.'}
+                </span>
+              </span>
             </button>
           </div>
         )}

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { searchFoods } from '@/features/nutrition/foodSearch';
+import { useSharedRecipeFoods } from '@/features/recipes/useSharedRecipeFoods';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import type { FoodTuple } from '@/types';
 
@@ -10,11 +11,13 @@ interface Props {
 export default function FoodSearchBar({ onSelect }: Props) {
   const recipes = useNutritionStore((s) => s.recipes);
   const barcodes = useNutritionStore((s) => s.barcodes);
+  const sharedFoods = useSharedRecipeFoods();
   const [query, setQuery] = useState('');
 
   const results = useMemo(
-    () => (query.trim() ? searchFoods(query, recipes, barcodes) : []),
-    [query, recipes, barcodes],
+    () =>
+      query.trim() ? searchFoods(query, recipes, barcodes, sharedFoods) : [],
+    [query, recipes, barcodes, sharedFoods],
   );
 
   const handlePick = (name: string, tuple: FoodTuple) => {

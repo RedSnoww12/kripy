@@ -4348,3 +4348,355 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
+/* ── Recettes partagées (communauté) ─────────────────────── */
+.rcp-share {
+  margin-top: -4px;
+}
+.rcp-share-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--s1);
+  border: none;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  color: var(--t2);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.rcp-share-toggle:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.rcp-share-toggle.on {
+  color: var(--accL);
+  background: rgba(107, 138, 255, 0.1);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--acc) 35%, transparent);
+}
+.rcp-share-toggle .material-symbols-outlined {
+  font-size: 20px !important;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.rcp-share-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.rcp-share-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--t1);
+}
+.rcp-share-sub {
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: var(--t3);
+}
+
+.rcp-shared {
+  margin-top: 22px;
+}
+.rcp-shared-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.rcp-shared-sub {
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--t3);
+  margin: 4px 0 0;
+}
+.rcp-shared-refresh {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 12px;
+  background: var(--s1);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  color: var(--t2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.rcp-shared-refresh:hover:not(:disabled) {
+  color: var(--accL);
+}
+.rcp-shared-refresh:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.rcp-shared-refresh:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+.rcp-shared-search {
+  margin-bottom: 10px;
+}
+.rcp-shared-loading {
+  padding: 18px 14px;
+  text-align: center;
+  font-size: 0.76rem;
+  color: var(--t3);
+  background: var(--s1);
+  border-radius: 14px;
+}
+.rcp-shared-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rcp-shared-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--s1);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+.rcp-shared-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.rcp-shared-item-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--t1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rcp-shared-item-macros {
+  font-size: 0.68rem;
+  color: var(--t2);
+}
+.rcp-shared-item-author {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+.rcp-shared-item-acts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.rcp-shared-import {
+  padding: 9px 14px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(107, 138, 255, 0.12);
+  color: var(--accL);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.rcp-shared-import:active {
+  transform: scale(0.95);
+  background: rgba(107, 138, 255, 0.2);
+}
+.rcp-shared-remove {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--t3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.rcp-shared-remove:hover {
+  color: var(--red);
+}
+.rcp-shared-remove .material-symbols-outlined {
+  font-size: 17px !important;
+}
+
+/* ── Graphe de poids agrandissable ──────────────────────── */
+.stat-chart-zoom {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  position: relative;
+  text-align: left;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.stat-chart-zoom:active {
+  opacity: 0.85;
+}
+.stat-chart-zoom-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+.stat-chart-zoom-hint .material-symbols-outlined {
+  font-size: 13px !important;
+}
+.stat-chart-zoom:hover .stat-chart-zoom-hint {
+  color: var(--accL);
+}
+
+/* ── Modale graphe agrandi ──────────────────────────────── */
+.stat-zoom-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.stat-zoom-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--t1);
+  margin: 0;
+}
+.stat-zoom-sub {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.64rem;
+  color: var(--t3);
+  margin: 4px 0 0;
+}
+.stat-zoom-close {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 12px;
+  background: var(--s2);
+  color: var(--t2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.stat-zoom-close:active {
+  transform: scale(0.94);
+}
+.stat-zoom-chart {
+  height: 300px;
+  margin: 12px 0 16px;
+}
+.stat-zoom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.stat-zoom-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  background: var(--s2);
+  border-radius: 12px;
+}
+.stat-zoom-cell-l {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+.stat-zoom-cell-v {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--t1);
+}
+.stat-zoom-eta {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  background: var(--accG);
+  border-radius: 12px;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--t2);
+}
+
+/* ── Dynamique de progression ───────────────────────────── */
+.stat-prog {
+  display: flex;
+  flex-direction: column;
+}
+.stat-prog-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  box-shadow: inset 0 -1px 0 0
+    color-mix(in srgb, var(--hairline) 70%, transparent);
+}
+.stat-prog-row:last-child {
+  box-shadow: none;
+}
+.stat-prog-l {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.76rem;
+  color: var(--t2);
+  min-width: 0;
+}
+.stat-prog-v {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--t1);
+}
+.stat-prog-hint {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--t3);
+}
