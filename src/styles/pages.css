@@ -1033,6 +1033,9 @@
   padding: 4px;
   margin-bottom: 16px;
 }
+.stat-tabs-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
 .stat-tab {
   height: 38px;
   border: none;
@@ -4699,4 +4702,273 @@
   font-weight: 500;
   letter-spacing: 0.06em;
   color: var(--t3);
+}
+
+/* ── Labo de moyennes (onglet Moyennes) ──────────────────── */
+.stat-avg {
+  display: flex;
+  flex-direction: column;
+}
+.stat-avg-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: var(--s0);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 14px;
+}
+.stat-avg-mode {
+  height: 34px;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  color: var(--t3);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition:
+    background 210ms var(--ease-out),
+    color 210ms var(--ease-out),
+    transform 140ms var(--ease-out);
+}
+.stat-avg-mode.on {
+  background: var(--s3);
+  color: var(--t1);
+}
+.stat-avg-mode:active {
+  transform: scale(0.96);
+}
+
+.stat-avg-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.stat-avg-day {
+  flex: 1 1 0;
+  min-width: 52px;
+  height: 38px;
+  border: none;
+  border-radius: 10px;
+  background: var(--s0);
+  color: var(--t2);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 700;
+  transition:
+    background 200ms var(--ease-out),
+    color 200ms var(--ease-out),
+    transform 140ms var(--ease-out);
+}
+.stat-avg-day.on {
+  background: var(--grad-primary);
+  color: var(--on-acc);
+}
+.stat-avg-day:active {
+  transform: scale(0.95);
+}
+.stat-avg-custom {
+  flex: 1 1 0;
+  min-width: 62px;
+  width: 62px;
+  height: 38px;
+  border: none;
+  border-radius: 10px;
+  background: var(--s0);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  color: var(--t1);
+  padding: 0 10px;
+  text-align: center;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+  transition: box-shadow 180ms var(--ease-out);
+}
+.stat-avg-custom:focus {
+  box-shadow: inset 0 0 0 1.5px var(--acc);
+}
+.stat-avg-custom::placeholder {
+  color: var(--t3);
+  font-weight: 500;
+  text-transform: lowercase;
+}
+
+.stat-avg-heads,
+.stat-avg-row {
+  display: grid;
+  grid-template-columns: 1fr 66px 66px 62px;
+  gap: 6px;
+  align-items: baseline;
+}
+.stat-avg-heads {
+  padding-bottom: 8px;
+  box-shadow: inset 0 -1px 0 0
+    color-mix(in srgb, var(--hairline) 70%, transparent);
+  margin-bottom: 2px;
+}
+.stat-avg-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--t2);
+  text-align: right;
+  white-space: nowrap;
+}
+.stat-avg-head small {
+  font-size: 7.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--t3);
+  text-transform: none;
+  white-space: nowrap;
+}
+.stat-avg-head.right {
+  text-align: right;
+}
+.stat-avg-row {
+  padding: 9px 0;
+  box-shadow: inset 0 -1px 0 0
+    color-mix(in srgb, var(--hairline) 70%, transparent);
+}
+.stat-avg-row:last-of-type {
+  box-shadow: none;
+}
+.stat-avg-lbl {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.74rem;
+  color: var(--t2);
+  min-width: 0;
+}
+.stat-avg-cur,
+.stat-avg-prev,
+.stat-avg-delta {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.76rem;
+  text-align: right;
+  white-space: nowrap;
+}
+.stat-avg-cur {
+  color: var(--t1);
+  font-weight: 700;
+}
+.stat-avg-prev {
+  color: var(--t3);
+  font-weight: 500;
+}
+.stat-avg-delta {
+  color: var(--t2);
+  font-weight: 700;
+}
+
+.stat-avg-rate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--s0);
+}
+.stat-avg-rate-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+.stat-avg-rate-val {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.stat-avg-note,
+.stat-avg-intro {
+  margin: 12px 0 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  line-height: 1.55;
+  color: var(--t3);
+}
+.stat-avg-intro {
+  margin: 0 0 14px;
+}
+
+.stat-avg-group {
+  background: var(--s0);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.stat-avg-group:last-child {
+  margin-bottom: 0;
+}
+.stat-avg-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.stat-avg-group-kcal {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--accL);
+  letter-spacing: -0.02em;
+}
+.stat-avg-group-days {
+  font-size: 0.6rem;
+  color: var(--t3);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.stat-avg-group-body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.stat-avg-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.stat-avg-metric-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+.stat-avg-metric-val {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--t1);
+  white-space: nowrap;
+}
+.stat-avg-group-warn {
+  margin: 10px 0 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.66rem;
+  line-height: 1.5;
+  color: var(--org);
 }

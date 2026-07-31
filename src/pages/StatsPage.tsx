@@ -16,6 +16,7 @@ import WeightEditModal from '@/components/stats/WeightEditModal';
 import WeightAddModal from '@/components/stats/WeightAddModal';
 import StatsAIModal from '@/components/stats/StatsAIModal';
 import ProgressStatsCard from '@/components/stats/ProgressStatsCard';
+import AverageLab from '@/components/stats/AverageLab';
 import WeightChartModal from '@/components/stats/WeightChartModal';
 import RangeSelector from '@/components/charts/RangeSelector';
 import {
@@ -38,7 +39,7 @@ import { useNutritionStore } from '@/store/useNutritionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useTrackingStore } from '@/store/useTrackingStore';
 
-type Tab = 'essential' | 'details';
+type Tab = 'essential' | 'averages' | 'details';
 
 export default function StatsPage() {
   const weights = useTrackingStore((s) => s.weights);
@@ -92,7 +93,7 @@ export default function StatsPage() {
         </button>
       </section>
 
-      <div className="stat-tabs" role="tablist">
+      <div className="stat-tabs stat-tabs-3" role="tablist">
         <button
           type="button"
           role="tab"
@@ -105,6 +106,15 @@ export default function StatsPage() {
         <button
           type="button"
           role="tab"
+          aria-selected={tab === 'averages'}
+          className={`stat-tab ${tab === 'averages' ? 'on' : ''}`}
+          onClick={() => setTab('averages')}
+        >
+          Moyennes
+        </button>
+        <button
+          type="button"
+          role="tab"
           aria-selected={tab === 'details'}
           className={`stat-tab ${tab === 'details' ? 'on' : ''}`}
           onClick={() => setTab('details')}
@@ -113,7 +123,25 @@ export default function StatsPage() {
         </button>
       </div>
 
-      {tab === 'essential' ? (
+      {tab === 'averages' && (
+        <section className="stat-card">
+          <div className="stat-card-head">
+            <div className="stat-card-title">
+              <h3>
+                <span
+                  className="stat-dot"
+                  style={{ background: 'var(--acc)' }}
+                />
+                Calculer la moyenne
+              </h3>
+              <p>Compare deux périodes ou deux paliers caloriques</p>
+            </div>
+          </div>
+          <AverageLab />
+        </section>
+      )}
+
+      {tab === 'essential' && (
         <>
           <WeightStatsGrid onAdd={() => setAddOpen(true)} />
 
@@ -229,7 +257,9 @@ export default function StatsPage() {
             <WeightAnalysisCard />
           </section>
         </>
-      ) : (
+      )}
+
+      {tab === 'details' && (
         <>
           <section className="stat-card">
             <div className="stat-card-head">
