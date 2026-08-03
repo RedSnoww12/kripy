@@ -45,6 +45,262 @@ const EXACT_OVERRIDES: Record<string, UnitPreset[]> = {
   'Compote poire': [{ label: 'gourde', grams: 90 }],
   'Compote pruneau': [{ label: 'gourde', grams: 90 }],
   'Compote sans sucre': [{ label: 'gourde', grams: 90 }],
+
+  // ── Fast-food : poids réels des produits d'enseigne ──
+  // Un burger ne se pèse pas : ces presets permettent de loguer
+  // « 1 Big Mac » plutôt que d'estimer des grammes au jugé.
+
+  // Frites & accompagnements : tailles réelles des menus
+  'McDo Frites': [
+    { label: 'petite', grams: 80 },
+    { label: 'moyenne', grams: 114 },
+    { label: 'grande', grams: 150 },
+  ],
+  'McDo Potatoes': [{ label: 'portion', grams: 100 }],
+  'BK King Fries': [
+    { label: 'moyenne', grams: 110 },
+    { label: 'grande', grams: 150 },
+  ],
+  'KFC Frites': [
+    { label: 'moyenne', grams: 110 },
+    { label: 'grande', grams: 150 },
+  ],
+  'KFC Potatoes': [{ label: 'portion', grams: 100 }],
+  'Popeyes Frites cajun': [
+    { label: 'moyenne', grams: 110 },
+    { label: 'grande', grams: 150 },
+  ],
+
+  // Pizzas livrées (pizza moyenne ≈ 560 g, 6 parts)
+  'Pizza Hut Pan cheese': [
+    { label: 'part', grams: 100 },
+    { label: 'demi-pizza', grams: 280 },
+    { label: 'pizza', grams: 560 },
+  ],
+  'Pizza Hut Stuffed crust': [
+    { label: 'part', grams: 100 },
+    { label: 'demi-pizza', grams: 280 },
+    { label: 'pizza', grams: 560 },
+  ],
+  'Pizza Hut Pepperoni': [
+    { label: 'part', grams: 100 },
+    { label: 'demi-pizza', grams: 280 },
+    { label: 'pizza', grams: 560 },
+  ],
+  'Pizza Hut BBQ chicken': [
+    { label: 'part', grams: 100 },
+    { label: 'demi-pizza', grams: 280 },
+    { label: 'pizza', grams: 560 },
+  ],
+  'Dominos Classic crust': [
+    { label: 'part', grams: 95 },
+    { label: 'demi-pizza', grams: 285 },
+    { label: 'pizza', grams: 570 },
+  ],
+  'Dominos Cheesy crust': [
+    { label: 'part', grams: 95 },
+    { label: 'demi-pizza', grams: 285 },
+    { label: 'pizza', grams: 570 },
+  ],
+  'Dominos Pepperoni': [
+    { label: 'part', grams: 95 },
+    { label: 'demi-pizza', grams: 285 },
+    { label: 'pizza', grams: 570 },
+  ],
+  'Dominos Reine': [
+    { label: 'part', grams: 95 },
+    { label: 'demi-pizza', grams: 285 },
+    { label: 'pizza', grams: 570 },
+  ],
+  'Dominos Potatoes': [{ label: 'portion', grams: 100 }],
+  'Dominos Chicken wings': [{ label: 'pièce', grams: 30 }],
+  'Dominos Garlic bread': [{ label: 'part', grams: 40 }],
+  'Papa Johns Pizza': [
+    { label: 'part', grams: 100 },
+    { label: 'demi-pizza', grams: 280 },
+    { label: 'pizza', grams: 560 },
+  ],
+  'Pizza livree standard': [
+    { label: 'part', grams: 100 },
+    { label: 'demi-pizza', grams: 280 },
+    { label: 'pizza', grams: 560 },
+  ],
+  'Pizza sicilienne': [
+    { label: 'part', grams: 100 },
+    { label: 'demi-pizza', grams: 280 },
+    { label: 'pizza', grams: 560 },
+  ],
+  'Pizza chevre miel': [
+    { label: 'part', grams: 100 },
+    { label: 'demi-pizza', grams: 280 },
+    { label: 'pizza', grams: 560 },
+  ],
+  'Pizza kebab': [
+    { label: 'part', grams: 100 },
+    { label: 'demi-pizza', grams: 280 },
+    { label: 'pizza', grams: 560 },
+  ],
+  'Pizza tartiflette': [
+    { label: 'part', grams: 100 },
+    { label: 'demi-pizza', grams: 280 },
+    { label: 'pizza', grams: 560 },
+  ],
+
+  // McDonald's
+  'McDo McChicken': [{ label: 'burger', grams: 173 }],
+  'McDo Filet-O-Fish': [{ label: 'burger', grams: 136 }],
+  'McDo Double cheeseburger': [{ label: 'burger', grams: 165 }],
+  'McDo McRoyal Bacon': [{ label: 'burger', grams: 215 }],
+  'McDo 280 Bacon': [{ label: 'burger', grams: 265 }],
+  'McDo 280 Chevre': [{ label: 'burger', grams: 265 }],
+  'McDo McWrap poulet': [{ label: 'wrap', grams: 250 }],
+  'McDo McFirst poulet': [{ label: 'burger', grams: 150 }],
+  'McDo Croque McDo': [{ label: 'croque', grams: 87 }],
+  'McDo P tit wrap ranch': [{ label: 'wrap', grams: 95 }],
+  'McDo Salade cesar poulet': [{ label: 'salade', grams: 250 }],
+  'McDo Sundae caramel': [{ label: 'sundae', grams: 149 }],
+  'McDo Sundae chocolat': [{ label: 'sundae', grams: 149 }],
+  'McDo McFlurry Kitkat': [{ label: 'pot', grams: 180 }],
+  'McDo McFlurry Oreo': [{ label: 'pot', grams: 180 }],
+  'McDo Milkshake vanille': [{ label: 'gobelet', grams: 300 }],
+  'McDo Chausson pommes': [{ label: 'chausson', grams: 75 }],
+  'McDo Muffin chocolat': [{ label: 'muffin', grams: 100 }],
+  'McDo Cookie': [{ label: 'cookie', grams: 75 }],
+
+  // Burger King
+  'BK Steakhouse': [{ label: 'burger', grams: 240 }],
+  'BK Big King': [{ label: 'burger', grams: 230 }],
+  'BK Whopper cheese': [{ label: 'burger', grams: 290 }],
+  'BK Double Whopper': [{ label: 'burger', grams: 350 }],
+  'BK Chicken Royal': [{ label: 'burger', grams: 220 }],
+  'BK Long Chicken': [{ label: 'burger', grams: 200 }],
+  'BK Fish King': [{ label: 'burger', grams: 190 }],
+  'BK Veggie King': [{ label: 'burger', grams: 200 }],
+  'BK Onion rings': [{ label: 'portion', grams: 90 }],
+  'BK King Nuggets': [
+    { label: 'pièce', grams: 17 },
+    { label: 'boîte de 9', grams: 150 },
+  ],
+  'BK Chicken Fries': [
+    { label: 'pièce', grams: 15 },
+    { label: 'boîte', grams: 100 },
+  ],
+  'BK Sundae': [{ label: 'sundae', grams: 150 }],
+
+  // KFC
+  'KFC Poulet original': [{ label: 'pièce', grams: 95 }],
+  'KFC Filet original': [{ label: 'filet', grams: 90 }],
+  'KFC Tenders': [
+    { label: 'tender', grams: 35 },
+    { label: 'boîte de 5', grams: 175 },
+  ],
+  'KFC Hot wings': [
+    { label: 'wing', grams: 25 },
+    { label: 'boîte de 5', grams: 125 },
+  ],
+  'KFC Boneless': [{ label: 'pièce', grams: 30 }],
+  'KFC Zinger burger': [{ label: 'burger', grams: 190 }],
+  'KFC Twister': [{ label: 'wrap', grams: 210 }],
+  'KFC Puree': [{ label: 'pot', grams: 120 }],
+  'KFC Coleslaw': [{ label: 'pot', grams: 100 }],
+
+  // Popeyes / PePe Chicken / Tasty Crousty / Chicken Spot
+  'Popeyes Tenders': [{ label: 'tender', grams: 35 }],
+  'Popeyes Sandwich poulet': [{ label: 'burger', grams: 210 }],
+  'PePe Chicken tenders': [{ label: 'tender', grams: 35 }],
+  'PePe Chicken burger': [{ label: 'burger', grams: 230 }],
+  'Chicken Spot tenders': [{ label: 'tender', grams: 35 }],
+  'Tasty Crousty tenders': [{ label: 'tender', grams: 35 }],
+  'Tasty Crousty burger': [{ label: 'burger', grams: 230 }],
+  'Poulet frit coreen': [{ label: 'portion', grams: 150 }],
+
+  // Subway
+  'Subway Poulet teriyaki': [
+    { label: 'sub 15cm', grams: 220 },
+    { label: 'sub 30cm', grams: 440 },
+  ],
+  'Subway Poulet grille': [
+    { label: 'sub 15cm', grams: 220 },
+    { label: 'sub 30cm', grams: 440 },
+  ],
+  'Subway Italian BMT': [
+    { label: 'sub 15cm', grams: 220 },
+    { label: 'sub 30cm', grams: 440 },
+  ],
+  'Subway Steak and cheese': [
+    { label: 'sub 15cm', grams: 220 },
+    { label: 'sub 30cm', grams: 440 },
+  ],
+  'Subway Thon': [
+    { label: 'sub 15cm', grams: 220 },
+    { label: 'sub 30cm', grams: 440 },
+  ],
+  'Subway Veggie delite': [
+    { label: 'sub 15cm', grams: 220 },
+    { label: 'sub 30cm', grams: 440 },
+  ],
+  'Subway Cookie': [{ label: 'cookie', grams: 45 }],
+
+  // Quick / Five Guys / burgers premium
+  'Quick Giant': [{ label: 'burger', grams: 230 }],
+  'Quick Supreme cheese': [{ label: 'burger', grams: 240 }],
+  'Quick Long chicken': [{ label: 'burger', grams: 210 }],
+  'Five Guys Hamburger': [{ label: 'burger', grams: 300 }],
+  'Five Guys Cheeseburger': [{ label: 'burger', grams: 320 }],
+  'Five Guys Frites cajun': [{ label: 'portion', grams: 200 }],
+  'Big Fernand burger': [{ label: 'burger', grams: 250 }],
+  'Smash burger': [{ label: 'burger', grams: 200 }],
+
+  // Kebab & grec
+  'Kebab durum': [{ label: 'durum', grams: 320 }],
+  'Kebab galette': [{ label: 'galette', grams: 300 }],
+  'Kebab poulet': [{ label: 'sandwich', grams: 280 }],
+  'Grec frites': [{ label: 'sandwich', grams: 400 }],
+  'Assiette grecque': [{ label: 'assiette', grams: 450 }],
+  'Chawarma sandwich': [{ label: 'sandwich', grams: 280 }],
+
+  // Tacos français (O'Tacos & assimilés)
+  'Tacos francais': [
+    { label: 'M (1 viande)', grams: 400 },
+    { label: 'L (2 viandes)', grams: 550 },
+    { label: 'XL (3 viandes)', grams: 700 },
+  ],
+  'Tacos francais poulet': [
+    { label: 'M (1 viande)', grams: 400 },
+    { label: 'L (2 viandes)', grams: 550 },
+  ],
+  'Tacos francais viande hachee': [
+    { label: 'M (1 viande)', grams: 400 },
+    { label: 'L (2 viandes)', grams: 550 },
+  ],
+  'Tacos francais cordon bleu': [
+    { label: 'M (1 viande)', grams: 400 },
+    { label: 'L (2 viandes)', grams: 550 },
+  ],
+
+  // Sandwicheries
+  'Bagelstein bagel': [{ label: 'bagel', grams: 180 }],
+  'Brioche Doree sandwich': [{ label: 'sandwich', grams: 200 }],
+  'Paul sandwich': [{ label: 'sandwich', grams: 200 }],
+  'Pret a manger wrap': [{ label: 'wrap', grams: 200 }],
+
+  // Asiatique à emporter
+  'Sushi box saumon': [{ label: 'box', grams: 250 }],
+  'Wok poulet nouilles': [{ label: 'box', grams: 400 }],
+  'Riz cantonais emporter': [{ label: 'box', grams: 300 }],
+  'Poulet aigre-doux emporter': [{ label: 'box', grams: 300 }],
+
+  // Boissons & desserts d'enseigne
+  'Starbucks Latte': [
+    { label: 'tall', grams: 350 },
+    { label: 'grande', grams: 470 },
+  ],
+  'Starbucks Frappuccino': [
+    { label: 'tall', grams: 350 },
+    { label: 'grande', grams: 470 },
+  ],
+  'Krispy Kreme donut': [{ label: 'donut', grams: 60 }],
+  'Dunkin donut': [{ label: 'donut', grams: 60 }],
 };
 
 const CATEGORY_RULES: CategoryRule[] = [
@@ -113,8 +369,21 @@ const CATEGORY_RULES: CategoryRule[] = [
     ],
   },
   {
-    match: /\b(amande|noisette|noix|cajou|pistache|pecan|macadamia|graine)s?\b/i,
+    match:
+      /\b(amande|noisette|noix|cajou|pistache|pecan|macadamia|graine)s?\b/i,
     presets: [{ label: 'poignée', grams: 30 }],
+  },
+  {
+    // Sauces de fast-food & kebab : servies en dosette ou à la louche,
+    // jamais à la cuillère à café — d'où des portions bien plus grosses
+    // que pour une sauce de cuisine. Doit précéder la règle générique.
+    match:
+      /\bsauce\b.*\b(blanche|kebab|biggy|fromagere|fromagère|marocaine|mammouth|burger|samurai|samouraï|samourai|algerienne|algérienne|andalouse|deluxe|poivre|aigre-douce|chili thai|cocktail)\b/i,
+    presets: [
+      { label: 'dosette', grams: 25 },
+      { label: 'c. à soupe', grams: 15 },
+      { label: 'portion kebab', grams: 40 },
+    ],
   },
   {
     match:
@@ -169,7 +438,8 @@ const CATEGORY_RULES: CategoryRule[] = [
     ],
   },
   {
-    match: /\b(barre|gateau|gâteau|tarte|cake|brownie|muffin|cupcake|eclair|éclair|millefeuille|paris-brest|baba)\b/i,
+    match:
+      /\b(barre|gateau|gâteau|tarte|cake|brownie|muffin|cupcake|eclair|éclair|millefeuille|paris-brest|baba)\b/i,
     presets: [
       { label: 'part', grams: 100 },
       { label: 'pièce', grams: 80 },

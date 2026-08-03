@@ -1670,4 +1670,161 @@ export const FOODS: FoodsDict = {
   'Boisson isotonique': [26, 0, 6.4, 0, 0],
   'Eau de coco': [19, 0.7, 3.7, 0.2, 0],
   'Jus citron': [25, 0.4, 7, 0.2, 0.1],
+  // ═══════════════════════════════════════════════════════
+  // FAST-FOOD — enseignes
+  // Valeurs pour 100 g (comme tout le reste de la base).
+  // Les portions réelles (burger, menu, part…) sont gérées par les
+  // presets d'unités : voir data/unitPresets.ts.
+  // ═══════════════════════════════════════════════════════
+
+  // McDonald's
+  'McDo McChicken': [241, 10, 23, 12, 1.2],
+  'McDo Filet-O-Fish': [248, 12, 26, 10, 1.5],
+  'McDo Double cheeseburger': [270, 15, 19, 14, 1.2],
+  'McDo McRoyal Bacon': [255, 14, 19, 13, 1.3],
+  'McDo 280 Bacon': [312, 17, 16, 18, 1.2],
+  'McDo 280 Chevre': [306, 16, 17, 18, 1.3],
+  'McDo McWrap poulet': [192, 11, 20, 8, 1.5],
+  'McDo McFirst poulet': [213, 11, 24, 8, 1.5],
+  'McDo Croque McDo': [291, 14, 29, 14, 1.5],
+  'McDo P tit wrap ranch': [232, 12, 23, 10, 1],
+  'McDo Frites': [296, 3, 37, 13, 3.5],
+  'McDo Potatoes': [245, 3.5, 30, 12, 3],
+  'McDo Salade cesar poulet': [120, 10, 6, 6, 1.5],
+  'McDo Sundae caramel': [188, 3.5, 32, 5, 0],
+  'McDo Sundae chocolat': [192, 3.5, 33, 5, 0.3],
+  'McDo McFlurry Kitkat': [239, 5, 33, 9.5, 0.5],
+  'McDo McFlurry Oreo': [225, 4.5, 32, 8.5, 0.5],
+  'McDo Milkshake vanille': [110, 3, 18, 3, 0],
+  'McDo Chausson pommes': [320, 3, 42, 15, 2],
+  'McDo Muffin chocolat': [400, 5, 50, 20, 2],
+  'McDo Cookie': [470, 5, 62, 22, 2],
+
+  // Burger King
+  'BK Steakhouse': [267, 15, 18, 15, 1.5],
+  'BK Big King': [243, 13, 18, 13, 1.5],
+  'BK Whopper cheese': [248, 13, 17, 15, 1.3],
+  'BK Double Whopper': [257, 16, 15, 16, 1.2],
+  'BK Chicken Royal': [259, 12, 26, 12, 1.5],
+  'BK Long Chicken': [260, 13, 26, 12, 1.5],
+  'BK Fish King': [253, 11, 27, 11, 1.5],
+  'BK Veggie King': [225, 9, 28, 9, 3],
+  'BK King Fries': [290, 3.5, 36, 14, 3.5],
+  'BK Onion rings': [330, 4, 40, 17, 3],
+  'BK King Nuggets': [270, 15, 17, 17, 1],
+  'BK Chicken Fries': [280, 15, 20, 15, 1.5],
+  'BK Sundae': [190, 3.5, 32, 5, 0],
+
+  // KFC
+  'KFC Poulet original': [211, 20, 6, 12, 0.5],
+  'KFC Filet original': [220, 22, 7, 12, 0.5],
+  'KFC Tenders': [240, 18, 15, 13, 1],
+  'KFC Hot wings': [290, 18, 8, 21, 0.5],
+  'KFC Boneless': [250, 17, 18, 12, 1],
+  'KFC Zinger burger': [237, 13, 24, 10, 1.5],
+  'KFC Twister': [230, 12, 22, 10, 1.5],
+  'KFC Frites': [290, 3.5, 36, 14, 3.5],
+  'KFC Potatoes': [245, 3.5, 30, 12, 3],
+  'KFC Puree': [85, 2, 12, 3, 1],
+  'KFC Coleslaw': [150, 1, 12, 11, 1.5],
+
+  // Popeyes / poulet frit
+  'Popeyes Tenders': [250, 18, 16, 13, 1],
+  'Popeyes Sandwich poulet': [265, 14, 25, 12, 1.5],
+  'Popeyes Frites cajun': [300, 4, 38, 14, 3.5],
+  'PePe Chicken tenders': [250, 18, 16, 13, 1],
+  'PePe Chicken burger': [260, 15, 24, 11, 1.5],
+  'Chicken Spot tenders': [245, 18, 16, 12, 1],
+  'Tasty Crousty tenders': [248, 18, 16, 13, 1],
+  'Tasty Crousty burger': [258, 15, 24, 11, 1.5],
+  'Poulet frit coreen': [280, 17, 20, 14, 1],
+
+  // Subway
+  'Subway Poulet teriyaki': [161, 11, 22, 3.5, 1.5],
+  'Subway Poulet grille': [150, 12, 20, 3, 1.5],
+  'Subway Italian BMT': [220, 11, 21, 10, 1.5],
+  'Subway Steak and cheese': [180, 12, 20, 6, 1.5],
+  'Subway Thon': [230, 10, 20, 12, 1.5],
+  'Subway Veggie delite': [130, 5, 23, 2, 2],
+  'Subway Cookie': [470, 5, 62, 22, 2],
+
+  // Quick
+  'Quick Giant': [255, 14, 19, 13, 1.5],
+  'Quick Supreme cheese': [265, 14, 20, 14, 1.5],
+  'Quick Long chicken': [255, 13, 25, 11, 1.5],
+
+  // Five Guys / burgers premium
+  'Five Guys Hamburger': [265, 16, 17, 15, 1],
+  'Five Guys Cheeseburger': [285, 17, 17, 17, 1],
+  'Five Guys Frites cajun': [310, 4, 40, 15, 4],
+  'Big Fernand burger': [255, 16, 18, 13, 1.5],
+  'Smash burger': [290, 17, 17, 17, 1],
+
+  // Pizza Hut
+  'Pizza Hut Pan cheese': [280, 12, 30, 12, 2],
+  'Pizza Hut Stuffed crust': [300, 13, 30, 14, 2],
+  'Pizza Hut Pepperoni': [295, 13, 29, 14, 2],
+  'Pizza Hut BBQ chicken': [270, 14, 31, 10, 2],
+
+  // Domino's
+  'Dominos Classic crust': [260, 11, 32, 9, 2],
+  'Dominos Cheesy crust': [290, 13, 30, 13, 2],
+  'Dominos Pepperoni': [285, 12, 30, 13, 2],
+  'Dominos Reine': [250, 12, 31, 8, 2],
+  'Dominos Potatoes': [245, 3.5, 30, 12, 3],
+  'Dominos Chicken wings': [260, 20, 5, 18, 0.5],
+  'Dominos Garlic bread': [320, 8, 40, 14, 2],
+
+  // Papa John's / autres pizzerias
+  'Papa Johns Pizza': [270, 12, 31, 10, 2],
+  'Pizza livree standard': [265, 11, 31, 10, 2],
+  'Pizza sicilienne': [270, 12, 29, 11, 2],
+  'Pizza chevre miel': [285, 12, 32, 12, 2],
+  'Pizza kebab': [275, 14, 28, 12, 2],
+  'Pizza tartiflette': [295, 11, 28, 15, 2],
+
+  // Kebab & grec
+  'Kebab durum': [230, 14, 22, 10, 1.5],
+  'Kebab galette': [235, 14, 23, 10, 1.5],
+  'Kebab poulet': [225, 15, 20, 10, 1.5],
+  'Grec frites': [270, 13, 25, 13, 1.5],
+  'Assiette grecque': [255, 15, 24, 12, 1.5],
+  'Chawarma sandwich': [235, 15, 22, 10, 1.5],
+
+  // Tacos francais (O'Tacos & assimilés)
+  'Tacos francais': [250, 11, 24, 12, 1.5],
+  'Tacos francais poulet': [245, 13, 24, 11, 1.5],
+  'Tacos francais viande hachee': [265, 12, 23, 14, 1.5],
+  'Tacos francais cordon bleu': [270, 12, 25, 14, 1.5],
+
+  // Sandwicheries & boulangeries
+  'Bagelstein bagel': [255, 12, 30, 10, 2],
+  'Brioche Doree sandwich': [230, 11, 27, 8, 2],
+  'Paul sandwich': [235, 11, 28, 8, 2],
+  'Pret a manger wrap': [200, 10, 22, 8, 2],
+
+  // Asiatique à emporter
+  'Sushi box saumon': [150, 8, 27, 1.5, 0.7],
+  'Wok poulet nouilles': [175, 10, 22, 5, 1.5],
+  'Riz cantonais emporter': [165, 6, 25, 4.5, 1],
+  'Poulet aigre-doux emporter': [190, 11, 22, 6, 1],
+
+  // Boissons & desserts d'enseigne
+  'Starbucks Latte': [65, 3.3, 6.5, 2.7, 0],
+  'Starbucks Frappuccino': [110, 2.5, 18, 3, 0],
+  'Krispy Kreme donut': [400, 5, 45, 22, 1.5],
+  'Dunkin donut': [410, 5, 47, 22, 1.5],
+
+  // ── Sauces de fast-food & kebab ──
+  'Sauce blanche': [380, 1.5, 6, 39, 0.5],
+  'Sauce biggy burger': [400, 1.5, 12, 38, 0.5],
+  'Sauce fromagere': [230, 6, 5, 21, 0],
+  'Sauce marocaine': [300, 1.5, 20, 24, 1],
+  'Sauce mammouth': [420, 1.5, 8, 43, 0.5],
+  'Sauce burger': [380, 1.5, 12, 36, 0.5],
+  'Sauce poivre': [350, 2, 8, 34, 0.5],
+  'Sauce aigre-douce': [180, 0.5, 42, 0.5, 0.3],
+  'Sauce chili thai': [180, 0.5, 42, 0.5, 0.5],
+  'Sauce deluxe': [400, 1, 10, 40, 0.3],
+  'Sauce salade tomate oignon': [30, 1, 5, 0.5, 1.5],
 };
