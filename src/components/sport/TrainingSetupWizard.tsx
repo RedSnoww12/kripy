@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   EXERCISE_CATALOG,
   TRAINING_STYLES,
+  allMuscleGroups,
   defaultPlannedExercise,
   exerciseGroupsByMuscle,
 } from '@/data/exercises';
@@ -54,6 +55,9 @@ export default function TrainingSetupWizard({
   const [pickerFor, setPickerFor] = useState<string | null>(null);
   const [customName, setCustomName] = useState('');
   const [customBw, setCustomBw] = useState(false);
+  const [customMuscle, setCustomMuscle] = useState('');
+
+  const muscleGroups = useMemo(() => allMuscleGroups(), []);
 
   const groups = useMemo(() => exerciseGroupsByMuscle(), []);
 
@@ -123,11 +127,13 @@ export default function TrainingSetupWizard({
       id: `custom_${Date.now()}`,
       name,
       bodyweight: customBw,
+      ...(customMuscle ? { muscle: customMuscle } : {}),
     };
     setCustoms((prev) => [...prev, custom]);
     toggleExerciseInTemplate(pickerFor, custom.id);
     setCustomName('');
     setCustomBw(false);
+    setCustomMuscle('');
   };
 
   const finish = () => {
@@ -145,6 +151,12 @@ export default function TrainingSetupWizard({
       sessionsPerWeek: freq,
       sessionTemplates: finalTemplates,
       customExercises: customs,
+      // L'assistant ne touche pas aux objectifs de volume (ils se règlent
+      // depuis la carte Volume) : les reconduire tels quels, sinon repasser
+      // par ⚙ pour renommer une séance les effacerait.
+      ...(initial?.muscleTargets
+        ? { muscleTargets: initial.muscleTargets }
+        : {}),
     });
   };
 
@@ -417,6 +429,24 @@ export default function TrainingSetupWizard({
                     >
                       <span className="material-symbols-outlined">add</span>
                     </button>
+                  </div>
+
+                  {/* Sans groupe musculaire, les séries de cet exercice ne
+                      seraient comptées nulle part dans le volume hebdo. */}
+                  <div className="kl-wiz-custom-muscles">
+                    {muscleGroups.map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        className={`kl-sport-muscle ${customMuscle === m ? 'on' : ''}`}
+                        onClick={() =>
+                          setCustomMuscle(customMuscle === m ? '' : m)
+                        }
+                        aria-pressed={customMuscle === m}
+                      >
+                        {m}
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
