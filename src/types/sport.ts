@@ -13,7 +13,20 @@ export interface CustomExercise {
   name: string;
   /** true = exercice au poids du corps (la charge saisie = lest ajouté). */
   bodyweight: boolean;
+  /**
+   * Groupe musculaire principal, pour le décompte des séries hebdomadaires.
+   * Absent sur les exercices créés avant l'arrivée du suivi de volume : ils
+   * sont alors regroupés sous « Non classé ».
+   */
+  muscle?: string;
 }
+
+/**
+ * Priorité de développement d'un groupe musculaire, au sens du Système
+ * Fluide : chaque niveau correspond à une fourchette de séries effectives
+ * par semaine (voir MUSCLE_TIERS dans data/exercises.ts).
+ */
+export type MuscleTier = 'maintenance' | 'moderate' | 'priority';
 
 /** Un exercice tel que planifié dans une séance type : cible fixée à l'avance. */
 export interface PlannedExercise {
@@ -53,6 +66,12 @@ export interface TrainingProfile {
   /** Séances définies par l'utilisateur (nom + exercices/séries/reps cibles). */
   sessionTemplates: SessionTemplate[];
   customExercises: CustomExercise[];
+  /**
+   * Objectif de volume par groupe musculaire (« liste personnelle » du
+   * Système Fluide). Un groupe absent n'a pas d'objectif fixé : ses séries
+   * sont comptées mais aucun écart n'est signalé.
+   */
+  muscleTargets?: Record<string, MuscleTier>;
 }
 
 export interface StrengthSet {
