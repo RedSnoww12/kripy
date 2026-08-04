@@ -155,6 +155,51 @@ describe('normalizeProfile', () => {
     });
   });
 
+  it('conserve les objectifs de volume par muscle et rejette les niveaux inconnus', () => {
+    const p = normalizeProfile({
+      style: 'hypertrophy',
+      sessionsPerWeek: 4,
+      sessionTemplates: [],
+      customExercises: [],
+      muscleTargets: {
+        Dos: 'priority',
+        Pecs: 'moderate',
+        Jambes: 'nimporte-quoi',
+        '': 'maintenance',
+      },
+    });
+    expect(p?.muscleTargets).toEqual({ Dos: 'priority', Pecs: 'moderate' });
+  });
+
+  it('omet muscleTargets quand aucun objectif valide', () => {
+    const p = normalizeProfile({
+      style: 'hypertrophy',
+      sessionsPerWeek: 3,
+      sessionTemplates: [],
+      customExercises: [],
+      muscleTargets: 'garbage',
+    });
+    expect(p?.muscleTargets).toBeUndefined();
+  });
+
+  it('conserve le muscle des exercices personnalisés', () => {
+    const p = normalizeProfile({
+      style: 'hypertrophy',
+      sessionsPerWeek: 3,
+      sessionTemplates: [],
+      customExercises: [
+        { id: 'c1', name: 'Planche', bodyweight: true, muscle: 'Tronc' },
+        { id: 'c2', name: 'Machin', bodyweight: false, muscle: '  ' },
+        { id: 'c3', name: 'Truc', bodyweight: false },
+      ],
+    });
+    expect(p?.customExercises).toEqual([
+      { id: 'c1', name: 'Planche', bodyweight: true, muscle: 'Tronc' },
+      { id: 'c2', name: 'Machin', bodyweight: false },
+      { id: 'c3', name: 'Truc', bodyweight: false },
+    ]);
+  });
+
   it("n'ajoute pas aiTargetSourceSessionId sans aiTargetWeight valide", () => {
     const current = {
       style: 'hypertrophy',

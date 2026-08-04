@@ -1,0 +1,163 @@
+/* ── Volume hebdomadaire par groupe musculaire ───────── */
+.kl-vol {
+  margin-top: 4px;
+}
+.kl-vol-edit {
+  margin-left: auto;
+  border: none;
+  background: rgba(107, 138, 255, 0.12);
+  color: var(--accL);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 200ms var(--ease-out),
+    transform 140ms var(--ease-out);
+}
+.kl-vol-edit:active {
+  transform: scale(0.94);
+}
+.kl-vol-edit[aria-pressed='true'] {
+  background: var(--grad-primary);
+  color: var(--on-acc);
+}
+
+.kl-vol-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--s1);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+.kl-vol-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.kl-vol-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.kl-vol-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--t1);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kl-vol-sets {
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.kl-vol-sets-unit {
+  font-size: 9.5px;
+  font-weight: 500;
+  color: var(--t3);
+  letter-spacing: 0.02em;
+}
+
+.kl-vol-track {
+  position: relative;
+  height: 7px;
+  background: var(--s0);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.kl-vol-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 600ms var(--ease-out);
+}
+.kl-vol-marker {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--t2);
+  opacity: 0.55;
+  border-radius: 2px;
+}
+
+.kl-vol-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kl-vol-tier {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t3);
+  background: var(--s2);
+  border: none;
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+.kl-vol-tier.on {
+  color: var(--accL);
+  background: rgba(107, 138, 255, 0.12);
+}
+.kl-vol-tier.editable {
+  cursor: pointer;
+  transition: transform 140ms var(--ease-out);
+}
+.kl-vol-tier.editable:active {
+  transform: scale(0.94);
+}
+.kl-vol-tier-ico {
+  font-size: 12px !important;
+}
+.kl-vol-meta {
+  font-size: 9px;
+  color: var(--t3);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.kl-vol-help,
+.kl-vol-warn {
+  margin: 10px 2px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--t3);
+}
+.kl-vol-warn {
+  color: var(--org);
+  background: var(--orgG);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 10px 0 0;
+}
+
+.kl-wiz-custom-muscles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.kl-wiz-custom-muscles .kl-sport-muscle {
+  font-size: 10px;
+  padding: 6px 10px;
+}

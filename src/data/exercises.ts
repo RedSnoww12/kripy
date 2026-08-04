@@ -1,5 +1,6 @@
 import type {
   CustomExercise,
+  MuscleTier,
   PlannedExercise,
   TrainingProfile,
   TrainingStyle,
@@ -221,6 +222,71 @@ export const TRAINING_STYLES: readonly TrainingStyleMeta[] = [
 
 export function styleMeta(style: TrainingStyle): TrainingStyleMeta {
   return TRAINING_STYLES.find((s) => s.key === style) ?? TRAINING_STYLES[0];
+}
+
+/** Groupe attribué aux exercices personnalisés sans muscle renseigné. */
+export const UNCLASSIFIED_MUSCLE = 'Non classé';
+
+export interface MuscleTierMeta {
+  key: MuscleTier;
+  label: string;
+  /** Libellé court pour les puces de l'interface. */
+  short: string;
+  /** Fourchette de séries effectives par semaine [min, max]. */
+  range: [number, number];
+}
+
+/**
+ * Niveaux de priorité et volumes hebdomadaires associés (Système Fluide).
+ * Le haut de fourchette du niveau « priorité » n'est pas une limite de la
+ * méthode (elle dit « 12+ ») mais un plafond de récupération réaliste : au
+ * delà, le volume coûte plus qu'il ne rapporte.
+ */
+export const MUSCLE_TIERS: readonly MuscleTierMeta[] = [
+  {
+    key: 'maintenance',
+    label: 'Maintenance',
+    short: 'MAINT',
+    range: [3, 5],
+  },
+  {
+    key: 'moderate',
+    label: 'Développement modéré',
+    short: 'MODÉRÉ',
+    range: [6, 12],
+  },
+  {
+    key: 'priority',
+    label: 'Priorité absolue',
+    short: 'PRIO',
+    range: [12, 20],
+  },
+] as const;
+
+export function tierMeta(tier: MuscleTier): MuscleTierMeta {
+  return MUSCLE_TIERS.find((t) => t.key === tier) ?? MUSCLE_TIERS[0];
+}
+
+/** Groupes musculaires du catalogue, dans l'ordre d'apparition. */
+export function allMuscleGroups(): string[] {
+  return [...new Set(EXERCISE_CATALOG.map((e) => e.muscle))];
+}
+
+/**
+ * Résout un id d'exercice vers son groupe musculaire. Un exercice
+ * personnalisé sans muscle renseigné tombe dans « Non classé » plutôt que
+ * d'être ignoré : ses séries doivent rester visibles quelque part.
+ */
+export function makeMuscleResolver(
+  custom: readonly CustomExercise[],
+): (exerciseId: string) => string | null {
+  return (id) => {
+    const def = EXERCISE_CATALOG.find((e) => e.id === id);
+    if (def) return def.muscle;
+    const c = custom.find((e) => e.id === id);
+    if (c) return c.muscle?.trim() || UNCLASSIFIED_MUSCLE;
+    return null;
+  };
 }
 
 /**

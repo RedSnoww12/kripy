@@ -7,6 +7,7 @@ import ActivityHeatmap from '@/components/sport/ActivityHeatmap';
 import TrainingSetupWizard from '@/components/sport/TrainingSetupWizard';
 import SessionLogger from '@/components/sport/SessionLogger';
 import CoachCard from '@/components/sport/CoachCard';
+import MuscleVolumeCard from '@/components/sport/MuscleVolumeCard';
 import ProgressionSection from '@/components/sport/ProgressionSection';
 import { styleMeta } from '@/data/exercises';
 import { weekSessionCount } from '@/features/sport/progression';
@@ -98,6 +99,7 @@ export default function SportPage() {
         <>
           <SessionLogger profile={profile} />
           <CoachCard profile={profile} />
+          <MuscleVolumeCard profile={profile} />
           <ProgressionSection profile={profile} />
         </>
       ) : (

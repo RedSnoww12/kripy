@@ -1,6 +1,11 @@
-import { defaultPlannedExercise, TRAINING_STYLES } from '@/data/exercises';
+import {
+  defaultPlannedExercise,
+  MUSCLE_TIERS,
+  TRAINING_STYLES,
+} from '@/data/exercises';
 import type {
   CustomExercise,
+  MuscleTier,
   PlannedExercise,
   SessionTemplate,
   TrainingProfile,
@@ -21,6 +26,7 @@ interface StoredProfile {
   sessionsPerWeek?: unknown;
   sessionTemplates?: unknown;
   customExercises?: unknown;
+  muscleTargets?: unknown;
   /** Ancien format (≤ PR #31). */
   trackedExercises?: unknown;
 }
@@ -39,13 +45,35 @@ function toCount(v: unknown, fallback: number, min: number, max: number) {
 
 function sanitizeCustoms(v: unknown): CustomExercise[] {
   if (!Array.isArray(v)) return [];
-  return v.filter(
-    (c): c is CustomExercise =>
-      Boolean(c) &&
-      typeof c === 'object' &&
-      typeof (c as CustomExercise).id === 'string' &&
-      typeof (c as CustomExercise).name === 'string',
-  );
+  return v
+    .filter(
+      (c): c is CustomExercise =>
+        Boolean(c) &&
+        typeof c === 'object' &&
+        typeof (c as CustomExercise).id === 'string' &&
+        typeof (c as CustomExercise).name === 'string',
+    )
+    .map((c) => {
+      const muscle = typeof c.muscle === 'string' ? c.muscle.trim() : '';
+      return {
+        id: c.id,
+        name: c.name,
+        bodyweight: c.bodyweight === true,
+        ...(muscle ? { muscle } : {}),
+      };
+    });
+}
+
+function sanitizeMuscleTargets(v: unknown): Record<string, MuscleTier> {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return {};
+  const out: Record<string, MuscleTier> = {};
+  for (const [muscle, tier] of Object.entries(v as Record<string, unknown>)) {
+    if (!muscle.trim()) continue;
+    if (MUSCLE_TIERS.some((t) => t.key === tier)) {
+      out[muscle] = tier as MuscleTier;
+    }
+  }
+  return out;
 }
 
 function sanitizePlanned(v: unknown, style: TrainingStyle): PlannedExercise[] {
@@ -129,5 +157,13 @@ export function normalizeProfile(raw: unknown): TrainingProfile | null {
         : [];
   }
 
-  return { style, sessionsPerWeek, sessionTemplates, customExercises };
+  const muscleTargets = sanitizeMuscleTargets(p.muscleTargets);
+
+  return {
+    style,
+    sessionsPerWeek,
+    sessionTemplates,
+    customExercises,
+    ...(Object.keys(muscleTargets).length > 0 ? { muscleTargets } : {}),
+  };
 }
