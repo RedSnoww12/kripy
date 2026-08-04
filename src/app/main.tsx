@@ -9,6 +9,7 @@ import '@/styles/pages.css';
 import '@/styles/components.css';
 import '@/styles/home.css';
 import '@/styles/sport.css';
+import '@/styles/muscleVolume.css';
 import '@/styles/legal.css';
 import '@/styles/onboarding.css';
 
