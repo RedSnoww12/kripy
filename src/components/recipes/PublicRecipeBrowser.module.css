@@ -1,0 +1,219 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.intro {
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--t3);
+  margin: 4px 0 0;
+}
+
+.refresh {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 12px;
+  background: var(--s1);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  color: var(--t2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.refresh:hover:not(:disabled) {
+  color: var(--accL);
+}
+
+.refresh:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.refresh:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.count {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t3);
+  font-variant-numeric: tabular-nums;
+}
+
+.notice {
+  padding: 18px 14px;
+  text-align: center;
+  font-size: 0.76rem;
+  color: var(--t3);
+  background: var(--s1);
+  border-radius: 14px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--s1);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--t1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge {
+  flex-shrink: 0;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: var(--s3);
+  color: var(--t3);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.badgeMine {
+  background: rgba(107, 138, 255, 0.14);
+  color: var(--accL);
+}
+
+.macros {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--t2);
+}
+
+.author {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+
+.acts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.add {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--grad-primary);
+  color: var(--bg);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.add:active {
+  transform: scale(0.97);
+}
+
+.add .material-symbols-outlined {
+  font-size: 16px !important;
+}
+
+.copy {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(107, 138, 255, 0.12);
+  color: var(--accL);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.copy:active {
+  transform: scale(0.95);
+  background: rgba(107, 138, 255, 0.2);
+}
+
+.remove {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--t3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.remove:hover {
+  color: var(--red);
+}
+
+.remove .material-symbols-outlined {
+  font-size: 18px !important;
+}

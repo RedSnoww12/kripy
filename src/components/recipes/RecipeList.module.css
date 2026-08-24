@@ -1,0 +1,19 @@
+.pub {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: rgba(107, 138, 255, 0.14);
+  color: var(--accL);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pub .material-symbols-outlined {
+  font-size: 13px !important;
+}

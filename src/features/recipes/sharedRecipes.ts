@@ -9,6 +9,7 @@ import {
   query,
   serverTimestamp,
   Timestamp,
+  updateDoc,
   type Firestore,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -121,6 +122,36 @@ export async function publishRecipe(
   }
 }
 
+/**
+ * Met à jour une recette déjà publiée (l'auteur a modifié sa version perso).
+ * Les règles Firestore réservent l'écriture à l'auteur : l'appel échoue
+ * proprement si quelqu'un d'autre tente la manœuvre.
+ */
+export async function updateSharedRecipe(
+  recipeId: string,
+  input: PublishRecipeInput,
+  firestore: Firestore | null = db,
+): Promise<boolean> {
+  const database = firestore ?? db;
+  if (!database) return false;
+  try {
+    await updateDoc(doc(database, SHARED_RECIPES_COLLECTION, recipeId), {
+      name: input.name,
+      tuple: input.tuple,
+      portions: input.portions,
+      // `unit` doit être effacé quand la recette repasse aux 100g, sinon le
+      // document garderait une unité fantôme.
+      unit: input.unit ?? null,
+      authorUid: input.authorUid,
+      authorName: input.authorName,
+    });
+    return true;
+  } catch (e) {
+    console.warn('updateSharedRecipe failed', e);
+    return false;
+  }
+}
+
 /** Récupère les recettes de la communauté, les plus récentes d'abord. */
 export async function fetchSharedRecipes(
   firestore: Firestore | null = db,
@@ -180,4 +211,49 @@ export function sharedRecipesToFoods(
     out[recipes[i].name] = recipes[i].tuple;
   }
   return out;
+}
+
+function normalize(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
+ * Retrouve la publication correspondant à une recette perso de l'utilisateur.
+ * Le rapprochement se fait par nom : c'est la clé primaire des recettes
+ * locales (`recipes` est un dictionnaire nom → tuple), donc le seul lien
+ * stable entre la version perso et la version publiée.
+ */
+export function findPublishedRecipe(
+  recipes: readonly SharedRecipe[],
+  authorUid: string | null | undefined,
+  name: string,
+): SharedRecipe | null {
+  if (!authorUid) return null;
+  const target = normalize(name.trim());
+  if (!target) return null;
+  return (
+    recipes.find(
+      (r) => r.authorUid === authorUid && normalize(r.name) === target,
+    ) ?? null
+  );
+}
+
+/**
+ * Recherche dans la bibliothèque publique, insensible aux accents et à la
+ * casse. Tous les mots de la requête doivent apparaître dans le nom de la
+ * recette ou dans le pseudo de l'auteur.
+ */
+export function searchSharedRecipes(
+  recipes: readonly SharedRecipe[],
+  queryText: string,
+): SharedRecipe[] {
+  const tokens = normalize(queryText.trim()).split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return [...recipes];
+  return recipes.filter((r) => {
+    const haystack = normalize(`${r.name} ${r.authorName ?? ''}`);
+    return tokens.every((t) => haystack.includes(t));
+  });
 }
