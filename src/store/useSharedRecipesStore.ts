@@ -3,6 +3,7 @@ import {
   fetchSharedRecipes,
   publishRecipe,
   unpublishRecipe,
+  updateSharedRecipe,
   type PublishRecipeInput,
 } from '@/features/recipes/sharedRecipes';
 import { loadJSON, saveJSON, STORAGE_KEYS } from '@/lib/storage';
@@ -15,6 +16,7 @@ interface SharedRecipesState {
   fetchedAt: number;
   refresh: () => Promise<void>;
   publish: (input: PublishRecipeInput) => Promise<boolean>;
+  update: (recipeId: string, input: PublishRecipeInput) => Promise<boolean>;
   unpublish: (recipeId: string) => Promise<boolean>;
   rehydrate: () => void;
 }
@@ -71,6 +73,30 @@ export const useSharedRecipesStore = create<SharedRecipesState>((set, get) => ({
       createdAt: Date.now(),
     };
     const recipes = [optimistic, ...get().recipes];
+    saveJSON(STORAGE_KEYS.sharedRecipesCache, {
+      recipes,
+      fetchedAt: get().fetchedAt,
+    });
+    set({ recipes });
+    return true;
+  },
+
+  update: async (recipeId, input) => {
+    const ok = await updateSharedRecipe(recipeId, input);
+    if (!ok) return false;
+    const recipes = get().recipes.map((r): SharedRecipe => {
+      if (r.id !== recipeId) return r;
+      return {
+        id: r.id,
+        name: input.name,
+        tuple: input.tuple,
+        portions: input.portions,
+        ...(input.unit ? { unit: input.unit } : {}),
+        authorUid: r.authorUid,
+        authorName: input.authorName,
+        createdAt: r.createdAt,
+      };
+    });
     saveJSON(STORAGE_KEYS.sharedRecipesCache, {
       recipes,
       fetchedAt: get().fetchedAt,

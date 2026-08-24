@@ -97,6 +97,11 @@ Plutôt que de te montrer ton poids brut (qui fluctue de ±1 kg par jour selon l
 - 4 types de repas : Petit-déj, Déjeuner, Dîner, Collation
 - Base d'aliments embarquée + ajout manuel
 - Favoris et recettes (repas composés réutilisables)
+- **Recettes publiques** : une coche « Rendre la recette publique » suffit à
+  publier une recette. Elle rejoint l'onglet _Publiques_ de la page Recettes,
+  où tout le monde peut la chercher (par nom ou par auteur) et l'ajouter
+  directement à un repas de la journée. Elle reste en **lecture seule** :
+  seul son auteur peut la modifier, la repasser en privé ou la supprimer.
 - Presets macros (Équilibre, High Prot, Keto, Low Fat, Zone)
 - Scan de code-barres (OpenFoodFacts)
 - Analyse d'un repas par photo (Google Gemini 2.5 Flash ou Groq / Llama 4 Scout, au choix)
@@ -366,7 +371,7 @@ Le contenu de `dist/` est prêt à être servi. Pense à configurer le **fallbac
 1. Créer un projet Firebase dédié à la prod (éviter de partager le projet dev).
 2. Remplir les `VITE_FIREBASE_*` dans l'environnement du hoster.
 3. Autoriser le domaine final dans **Firebase Console → Authentication → Settings → Authorized domains**.
-4. Déployer les **règles Firestore** du repo : [`firestore.rules`](./firestore.rules) — `users/{uid}` accessible uniquement à l'user correspondant, et `sharedRecipes` lisible par tout utilisateur authentifié mais écrivable seulement par l'auteur de chaque recette. **Sans ce déploiement, le partage de recettes échoue** (les écritures sont refusées par le mode verrouillé par défaut).
+4. Déployer les **règles Firestore** du repo : [`firestore.rules`](./firestore.rules) — `users/{uid}` accessible uniquement à l'user correspondant, et `sharedRecipes` lisible par tout utilisateur authentifié mais écrivable seulement par l'auteur de chaque recette (c'est ce qui garantit le « lecture seule » côté serveur, et pas seulement dans l'interface). **Sans ce déploiement, les recettes publiques échouent** (les écritures sont refusées par le mode verrouillé par défaut).
    ```bash
    firebase deploy --only firestore:rules
    # ou : console Firebase → Firestore Database → Règles → coller firestore.rules

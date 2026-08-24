@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useNutritionStore } from '@/store/useNutritionStore';
+import { useSessionStore } from '@/store/useSessionStore';
+import { useSharedRecipesStore } from '@/store/useSharedRecipesStore';
+import { findPublishedRecipe } from '@/features/recipes/sharedRecipes';
 import { toast } from '@/components/ui/toastStore';
 import type { FoodTuple } from '@/types';
+import styles from './RecipeList.module.css';
 
 interface Props {
   onEdit: (name: string, tuple: FoodTuple) => void;
@@ -18,6 +22,9 @@ export default function RecipeList({ onEdit }: Props) {
   const setRecipePortions = useNutritionStore((s) => s.setRecipePortions);
   const recipeUnits = useNutritionStore((s) => s.recipeUnits);
   const setRecipeUnits = useNutritionStore((s) => s.setRecipeUnits);
+  const user = useSessionStore((s) => s.user);
+  const sharedRecipes = useSharedRecipesStore((s) => s.recipes);
+  const unpublishShared = useSharedRecipesStore((s) => s.unpublish);
   const [query, setQuery] = useState('');
 
   const allNames = useMemo(() => Object.keys(recipes), [recipes]);
@@ -42,7 +49,15 @@ export default function RecipeList({ onEdit }: Props) {
       delete nextUnits[name];
       setRecipeUnits(nextUnits);
     }
-    toast(`${name} supprimée`, 'info');
+    // Supprimer la version perso doit aussi retirer la version publique :
+    // sinon la recette reste offerte à la communauté sans que son auteur
+    // puisse encore la modifier.
+    const published = findPublishedRecipe(sharedRecipes, user?.uid, name);
+    if (published) void unpublishShared(published.id);
+    toast(
+      published ? `${name} supprimée et dépubliée` : `${name} supprimée`,
+      'info',
+    );
   };
 
   if (allNames.length === 0) {
@@ -140,6 +155,14 @@ export default function RecipeList({ onEdit }: Props) {
                 >
                   <div className="rc-h">
                     <h4 className="rc-name">{name}</h4>
+                    {findPublishedRecipe(sharedRecipes, user?.uid, name) && (
+                      <span className={styles.pub}>
+                        <span className="material-symbols-outlined" aria-hidden>
+                          public
+                        </span>
+                        Publique
+                      </span>
+                    )}
                     <span className="rc-kcal">
                       {kcal} kcal{' '}
                       <span className="mono" style={{ opacity: 0.6 }}>

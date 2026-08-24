@@ -2,6 +2,10 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useNutritionStore } from '@/store/useNutritionStore';
 import { useSessionStore } from '@/store/useSessionStore';
 import { useSharedRecipesStore } from '@/store/useSharedRecipesStore';
+import {
+  findPublishedRecipe,
+  type PublishRecipeInput,
+} from '@/features/recipes/sharedRecipes';
 import { toast } from '@/components/ui/toastStore';
 import RecipeAIModal from '@/features/ai/RecipeAIModal';
 import type { AiRecipeResult } from '@/features/ai';
@@ -83,12 +87,28 @@ export default function RecipeForm({ editing, onDone }: Props) {
   const recipeUnits = useNutritionStore((s) => s.recipeUnits);
   const setRecipeUnits = useNutritionStore((s) => s.setRecipeUnits);
   const user = useSessionStore((s) => s.user);
+  const sharedRecipes = useSharedRecipesStore((s) => s.recipes);
   const publishShared = useSharedRecipesStore((s) => s.publish);
+  const updateShared = useSharedRecipesStore((s) => s.update);
+  const unpublishShared = useSharedRecipesStore((s) => s.unpublish);
   const [form, setForm] = useState<FormState>(INITIAL);
   const [aiOpen, setAiOpen] = useState(false);
-  const [share, setShare] = useState(false);
+  // null = « suivre l'état réel de la publication ». Dès que l'utilisateur
+  // touche la coche, son choix prime jusqu'à l'enregistrement.
+  const [shareOverride, setShareOverride] = useState<boolean | null>(null);
+
+  // Rapprochement par nom : celui d'origine en édition (la publication porte
+  // encore l'ancien nom), sinon celui en cours de saisie — taper le nom d'une
+  // recette déjà publiée montre ainsi tout de suite qu'elle est publique.
+  const published = findPublishedRecipe(
+    sharedRecipes,
+    user?.uid,
+    editing?.name ?? form.name,
+  );
+  const share = shareOverride ?? published !== null;
 
   useEffect(() => {
+    setShareOverride(null);
     if (editing) {
       setForm(
         tupleToForm(
@@ -136,7 +156,7 @@ export default function RecipeForm({ editing, onDone }: Props) {
 
   const reset = () => {
     setForm(INITIAL);
-    setShare(false);
+    setShareOverride(null);
     onDone();
   };
 
@@ -219,29 +239,51 @@ export default function RecipeForm({ editing, onDone }: Props) {
 
     toast(editing ? `${name} mise à jour` : `${name} enregistrée`, 'success');
 
-    // Publication communautaire : la recette est déjà enregistrée localement,
-    // un échec de partage ne doit donc jamais faire perdre la saisie.
-    if (share && user) {
-      const published = await publishShared({
+    // Publication : la recette est déjà enregistrée localement, un échec de
+    // synchro publique ne doit donc jamais faire perdre la saisie.
+    if (user) {
+      const payload: PublishRecipeInput = {
         name,
         tuple,
         portions,
         ...(isPerUnit ? { unit: { label: unitLabel } } : {}),
         authorUid: user.uid,
         authorName: user.displayName ?? null,
-      });
-      toast(
-        published
-          ? `${name} partagée avec la communauté`
-          : 'Partage impossible — recette gardée en local',
-        published ? 'success' : 'error',
-      );
+      };
+      if (share && !published) {
+        const ok = await publishShared(payload);
+        toast(
+          ok
+            ? `${name} publiée — visible par tous en lecture seule`
+            : 'Publication impossible — recette gardée en privé',
+          ok ? 'success' : 'error',
+        );
+      } else if (share && published) {
+        const ok = await updateShared(published.id, payload);
+        if (!ok)
+          toast('Mise à jour de la version publique impossible', 'error');
+      } else if (!share && published) {
+        const ok = await unpublishShared(published.id);
+        toast(
+          ok ? `${name} repassée en privé` : 'Retrait impossible',
+          ok ? 'success' : 'error',
+        );
+      }
     }
 
     reset();
   };
 
   const isEditing = editing !== null;
+  const shareHint = !user
+    ? 'Connecte-toi pour publier tes recettes.'
+    : share
+      ? published
+        ? 'Publiée : les autres la voient en lecture seule et peuvent l’ajouter à leurs repas. Tes modifications seront répercutées.'
+        : 'Elle rejoindra la section Publiques : visible par tous en lecture seule, toi seul peux la modifier.'
+      : published
+        ? 'Décochée : la recette sera retirée de la section Publiques à l’enregistrement.'
+        : 'Elle reste privée, visible de toi seul.';
   const isPerUnit = form.mode === 'perUnit';
   const macroSuffix = isPerUnit ? `/ ${form.unitLabel || 'unité'}` : '/ 100g';
 
@@ -447,31 +489,25 @@ export default function RecipeForm({ editing, onDone }: Props) {
           </div>
         )}
 
-        {!isEditing && (
-          <div className="rcp-share">
-            <button
-              type="button"
-              className={`rcp-share-toggle${share ? ' on' : ''}`}
-              onClick={() => setShare((v) => !v)}
-              aria-pressed={share}
-              disabled={!user}
-            >
-              <span className="material-symbols-outlined" aria-hidden>
-                {share ? 'check_box' : 'check_box_outline_blank'}
+        <div className="rcp-share">
+          <button
+            type="button"
+            className={`rcp-share-toggle${share ? ' on' : ''}`}
+            onClick={() => setShareOverride(!share)}
+            aria-pressed={share}
+            disabled={!user}
+          >
+            <span className="material-symbols-outlined" aria-hidden>
+              {share ? 'check_box' : 'check_box_outline_blank'}
+            </span>
+            <span className="rcp-share-body">
+              <span className="rcp-share-title">
+                Rendre la recette publique
               </span>
-              <span className="rcp-share-body">
-                <span className="rcp-share-title">
-                  Partager avec la communauté
-                </span>
-                <span className="rcp-share-sub">
-                  {user
-                    ? 'La recette sera disponible dans la base de tous les utilisateurs.'
-                    : 'Connecte-toi pour pouvoir partager tes recettes.'}
-                </span>
-              </span>
-            </button>
-          </div>
-        )}
+              <span className="rcp-share-sub">{shareHint}</span>
+            </span>
+          </button>
+        </div>
 
         <div style={{ display: 'flex', gap: 8 }}>
           <button

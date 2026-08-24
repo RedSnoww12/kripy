@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { Timestamp } from 'firebase/firestore';
 import type { SharedRecipe } from '@/types';
-import { parseSharedRecipe, sharedRecipesToFoods } from './sharedRecipes';
+import {
+  findPublishedRecipe,
+  parseSharedRecipe,
+  searchSharedRecipes,
+  sharedRecipesToFoods,
+} from './sharedRecipes';
 
 const valid = {
   name: 'Poulet curry keto',
@@ -111,5 +116,85 @@ describe('sharedRecipesToFoods', () => {
 
   it('renvoie un objet vide sans recette', () => {
     expect(sharedRecipesToFoods([])).toEqual({});
+  });
+});
+
+function make(
+  id: string,
+  name: string,
+  authorUid: string,
+  authorName: string | null = null,
+): SharedRecipe {
+  return {
+    id,
+    name,
+    tuple: [100, 0, 0, 0, 0],
+    portions: [],
+    authorUid,
+    authorName,
+    createdAt: 0,
+  };
+}
+
+describe('findPublishedRecipe', () => {
+  const library = [
+    make('a', 'Poulet Curry', 'moi'),
+    make('b', 'Chili', 'autre'),
+  ];
+
+  it('retrouve la publication de l’utilisateur par nom', () => {
+    expect(findPublishedRecipe(library, 'moi', 'Poulet Curry')?.id).toBe('a');
+  });
+
+  it('ignore la casse, les accents et les espaces autour', () => {
+    expect(findPublishedRecipe(library, 'moi', '  poulet cürry ')?.id).toBe(
+      'a',
+    );
+  });
+
+  it('ne retourne jamais la recette d’un autre auteur', () => {
+    expect(findPublishedRecipe(library, 'moi', 'Chili')).toBeNull();
+  });
+
+  it('renvoie null sans utilisateur ou sans nom', () => {
+    expect(findPublishedRecipe(library, null, 'Poulet Curry')).toBeNull();
+    expect(findPublishedRecipe(library, 'moi', '   ')).toBeNull();
+  });
+});
+
+describe('searchSharedRecipes', () => {
+  const library = [
+    make('a', 'Poulet Curry Keto', 'u1', 'Alex'),
+    make('b', 'Chili sin carne', 'u2', 'Bérénice'),
+    make('c', 'Gâteau protéiné', 'u3', null),
+  ];
+
+  it('renvoie toute la bibliothèque sans requête', () => {
+    expect(searchSharedRecipes(library, '  ')).toHaveLength(3);
+  });
+
+  it('filtre sur le nom, insensible aux accents et à la casse', () => {
+    expect(searchSharedRecipes(library, 'gateau').map((r) => r.id)).toEqual([
+      'c',
+    ]);
+  });
+
+  it('filtre aussi sur le nom de l’auteur', () => {
+    expect(searchSharedRecipes(library, 'berenice').map((r) => r.id)).toEqual([
+      'b',
+    ]);
+  });
+
+  it('exige que tous les mots de la requête soient présents', () => {
+    expect(
+      searchSharedRecipes(library, 'poulet keto').map((r) => r.id),
+    ).toEqual(['a']);
+    expect(searchSharedRecipes(library, 'poulet chili')).toEqual([]);
+  });
+
+  it('ne mute pas la liste d’origine', () => {
+    const out = searchSharedRecipes(library, '');
+    expect(out).not.toBe(library);
+    expect(out).toEqual(library);
   });
 });
