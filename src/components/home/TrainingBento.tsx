@@ -1,17 +1,12 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { todayISO } from '@/lib/date';
+import { shiftISO, todayISO } from '@/lib/date';
 import { useSportStore } from '@/store/useSportStore';
 import { useTrackingStore } from '@/store/useTrackingStore';
 
 function last7Dates(todayIso: string): string[] {
   const arr: string[] = [];
-  const today = new Date(todayIso + 'T00:00:00');
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    arr.push(d.toISOString().slice(0, 10));
-  }
+  for (let i = 6; i >= 0; i--) arr.push(shiftISO(todayIso, -i));
   return arr;
 }
 

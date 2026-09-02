@@ -99,3 +99,29 @@ describe('buildCoachContext', () => {
     expect(exos[0].seriesReellesDerniereSeance).toEqual(['12reps']);
   });
 });
+
+describe('buildCoachContext — charge hebdo', () => {
+  it('transmet les 4 dernières fenêtres de charge et le verdict local', () => {
+    const sessions = [
+      session(1, '2026-01-05', 'upper', 'Upper A', [
+        { exerciseId: 'bench', sets: [{ w: 80, r: 8, rpe: 8 }] },
+      ]),
+      session(2, '2026-01-12', 'upper', 'Upper A', [
+        { exerciseId: 'bench', sets: [{ w: 82.5, r: 8, rpe: 8 }] },
+      ]),
+    ];
+    const ctx = buildCoachContext(profile, sessions, resolve, '2026-01-14');
+    const charge = ctx.chargeHebdo as Array<Record<string, unknown>>;
+    expect(charge).toHaveLength(4);
+    expect(charge[3]).toMatchObject({
+      seances: 1,
+      series: 1,
+      seriesDures: 1,
+      tonnageKg: 660,
+      rpeMoyen: 8,
+      records: 1,
+    });
+    expect(charge[3].fenetre).toBe('2026-01-08 → 2026-01-14');
+    expect(ctx.verdictLocal).toMatchObject({ statut: expect.any(String) });
+  });
+});

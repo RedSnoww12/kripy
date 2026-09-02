@@ -1,13 +1,18 @@
 import { styleMeta } from '@/data/exercises';
 import type { StrengthSession, TrainingProfile } from '@/types';
-import type { ExerciseResolver } from './coach';
 import {
   exerciseHistory,
+  summarizeExercise,
   trackedExerciseIds,
   weekSessionCount,
+  type ExerciseResolver,
 } from './progression';
+import { assessTraining } from './trainingStatus';
+import { buildLoadWindows } from './weeklyLoad';
 
 const POINTS_PER_EXERCISE = 6;
+/** Fenêtres de charge hebdo transmises au coach IA (~1 mois). */
+const LOAD_WINDOWS_FOR_AI = 4;
 
 function formatSet(w: number, r: number, rpe?: number): string {
   const load = w > 0 ? `${w}kg×${r}` : `${r}reps`;
@@ -96,6 +101,44 @@ export function buildCoachContext(
     duree: s.dur ?? null,
   }));
 
+  // Charge hebdo (volume / intensité / records) et verdict local : l'IA
+  // raisonne sur les mêmes chiffres que le coach intégré, et peut les
+  // nuancer plutôt que de repartir de zéro.
+  const windows = buildLoadWindows(sessions, resolve, todayIso);
+  const chargeHebdo = windows
+    .filter((w) => w.index < LOAD_WINDOWS_FOR_AI)
+    .map((w) => ({
+      fenetre: `${w.start} → ${w.end}`,
+      seances: w.sessions,
+      series: w.sets,
+      seriesDures: w.hardSets,
+      tonnageKg: w.tonnage,
+      rpeMoyen: w.avgRpe,
+      records: w.prCount,
+    }));
+  const status = assessTraining({
+    windows,
+    exercises: trackedExerciseIds(profile, sessions).flatMap((id) => {
+      const def = resolve(id);
+      if (!def) return [];
+      const summary = summarizeExercise(sessions, id, def.bodyweight);
+      if (summary.points.length === 0) return [];
+      return [
+        {
+          name: def.name,
+          trend: summary.trend,
+          stagnant: summary.stagnant,
+          isPR: summary.isPR,
+        },
+      ];
+    }),
+    sessionsPerWeek: profile.sessionsPerWeek,
+    recentFeels: recents
+      .slice(-3)
+      .map((r) => r.ressenti)
+      .filter((f): f is number => typeof f === 'number'),
+  });
+
   return {
     profil: {
       style: style.label,
@@ -111,6 +154,8 @@ export function buildCoachContext(
       ...(extras?.poids ? { poidsCorporelKg: extras.poids } : {}),
     },
     programme,
+    chargeHebdo,
+    verdictLocal: { statut: status.kind, titre: status.title },
     seancesRecentes: recents,
     exercices,
     date: todayIso,

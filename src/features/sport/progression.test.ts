@@ -3,10 +3,13 @@ import type { StrengthSession, TrainingProfile } from '@/types';
 import {
   epley1RM,
   exerciseHistory,
+  isStagnant,
+  regressionTrendPct,
   setScore,
   summarizeExercise,
   trackedExerciseIds,
   weekSessionCount,
+  weeklyGoalStreak,
 } from './progression';
 
 function session(
@@ -166,5 +169,138 @@ describe('weekSessionCount', () => {
 
   it('returns 0 with no recent sessions', () => {
     expect(weekSessionCount(['2025-12-01'], '2026-01-14')).toBe(0);
+  });
+});
+
+describe('weekSessionCount — bornes de la fenêtre', () => {
+  it('exclut une séance datée d’exactement 7 jours (fenêtre de 7 jours, pas 8)', () => {
+    expect(weekSessionCount(['2026-01-07'], '2026-01-14')).toBe(0);
+    expect(weekSessionCount(['2026-01-08'], '2026-01-14')).toBe(1);
+  });
+});
+
+describe('regressionTrendPct / tendance', () => {
+  it('égale la variation brute avec deux points', () => {
+    expect(regressionTrendPct([100, 105])).toBe(5);
+  });
+
+  it('lisse un écart isolé au milieu d’une série stable', () => {
+    const pct = regressionTrendPct([100, 100, 110, 100, 100])!;
+    expect(Math.abs(pct)).toBeLessThan(1.5);
+  });
+
+  it('renvoie null avec moins de deux points', () => {
+    expect(regressionTrendPct([100])).toBeNull();
+  });
+
+  it('classe la tendance en up / flat / down', () => {
+    const up = summarizeExercise(
+      [
+        session(1, '2026-01-01', [{ w: 80, r: 8 }]),
+        session(2, '2026-01-04', [{ w: 82.5, r: 8 }]),
+        session(3, '2026-01-07', [{ w: 85, r: 8 }]),
+      ],
+      'bench',
+      false,
+    );
+    expect(up.trend).toBe('up');
+    expect(up.trendPct).toBeGreaterThan(1.5);
+
+    const flat = summarizeExercise(
+      [
+        session(1, '2026-01-01', [{ w: 80, r: 8 }]),
+        session(2, '2026-01-04', [{ w: 80, r: 8 }]),
+        session(3, '2026-01-07', [{ w: 80, r: 8 }]),
+      ],
+      'bench',
+      false,
+    );
+    expect(flat.trend).toBe('flat');
+    expect(flat.stagnant).toBe(true);
+
+    const down = summarizeExercise(
+      [
+        session(1, '2026-01-01', [{ w: 90, r: 8 }]),
+        session(2, '2026-01-04', [{ w: 85, r: 8 }]),
+      ],
+      'bench',
+      false,
+    );
+    expect(down.trend).toBe('down');
+  });
+});
+
+describe('summarizeExercise — palier prioritaire sur la tendance', () => {
+  it('classe « flat » un exercice qui a progressé puis stagne 3 séances', () => {
+    const s = summarizeExercise(
+      [
+        session(1, '2026-01-01', [{ w: 70, r: 8 }]),
+        session(2, '2026-01-04', [{ w: 75, r: 8 }]),
+        session(3, '2026-01-07', [{ w: 80, r: 8 }]),
+        session(4, '2026-01-10', [{ w: 80, r: 8 }]),
+        session(5, '2026-01-13', [{ w: 80, r: 8 }]),
+      ],
+      'bench',
+      false,
+    );
+    expect(s.trendPct).toBeGreaterThan(1.5);
+    expect(s.stagnant).toBe(true);
+    expect(s.trend).toBe('flat');
+  });
+});
+
+describe('isStagnant', () => {
+  it('demande trois séances à ±1,5 % du même score', () => {
+    const pts = exerciseHistory(
+      [
+        session(1, '2026-01-01', [{ w: 80, r: 8 }]),
+        session(2, '2026-01-04', [{ w: 80, r: 8 }]),
+        session(3, '2026-01-07', [{ w: 81, r: 8 }]),
+      ],
+      'bench',
+      false,
+    );
+    expect(isStagnant(pts)).toBe(true);
+    expect(isStagnant(pts.slice(-2))).toBe(false);
+  });
+});
+
+describe('weeklyGoalStreak', () => {
+  // 2026-01-14 est un mercredi : semaine en cours = 12/01 → 18/01.
+  it('compte les semaines calendaires consécutives à l’objectif', () => {
+    const dates = [
+      // Semaine 29/12 → 04/01 : 3 séances.
+      '2025-12-29',
+      '2025-12-31',
+      '2026-01-02',
+      // Semaine 05/01 → 11/01 : 3 séances.
+      '2026-01-05',
+      '2026-01-07',
+      '2026-01-09',
+      // Semaine en cours : 1 séance, pas encore atteinte → ignorée.
+      '2026-01-13',
+    ];
+    expect(weeklyGoalStreak(dates, 3, '2026-01-14')).toBe(2);
+  });
+
+  it('inclut la semaine en cours dès qu’elle est atteinte', () => {
+    const dates = [
+      '2026-01-05',
+      '2026-01-07',
+      '2026-01-09',
+      '2026-01-12',
+      '2026-01-13',
+      '2026-01-14',
+    ];
+    expect(weeklyGoalStreak(dates, 3, '2026-01-14')).toBe(2);
+  });
+
+  it('s’arrête à la première semaine manquée', () => {
+    const dates = ['2025-12-29', '2025-12-31', '2026-01-02', '2026-01-07'];
+    expect(weeklyGoalStreak(dates, 3, '2026-01-14')).toBe(0);
+  });
+
+  it('renvoie 0 sans objectif', () => {
+    expect(weeklyGoalStreak(['2026-01-13'], 0, '2026-01-14')).toBe(0);
   });
 });
