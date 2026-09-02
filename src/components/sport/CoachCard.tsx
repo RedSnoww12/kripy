@@ -1,13 +1,17 @@
-import { useMemo, useState } from 'react';
-import { makeExerciseResolver } from '@/data/exercises';
-import { coachTips, type CoachTipKind } from '@/features/sport/coach';
-import { todayISO } from '@/lib/date';
-import { useSportStore } from '@/store/useSportStore';
+import { useState } from 'react';
+import type {
+  CoachAxis,
+  CoachReport,
+  CoachTipKind,
+} from '@/features/sport/coach';
+import type { TrainingStatusKind } from '@/features/sport/trainingStatus';
 import SportAIModal from './SportAIModal';
 import type { TrainingProfile } from '@/types';
 
 interface Props {
   profile: TrainingProfile;
+  report: CoachReport;
+  hasSessions: boolean;
 }
 
 const KIND_ICONS: Record<CoachTipKind, string> = {
@@ -16,31 +20,51 @@ const KIND_ICONS: Record<CoachTipKind, string> = {
   keep: 'check_circle',
   deload: 'battery_low',
   info: 'lightbulb',
+  warn: 'warning',
   pr: 'trophy',
   priority: 'star',
 };
 
-export default function CoachCard({ profile }: Props) {
-  const sessions = useSportStore((s) => s.sessions);
+const AXIS_LABEL: Record<CoachAxis, string> = {
+  adherence: 'Régularité',
+  volume: 'Volume',
+  intensity: 'Intensité',
+  performance: 'Perf',
+  recovery: 'Récup',
+};
+
+const STATUS_ICONS: Record<TrainingStatusKind, string> = {
+  insufficient: 'hourglass_empty',
+  progressing: 'trending_up',
+  steady: 'trending_flat',
+  stalled: 'pause_circle',
+  fatigue: 'battery_low',
+  spike: 'warning',
+  low_volume: 'south',
+};
+
+/** Conseils affichés avant le bouton « voir plus ». */
+const VISIBLE_TIPS = 4;
+
+export default function CoachCard({ profile, report, hasSessions }: Props) {
   const [aiOpen, setAiOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
-  const resolve = useMemo(
-    () => makeExerciseResolver(profile.customExercises),
-    [profile.customExercises],
-  );
+  if (!hasSessions) return null;
 
-  const tips = useMemo(
-    () => coachTips(profile, sessions, resolve, todayISO()),
-    [profile, sessions, resolve],
-  );
-
-  if (sessions.length === 0) return null;
+  const { status, tips } = report;
+  const urgent = tips.filter((t) => t.priority === 0).length;
+  const visible = expanded ? tips : tips.slice(0, VISIBLE_TIPS);
+  const hidden = tips.length - visible.length;
 
   return (
     <section className="kl-coach">
       <div className="kl-sport-section-lbl kl-sport-section-inline">
         <span className="kl-sport-section-bar" aria-hidden />
         COACH
+        {urgent > 0 && (
+          <span className="kl-coach-urgent-count">{urgent} à traiter</span>
+        )}
         <button
           type="button"
           className="kl-coach-ai-btn"
@@ -50,6 +74,19 @@ export default function CoachCard({ profile }: Props) {
         </button>
       </div>
 
+      <div className={`kl-coach-status tone-${status.tone}`}>
+        <span className="kl-coach-status-ico" aria-hidden>
+          <span className="material-symbols-outlined">
+            {STATUS_ICONS[status.kind]}
+          </span>
+        </span>
+        <div className="kl-coach-status-body">
+          <div className="kl-coach-status-lbl">BILAN · 7 DERNIERS JOURS</div>
+          <div className="kl-coach-status-title">{status.title}</div>
+          <div className="kl-coach-status-msg">{status.msg}</div>
+        </div>
+      </div>
+
       {tips.length === 0 ? (
         <div className="kl-sport-history-empty">
           ▸ Continue à logger tes séances, les conseils arrivent avec les
@@ -57,8 +94,11 @@ export default function CoachCard({ profile }: Props) {
         </div>
       ) : (
         <div className="kl-coach-tips">
-          {tips.map((tip, i) => (
-            <div key={i} className={`kl-coach-tip kind-${tip.kind}`}>
+          {visible.map((tip, i) => (
+            <div
+              key={`${tip.axis}-${tip.exerciseName ?? ''}-${i}`}
+              className={`kl-coach-tip kind-${tip.kind} prio-${tip.priority}`}
+            >
               <span
                 className="material-symbols-outlined kl-coach-tip-ico"
                 aria-hidden
@@ -66,13 +106,33 @@ export default function CoachCard({ profile }: Props) {
                 {KIND_ICONS[tip.kind]}
               </span>
               <div className="kl-coach-tip-body">
-                {tip.exerciseName && (
-                  <span className="kl-coach-tip-exo">{tip.exerciseName}</span>
-                )}
+                <div className="kl-coach-tip-head">
+                  <span className={`kl-coach-tip-axis axis-${tip.axis}`}>
+                    {AXIS_LABEL[tip.axis]}
+                  </span>
+                  {tip.exerciseName && (
+                    <span className="kl-coach-tip-exo">{tip.exerciseName}</span>
+                  )}
+                </div>
                 {tip.msg}
               </div>
             </div>
           ))}
+          {(hidden > 0 || expanded) && tips.length > VISIBLE_TIPS && (
+            <button
+              type="button"
+              className="kl-coach-more"
+              onClick={() => setExpanded((v) => !v)}
+              aria-expanded={expanded}
+            >
+              <span className="material-symbols-outlined" aria-hidden>
+                {expanded ? 'expand_less' : 'expand_more'}
+              </span>
+              {expanded
+                ? 'Réduire'
+                : `Voir ${hidden} conseil${hidden > 1 ? 's' : ''} de plus`}
+            </button>
+          )}
         </div>
       )}
 
