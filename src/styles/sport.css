@@ -2127,3 +2127,698 @@
   color: var(--t3);
   margin-top: 4px;
 }
+
+/* ============================================================
+   Suivi de l'entraînement — header semaine, coach v2, charge,
+   progression (tendance), heatmap calendaire
+   ============================================================ */
+
+/* ── Header : compteur, streak hebdo, points des 7 jours ─ */
+.kl-sport-head-main {
+  min-width: 0;
+  flex: 1;
+}
+.kl-sport-head-count {
+  font-weight: 700;
+  color: var(--t1);
+}
+.kl-sport-head-count.reached {
+  color: var(--acc);
+}
+.kl-sport-head-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 8px;
+  padding: 2px 7px 2px 5px;
+  border-radius: 999px;
+  background: var(--orgG);
+  color: var(--org);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  vertical-align: 1px;
+}
+.kl-sport-head-streak .material-symbols-outlined {
+  font-size: 12px !important;
+}
+.kl-week-dots {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+.kl-week-dot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.kl-week-dot-cell {
+  width: 22px;
+  height: 8px;
+  border-radius: 3px;
+  background: var(--s3);
+  transition: background var(--dur-base) var(--ease-out);
+}
+.kl-week-dot.on .kl-week-dot-cell {
+  background: var(--cyan);
+}
+.kl-week-dot.on.strength .kl-week-dot-cell {
+  background: var(--acc);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--acc) 55%, transparent);
+}
+.kl-week-dot.today .kl-week-dot-cell {
+  outline: 1px solid var(--t3);
+  outline-offset: 1px;
+}
+.kl-week-dot-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  color: var(--t3);
+}
+.kl-week-dot.today .kl-week-dot-lbl {
+  color: var(--t1);
+  font-weight: 700;
+}
+
+/* ── Coach v2 : bilan + conseils classés ─────────────── */
+.kl-coach-urgent-count {
+  margin-left: 2px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--orgG);
+  color: var(--org);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: none;
+}
+.kl-coach-status {
+  --tone: var(--t2);
+  --toneG: var(--s3);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--s2);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.kl-coach-status.tone-good {
+  --tone: var(--acc);
+  --toneG: var(--accG);
+}
+.kl-coach-status.tone-warn {
+  --tone: var(--org);
+  --toneG: var(--orgG);
+}
+.kl-coach-status.tone-bad {
+  --tone: var(--red);
+  --toneG: var(--redG);
+}
+.kl-coach-status-ico {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--toneG);
+  color: var(--tone);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.kl-coach-status-ico .material-symbols-outlined {
+  font-size: 20px !important;
+}
+.kl-coach-status-body {
+  min-width: 0;
+}
+.kl-coach-status-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--t3);
+}
+.kl-coach-status-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--t1);
+  margin: 2px 0 3px;
+}
+.kl-coach-status-msg {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--t2);
+}
+.kl-coach-tip.prio-0 {
+  box-shadow: inset 2px 0 0 var(--org);
+}
+.kl-coach-tip.kind-warn .kl-coach-tip-ico {
+  color: var(--org);
+}
+.kl-coach-tip-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+.kl-coach-tip-head .kl-coach-tip-exo {
+  display: inline;
+  margin-bottom: 0;
+}
+.kl-coach-tip-axis {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--s3);
+  color: var(--t2);
+}
+.kl-coach-tip-axis.axis-volume {
+  color: var(--cyan);
+  background: var(--cyanG);
+}
+.kl-coach-tip-axis.axis-intensity {
+  color: var(--org);
+  background: var(--orgG);
+}
+.kl-coach-tip-axis.axis-performance {
+  color: var(--accL);
+  background: var(--accG);
+}
+.kl-coach-tip-axis.axis-adherence {
+  color: var(--pur);
+  background: var(--purG);
+}
+.kl-coach-tip-axis.axis-recovery {
+  color: var(--red);
+  background: var(--redG);
+}
+.kl-coach-more {
+  width: 100%;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--t2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.kl-coach-more:hover {
+  background: var(--s2);
+}
+.kl-coach-more .material-symbols-outlined {
+  font-size: 16px !important;
+}
+
+/* ── Charge d'entraînement (8 fenêtres) ──────────────── */
+.kl-load {
+  background: var(--s1);
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.kl-load-meta {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  color: var(--t3);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-weight: 500;
+}
+.kl-load-view {
+  width: 28px;
+  height: 28px;
+  margin-left: 8px;
+  border: none;
+  background: var(--s2);
+  color: var(--t2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.kl-load-view[aria-pressed='true'] {
+  background: var(--accG);
+  color: var(--acc);
+}
+.kl-load-view .material-symbols-outlined {
+  font-size: 16px !important;
+}
+.kl-load-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.kl-kpi {
+  --tone: var(--t2);
+  background: var(--s2);
+  border-radius: 12px;
+  padding: 10px 10px 9px;
+  min-width: 0;
+}
+.kl-kpi.tone-good {
+  --tone: var(--acc);
+}
+.kl-kpi.tone-warn {
+  --tone: var(--org);
+}
+.kl-kpi.tone-bad {
+  --tone: var(--red);
+}
+.kl-kpi-lbl {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--t3);
+}
+.kl-kpi-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tone);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--tone) 60%, transparent);
+  flex-shrink: 0;
+}
+.kl-kpi.tone-neutral .kl-kpi-led {
+  box-shadow: none;
+  background: var(--s4);
+}
+.kl-kpi-val {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--t1);
+  line-height: 1;
+}
+.kl-kpi-unit {
+  font-size: 8.5px;
+  font-weight: 500;
+  color: var(--t3);
+  letter-spacing: 0.02em;
+}
+.kl-kpi-foot {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kl-kpi-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--t2);
+}
+.kl-kpi-delta .material-symbols-outlined {
+  font-size: 11px !important;
+}
+.kl-kpi-hint {
+  font-family: 'Inter', sans-serif;
+  font-size: 9.5px;
+  line-height: 1.3;
+  color: var(--t3);
+}
+.kl-load-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--s0);
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 8px;
+}
+.kl-load-tab {
+  flex: 1;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--t3);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.kl-load-tab.on {
+  background: var(--s3);
+  color: var(--t1);
+}
+.kl-load-chart {
+  width: 100%;
+  min-width: 0;
+}
+.kl-load-chart .recharts-surface {
+  overflow: visible;
+}
+.kl-load-caption {
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8.5px;
+  color: var(--t3);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+.kl-load-tip {
+  min-width: 150px;
+  background: var(--s3);
+  border-radius: 10px;
+  padding: 8px 10px;
+  box-shadow: var(--glow);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  color: var(--t1);
+}
+.kl-load-tip-range {
+  color: var(--t3);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.kl-load-tip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 1px 0;
+}
+.kl-load-tip-pr {
+  color: var(--yel);
+  font-weight: 700;
+}
+.kl-load-table-wrap {
+  overflow-x: auto;
+}
+.kl-load-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 10.5px;
+}
+.kl-load-table th {
+  text-align: right;
+  font-weight: 600;
+  color: var(--t3);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 6px;
+}
+.kl-load-table th:first-child,
+.kl-load-table td:first-child {
+  text-align: left;
+}
+.kl-load-table td {
+  text-align: right;
+  padding: 6px;
+  color: var(--t2);
+}
+.kl-load-table tbody tr:nth-child(even) td {
+  background: var(--s2);
+}
+.kl-load-table tbody tr:first-child td:first-child {
+  border-radius: 8px 0 0 8px;
+}
+.kl-load-table tbody tr:first-child td:last-child {
+  border-radius: 0 8px 8px 0;
+}
+.kl-load-table tr.current td {
+  color: var(--t1);
+  font-weight: 700;
+}
+
+/* ── Progression : filtres + tendance ────────────────── */
+.kl-prog-summary {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  color: var(--t3);
+  letter-spacing: 0.04em;
+  text-transform: none;
+  font-weight: 500;
+}
+.kl-prog-filters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.kl-prog-filters::-webkit-scrollbar {
+  display: none;
+}
+.kl-prog-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 999px;
+  background: var(--s1);
+  color: var(--t2);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.kl-prog-filter.on {
+  background: var(--s3);
+  color: var(--t1);
+}
+.kl-prog-filter:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.kl-prog-filter-n {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--s0);
+  color: var(--t3);
+}
+.kl-prog-filter.f-up .kl-prog-filter-n {
+  color: var(--acc);
+}
+.kl-prog-filter.f-flat .kl-prog-filter-n {
+  color: var(--org);
+}
+.kl-prog-filter.f-down .kl-prog-filter-n {
+  color: var(--red);
+}
+.kl-prog-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--s3);
+  color: var(--t3);
+  flex-shrink: 0;
+}
+.kl-prog-trend .material-symbols-outlined {
+  font-size: 11px !important;
+}
+.kl-prog-trend.up {
+  color: var(--acc);
+  background: color-mix(in srgb, var(--acc) 14%, transparent);
+}
+.kl-prog-trend.down {
+  color: var(--red);
+  background: color-mix(in srgb, var(--red) 14%, transparent);
+}
+.kl-prog-trend.flat {
+  color: var(--org);
+  background: var(--orgG);
+}
+.kl-prog-spark circle {
+  fill: var(--acc);
+}
+.kl-prog-card.trend-down .kl-prog-spark polyline {
+  stroke: var(--red);
+}
+.kl-prog-card.trend-down .kl-prog-spark circle {
+  fill: var(--red);
+}
+.kl-prog-card.trend-flat .kl-prog-spark polyline {
+  stroke: var(--t2);
+}
+.kl-prog-card.trend-flat .kl-prog-spark circle {
+  fill: var(--t2);
+}
+
+/* ── Détail exercice : tendance + métrique du graphique ─ */
+.kl-detail-trend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -6px;
+  padding: 0 2px;
+}
+.kl-detail-trend-txt {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  color: var(--t3);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kl-detail-chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.kl-detail-chart-head .kl-detail-lbl {
+  margin-bottom: 0;
+}
+.kl-detail-tabs {
+  margin-bottom: 0;
+  width: auto;
+  flex-shrink: 0;
+}
+.kl-detail-tabs .kl-load-tab {
+  flex: none;
+  height: 24px;
+  padding: 0 9px;
+  font-size: 9px;
+}
+.kl-detail-chart.metric-volume .kl-detail-line {
+  stroke: var(--cyan);
+}
+.kl-detail-chart.metric-volume .kl-detail-dot.last {
+  fill: var(--cyan);
+}
+.kl-detail-chart.metric-rpe .kl-detail-line {
+  stroke: var(--org);
+}
+.kl-detail-chart.metric-rpe .kl-detail-dot.last {
+  fill: var(--org);
+}
+.kl-detail-axis-last {
+  fill: var(--t1);
+  font-weight: 700;
+}
+
+/* ── Heatmap calendaire lun → dim ────────────────────── */
+.kl-heat-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  color: var(--t3);
+  text-align: center;
+}
+.kl-sport-heatmap .kl-sport-heatmap-grid {
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.kl-sport-heatmap .kl-sport-heat-cell {
+  aspect-ratio: 7 / 3;
+  border-radius: 4px;
+}
+.kl-sport-heat-cell.other.tier-1 {
+  background: color-mix(in srgb, var(--cyan) 30%, transparent);
+}
+.kl-sport-heat-cell.other.tier-2 {
+  background: color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+.kl-sport-heat-cell.other.tier-3 {
+  background: var(--cyan);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--cyan) 55%, transparent);
+}
+.kl-sport-heat-cell.future {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--s2);
+}
+.kl-sport-heat-cell.outside {
+  opacity: 0.45;
+}
+.kl-sport-heat-cell.today {
+  outline: 1px solid var(--t2);
+  outline-offset: 1px;
+}
+.kl-heat-legend {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  color: var(--t3);
+}
+.kl-heat-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.kl-heat-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 6px;
+  border-radius: 2px;
+}
+.kl-heat-swatch.strength {
+  background: var(--acc);
+}
+.kl-heat-swatch.other {
+  background: var(--cyan);
+}

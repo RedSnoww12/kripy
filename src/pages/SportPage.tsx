@@ -2,31 +2,35 @@ import { useMemo, useState } from 'react';
 import SportTypeSelector from '@/components/sport/SportTypeSelector';
 import OtherSportForm from '@/components/sport/OtherSportForm';
 import WorkoutHistory from '@/components/sport/WorkoutHistory';
-import SportHeader from '@/components/sport/SportHeader';
+import SportHeader, { type HeaderDay } from '@/components/sport/SportHeader';
 import ActivityHeatmap from '@/components/sport/ActivityHeatmap';
 import TrainingSetupWizard from '@/components/sport/TrainingSetupWizard';
 import SessionLogger from '@/components/sport/SessionLogger';
 import CoachCard from '@/components/sport/CoachCard';
+import TrainingLoadCard from '@/components/sport/TrainingLoadCard';
 import MuscleVolumeCard from '@/components/sport/MuscleVolumeCard';
 import ProgressionSection from '@/components/sport/ProgressionSection';
-import { styleMeta } from '@/data/exercises';
-import { weekSessionCount } from '@/features/sport/progression';
+import {
+  makeExerciseResolver,
+  makeMuscleResolver,
+  styleMeta,
+} from '@/data/exercises';
+import { buildCoachReport } from '@/features/sport/coach';
+import {
+  weeklyGoalStreak,
+  weekSessionCount,
+} from '@/features/sport/progression';
 import { useSportStore } from '@/store/useSportStore';
 import { useTrackingStore } from '@/store/useTrackingStore';
-import { todayISO } from '@/lib/date';
+import { shiftISO, todayISO } from '@/lib/date';
 import type { SportCategory } from '@/types';
 
 type Tab = 'muscu' | 'autres';
 
-function daysBetween(aISO: string, bISO: string): number {
-  const a = new Date(aISO + 'T00:00:00').getTime();
-  const b = new Date(bISO + 'T00:00:00').getTime();
-  return Math.round((b - a) / 86_400_000);
-}
-
 export default function SportPage() {
   const profile = useSportStore((s) => s.profile);
   const setProfile = useSportStore((s) => s.setProfile);
+  const sessions = useSportStore((s) => s.sessions);
   const workouts = useTrackingStore((s) => s.workouts);
 
   const [editing, setEditing] = useState(false);
@@ -34,24 +38,47 @@ export default function SportPage() {
   const [category, setCategory] =
     useState<Exclude<SportCategory, 'muscu'>>('cardio');
 
-  const { weekCount, streak } = useMemo(() => {
-    const today = todayISO();
-    const dates = [...new Set(workouts.map((w) => w.date))];
-    const count = weekSessionCount(dates, today);
-    const sortedDates = dates.sort();
-    let s = 0;
-    for (let i = sortedDates.length - 1; i >= 0; i--) {
-      const gap = daysBetween(sortedDates[i], today);
-      if (gap === s || gap === s + 1) {
-        s = gap + 1;
-      } else {
-        break;
-      }
-    }
-    return { weekCount: count, streak: s };
-  }, [workouts]);
+  const today = todayISO();
+  const target = profile?.sessionsPerWeek ?? 0;
 
-  if (!profile || editing) {
+  const { weekCount, weekStreak, days } = useMemo(() => {
+    const dates = [...new Set(workouts.map((w) => w.date))];
+    const strengthDates = new Set(sessions.map((s) => s.date));
+    const activeDates = new Set(dates);
+    const last7: HeaderDay[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = shiftISO(today, -i);
+      last7.push({
+        date,
+        active: activeDates.has(date),
+        strength: strengthDates.has(date),
+      });
+    }
+    return {
+      weekCount: weekSessionCount(dates, today),
+      weekStreak: weeklyGoalStreak(dates, target, today),
+      days: last7,
+    };
+  }, [workouts, sessions, today, target]);
+
+  const resolve = useMemo(
+    () => makeExerciseResolver(profile?.customExercises ?? []),
+    [profile?.customExercises],
+  );
+  const resolveMuscle = useMemo(
+    () => makeMuscleResolver(profile?.customExercises ?? []),
+    [profile?.customExercises],
+  );
+
+  const report = useMemo(
+    () =>
+      profile
+        ? buildCoachReport(profile, sessions, resolve, resolveMuscle, today)
+        : null,
+    [profile, sessions, resolve, resolveMuscle, today],
+  );
+
+  if (!profile || editing || !report) {
     return (
       <TrainingSetupWizard
         initial={profile}
@@ -69,7 +96,8 @@ export default function SportPage() {
       <SportHeader
         weekCount={weekCount}
         target={profile.sessionsPerWeek}
-        streak={streak}
+        weekStreak={weekStreak}
+        days={days}
         programLabel={`${styleMeta(profile.style).label} · ${profile.sessionTemplates.length} séance${profile.sessionTemplates.length > 1 ? 's' : ''}`}
         onEdit={() => setEditing(true)}
       />
@@ -98,7 +126,14 @@ export default function SportPage() {
       {tab === 'muscu' ? (
         <>
           <SessionLogger profile={profile} />
-          <CoachCard profile={profile} />
+          <CoachCard
+            profile={profile}
+            report={report}
+            hasSessions={sessions.length > 0}
+          />
+          {sessions.length > 0 && (
+            <TrainingLoadCard windows={report.windows} status={report.status} />
+          )}
           <MuscleVolumeCard profile={profile} />
           <ProgressionSection profile={profile} />
         </>
@@ -109,7 +144,7 @@ export default function SportPage() {
         </>
       )}
 
-      <ActivityHeatmap workouts={workouts} />
+      <ActivityHeatmap workouts={workouts} sessions={sessions} />
       <WorkoutHistory />
     </div>
   );

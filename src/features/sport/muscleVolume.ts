@@ -1,4 +1,5 @@
 import { tierMeta } from '@/data/exercises';
+import { shiftISO } from '@/lib/date';
 import type { MuscleTier, StrengthSession, TrainingProfile } from '@/types';
 
 /** Fenêtre de comptage par défaut : la semaine glissante de la méthode. */
@@ -43,9 +44,7 @@ export interface MuscleVolumeReport {
 }
 
 function windowStart(todayIso: string, days: number): string {
-  const start = new Date(todayIso + 'T00:00:00');
-  start.setDate(start.getDate() - (days - 1));
-  return start.toISOString().slice(0, 10);
+  return shiftISO(todayIso, -(days - 1));
 }
 
 function statusFor(sets: number, range: [number, number] | null): VolumeStatus {

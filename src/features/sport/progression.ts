@@ -1,4 +1,5 @@
 import { allTemplateExerciseIds } from '@/data/exercises';
+import { mondayOfISO, shiftISO } from '@/lib/date';
 import type { StrengthSession, StrengthSet, TrainingProfile } from '@/types';
 
 /**
@@ -15,6 +16,10 @@ export function epley1RM(weight: number, reps: number): number {
 export function setScore(set: StrengthSet, bodyweight: boolean): number {
   if (bodyweight && set.w <= 0) return set.r;
   return epley1RM(set.w, set.r);
+}
+
+export interface ExerciseResolver {
+  (exerciseId: string): { name: string; bodyweight: boolean } | null;
 }
 
 export interface ExercisePoint {
@@ -80,15 +85,75 @@ export function exerciseHistory(
   return points;
 }
 
+export type TrendKind = 'up' | 'flat' | 'down';
+
+/** Nombre de séances lues pour la tendance de fond d'un exercice. */
+export const TREND_POINTS = 6;
+/** Fenêtre (en séances) et tolérance (±1,5 %) de la détection de stagnation. */
+export const STAGNATION_WINDOW = 3;
+const STAGNATION_TOLERANCE = 0.015;
+/** En dessous de ±1,5 % sur la fenêtre de tendance, on considère l'exercice stable. */
+const TREND_FLAT_PCT = 1.5;
+
 export interface ProgressionSummary {
   points: ExercisePoint[];
   last: ExercisePoint | null;
   prev: ExercisePoint | null;
   /** Variation % du meilleur score entre les deux dernières séances. */
   deltaPct: number | null;
+  /**
+   * Tendance de fond : variation % du meilleur score, lissée par régression
+   * linéaire sur les `TREND_POINTS` dernières séances. Moins bruitée que
+   * `deltaPct`, qui ne compare que deux séances.
+   */
+  trendPct: number | null;
+  trend: TrendKind | null;
+  /** true si les `STAGNATION_WINDOW` dernières séances sont à ±1,5 % du même score. */
+  stagnant: boolean;
   bestEver: number;
   /** true si la dernière séance établit un record. */
   isPR: boolean;
+}
+
+/**
+ * Variation % entre la valeur prédite au début et à la fin de la fenêtre par
+ * une régression linéaire sur l'index de séance. Avec deux points, égale la
+ * variation brute ; au-delà, un écart isolé pèse moins qu'une vraie dérive.
+ */
+export function regressionTrendPct(values: readonly number[]): number | null {
+  const n = values.length;
+  if (n < 2) return null;
+  const sx = (n * (n - 1)) / 2;
+  const sxx = ((n - 1) * n * (2 * n - 1)) / 6;
+  let sy = 0;
+  let sxy = 0;
+  values.forEach((y, x) => {
+    sy += y;
+    sxy += x * y;
+  });
+  const denom = n * sxx - sx * sx;
+  const slope = denom !== 0 ? (n * sxy - sx * sy) / denom : 0;
+  const intercept = (sy - slope * sx) / n;
+  if (intercept <= 0) return null;
+  const predLast = intercept + slope * (n - 1);
+  return Math.round(((predLast - intercept) / intercept) * 1000) / 10;
+}
+
+function trendKindFor(trendPct: number | null): TrendKind | null {
+  if (trendPct === null) return null;
+  if (trendPct > TREND_FLAT_PCT) return 'up';
+  if (trendPct < -TREND_FLAT_PCT) return 'down';
+  return 'flat';
+}
+
+export function isStagnant(points: readonly ExercisePoint[]): boolean {
+  if (points.length < STAGNATION_WINDOW) return false;
+  const recent = points.slice(-STAGNATION_WINDOW);
+  const first = recent[0].best;
+  if (first <= 0) return false;
+  return recent.every(
+    (p) => Math.abs(p.best - first) / first < STAGNATION_TOLERANCE,
+  );
 }
 
 export function summarizeExercise(
@@ -104,12 +169,28 @@ export function summarizeExercise(
     last && prev && prev.best > 0
       ? Math.round(((last.best - prev.best) / prev.best) * 1000) / 10
       : null;
+  const trendPct = regressionTrendPct(
+    points.slice(-TREND_POINTS).map((p) => p.best),
+  );
+  const stagnant = isStagnant(points);
   const isPR =
     last !== null &&
     points.length > 1 &&
     last.best >= bestEver &&
     points.slice(0, -1).every((p) => p.best < last.best);
-  return { points, last, prev, deltaPct, bestEver, isPR };
+  return {
+    points,
+    last,
+    prev,
+    deltaPct,
+    trendPct,
+    // La régression lit 6 séances : un exercice qui a progressé puis s'est
+    // figé sur les 3 dernières est en palier aujourd'hui, pas « en hausse ».
+    trend: stagnant ? 'flat' : trendKindFor(trendPct),
+    stagnant,
+    bestEver,
+    isPR,
+  };
 }
 
 /**
@@ -132,9 +213,39 @@ export function weekSessionCount(
   dates: readonly string[],
   todayIso: string,
 ): number {
-  const start = new Date(todayIso + 'T00:00:00');
-  start.setDate(start.getDate() - 6);
-  const startIso = start.toISOString().slice(0, 10);
+  const startIso = shiftISO(todayIso, -6);
   const unique = new Set(dates.filter((d) => d >= startIso && d <= todayIso));
   return unique.size;
+}
+
+/**
+ * Semaines calendaires consécutives (lundi → dimanche) où l'objectif de
+ * séances a été tenu, en remontant depuis aujourd'hui. La semaine en cours
+ * compte si elle est déjà atteinte ; sinon elle est ignorée (elle n'est pas
+ * finie) et la série se lit depuis la semaine précédente.
+ */
+export function weeklyGoalStreak(
+  dates: readonly string[],
+  target: number,
+  todayIso: string,
+): number {
+  if (target <= 0) return 0;
+  const byWeek = new Map<string, Set<string>>();
+  for (const d of dates) {
+    if (d > todayIso) continue;
+    const monday = mondayOfISO(d);
+    const set = byWeek.get(monday) ?? new Set<string>();
+    set.add(d);
+    byWeek.set(monday, set);
+  }
+  const hit = (monday: string) => (byWeek.get(monday)?.size ?? 0) >= target;
+
+  let monday = mondayOfISO(todayIso);
+  let streak = hit(monday) ? 1 : 0;
+  monday = shiftISO(monday, -7);
+  while (hit(monday)) {
+    streak += 1;
+    monday = shiftISO(monday, -7);
+  }
+  return streak;
 }

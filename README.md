@@ -136,11 +136,23 @@ Plutôt que de te montrer ton poids brut (qui fluctue de ±1 kg par jour selon l
   au-dessus de ce que tu logues réellement, avec un compteur de progression
 - **Suivi de la surcharge progressive** sur les exercices suivis :
   séries charge × reps avec **RPE par série**, 1RM estimé (Epley), volume,
-  records (PR), deltas et sparklines — gère aussi le poids du corps (reps / lest)
-- **Coach intégré** : conseils locaux (progression, deload, stagnation,
-  adhérence) + **analyse IA** avec ajustements chiffrés selon l'objectif
+  records (PR), **tendance lissée sur 6 séances** (↗ / → / ↘, filtres
+  Progresse / Stagne / Baisse) et sparklines — gère aussi le poids du corps
+  (reps / lest). Le détail d'un exercice trace au choix la perf (e1RM), le
+  volume ou le RPE moyen par séance
+- **Charge d'entraînement sur 8 semaines** : par fenêtre glissante de
+  7 jours — séances, séries, séries dures (RPE ≥ 8), tonnage, RPE moyen,
+  records — avec tuiles Volume / Intensité / Performance (variation vs la
+  semaine précédente), graphique à métrique commutable et vue tableau
+- **Coach intégré** : un **bilan hebdo** (ça progresse / stable / palier /
+  fatigue / pic de volume / semaine légère) dérivé des trois axes, puis des
+  conseils **classés par urgence** — régularité, exercices prioritaires
+  sous-servis, dérive du RPE, pic ou creux de volume, groupe musculaire sous
+  sa cible, exercice qui stagne, marge disponible — et **analyse IA** avec
+  ajustements chiffrés, qui reçoit la même charge hebdo et le verdict local
 - Cardio, sports collectifs, sports de combat
-- Historique des séances et heatmap d'activité 28 jours
+- Historique des séances, **calendrier d'activité lun → dim** sur 28 jours
+  (musculation / autres sports) et série de semaines à l'objectif
 
 ### Personnalisation
 
