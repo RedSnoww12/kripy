@@ -76,7 +76,7 @@ Plutôt que de te montrer ton poids brut (qui fluctue de ±1 kg par jour selon l
 ### 3. **Saisie ultra-rapide sur mobile**
 
 - **Recherche d'aliment** : base FOODS embarquée + recherche incrémentale
-- **Photo IA** : envoie une photo d'assiette au fournisseur d'IA choisi — **Google Gemini** (2.5 Flash, multimodal) ou **Groq** (Llama 4 Scout) — qui extrait les aliments et estime les portions (opt-in, fournisseur + clé API configurables dans Réglages)
+- **Photo IA** : envoie une photo d'assiette au fournisseur d'IA choisi — **Google Gemini** (2.5 Flash, multimodal) ou **Groq** (GPT-OSS 120B pour le texte, Qwen 3 27B pour la photo) — qui extrait les aliments et estime les portions (opt-in, fournisseur + clé API configurables dans Réglages)
 - **Dictée vocale** : reconnaissance vocale native du navigateur pour décrire le repas
 - **Code-barres** : scanner ZXing branché sur OpenFoodFacts
 - **URL scheme steps** : ouvrir l'app avec `?steps=12345` pour synchroniser les pas depuis Raccourcis iOS / Tasker
@@ -104,7 +104,7 @@ Plutôt que de te montrer ton poids brut (qui fluctue de ±1 kg par jour selon l
   seul son auteur peut la modifier, la repasser en privé ou la supprimer.
 - Presets macros (Équilibre, High Prot, Keto, Low Fat, Zone)
 - Scan de code-barres (OpenFoodFacts)
-- Analyse d'un repas par photo (Google Gemini 2.5 Flash ou Groq / Llama 4 Scout, au choix)
+- Analyse d'un repas par photo (Google Gemini 2.5 Flash ou Groq / GPT-OSS 120B + Qwen 3 27B, au choix)
 - Dictée vocale
 
 ### Poids & pas
